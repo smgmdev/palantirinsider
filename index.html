@@ -130,6 +130,22 @@
     footer { background: var(--head); color: #a0b0c8; text-align: center; padding: 32px; font-size: 12px; line-height: 1.7; }
     footer strong { color: #fff; }
 
+    /* BURGER MENU */
+    .burger-btn { position: fixed; bottom: 24px; right: 24px; z-index: 999; width: 52px; height: 52px; background: var(--accent); border-radius: 50%; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: background 0.2s; }
+    .burger-btn:hover { background: var(--a2); }
+    .burger-btn span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.3s; }
+    .burger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .burger-btn.open span:nth-child(2) { opacity: 0; }
+    .burger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .burger-menu { position: fixed; bottom: 86px; right: 24px; z-index: 998; background: var(--head); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px; min-width: 220px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none; flex-direction: column; gap: 4px; }
+    .burger-menu.open { display: flex; }
+    .burger-menu .bm-label { font-size: 10px; color: #506080; text-transform: uppercase; letter-spacing: 1.5px; padding: 6px 12px 2px; font-weight: 700; }
+    .burger-menu a { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 6px; text-decoration: none; color: #a0b8d0; font-size: 13px; font-weight: 600; transition: background 0.15s, color 0.15s; }
+    .burger-menu a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .burger-menu a.active-report { background: rgba(0,85,204,0.3); color: #4da6ff; }
+    .burger-menu a .bm-icon { font-size: 16px; flex-shrink: 0; }
+    .burger-menu .bm-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 4px 0; }
+
     /* NAV */
     .topnav { position: sticky; top: 0; z-index: 100; background: var(--head); border-bottom: 2px solid var(--accent); display: flex; align-items: center; gap: 0; overflow-x: auto; }
     .topnav a { display: block; padding: 13px 18px; font-size: 11px; font-weight: 600; color: #7090b0; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.06); transition: color 0.15s, background 0.15s; }
@@ -1570,6 +1586,36 @@
   Palantir contract values sourced from public DoD announcements via DefenseScoop, Breaking Defense, and C4ISRNET.
   This document is for strategic planning purposes only and does not constitute financial or legal advice.
 </footer>
+
+<!-- BURGER MENU -->
+<button class="burger-btn" id="burgerBtn" onclick="toggleBurger()" aria-label="Reports menu">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bm-label">Reports</div>
+  <a href="index.html" class="active-report"><span class="bm-icon">🛰️</span>Project MAX — Palantir Takedown</a>
+  <a href="KLEOS_ANALYSIS.html"><span class="bm-icon">📡</span>Kleos Space — Intelligence Analysis</a>
+  <div class="bm-divider"></div>
+  <div class="bm-label">Sections</div>
+  <a href="#s1"><span class="bm-icon">🔍</span>Palantir Stack</a>
+  <a href="#s4"><span class="bm-icon">💰</span>Cost Breakdown</a>
+  <a href="#s7"><span class="bm-icon">🎥</span>Video Satellites</a>
+  <a href="#s8"><span class="bm-icon">📊</span>Business Model</a>
+</div>
+<script>
+  function toggleBurger() {
+    document.getElementById('burgerBtn').classList.toggle('open');
+    document.getElementById('burgerMenu').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    var btn = document.getElementById('burgerBtn');
+    var menu = document.getElementById('burgerMenu');
+    if (!btn.contains(e.target) && !menu.contains(e.target)) {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+    }
+  });
+</script>
 
 </body>
 </html>
