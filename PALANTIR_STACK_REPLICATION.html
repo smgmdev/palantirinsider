@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Palantir Stack — Independent Replication Plan & Cost Analysis</title>
+  <style>
+    :root {
+      --bg:      #ffffff;
+      --surface: #f5f7fa;
+      --s2:      #edf0f5;
+      --border:  #d0d8e8;
+      --accent:  #0055cc;
+      --a2:      #003a99;
+      --gold:    #b86a00;
+      --red:     #cc2222;
+      --green:   #007a44;
+      --orange:  #c45200;
+      --text:    #1a2333;
+      --muted:   #5a6a85;
+      --head:    #0a1628;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.65; }
+
+    /* COVER */
+    .cover { background: linear-gradient(135deg, #0a1628 0%, #0d2550 100%); color: #fff; padding: 64px 40px; text-align: center; }
+    .badge { display: inline-block; background: var(--orange); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 3px; padding: 5px 18px; border-radius: 2px; margin-bottom: 32px; text-transform: uppercase; }
+    .cover h1 { font-size: 44px; font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 10px; }
+    .cover h1 span { color: #4da6ff; }
+    .cover .sub { font-size: 12px; letter-spacing: 4px; color: #4da6ff; text-transform: uppercase; margin-bottom: 24px; }
+    .cover .desc { font-size: 15px; color: #a8c0e0; max-width: 600px; margin: 0 auto 40px; }
+    .cover-stats { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+    .cs { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 16px 24px; min-width: 140px; text-align: center; }
+    .cs .v { font-size: 24px; font-weight: 800; color: #4da6ff; line-height: 1; margin-bottom: 4px; }
+    .cs .l { font-size: 10px; color: #7090b0; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* LAYOUT */
+    .container { max-width: 980px; margin: 0 auto; padding: 0 32px; }
+    .section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+    .sh { display: flex; align-items: center; gap: 14px; margin-bottom: 30px; }
+    .sn { background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 4px 10px; border-radius: 3px; text-transform: uppercase; white-space: nowrap; }
+    .st { font-size: 22px; font-weight: 700; color: var(--head); }
+
+    h3 { font-size: 12px; font-weight: 700; color: var(--a2); margin: 32px 0 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--s2); padding-bottom: 6px; }
+    h4 { font-size: 13px; font-weight: 700; color: var(--head); margin: 20px 0 8px; padding-left: 10px; border-left: 3px solid var(--accent); }
+    p { margin-bottom: 12px; font-size: 13.5px; }
+    ul { padding-left: 18px; margin-bottom: 10px; }
+    li { margin-bottom: 5px; font-size: 13.5px; }
+    strong { color: var(--head); }
+
+    /* TABLES */
+    .tw { overflow-x: auto; margin: 10px 0 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: var(--accent); }
+    thead th { padding: 10px 14px; text-align: left; color: #fff; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:hover { background: var(--surface); }
+    tbody tr:nth-child(even) { background: #fafbfd; }
+    td { padding: 9px 14px; vertical-align: top; }
+    .tr { background: var(--s2) !important; font-weight: 700; color: var(--head); border-top: 2px solid var(--border); }
+
+    /* COMPARE TABLE */
+    .palantir-col { background: rgba(200,80,0,0.06); }
+    .own-col { background: rgba(0,85,204,0.06); }
+    .palantir-head { background: #c45200 !important; }
+    .own-head { background: var(--accent) !important; }
+
+    /* NOTE / CALLOUT */
+    .note { background: #fff8e6; border-left: 4px solid var(--gold); border-radius: 0 4px 4px 0; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #7a4a00; }
+    .note strong { color: var(--gold); }
+    .tip { background: #e8f4ff; border-left: 4px solid var(--accent); border-radius: 0 4px 4px 0; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #003080; }
+    .tip strong { color: var(--accent); }
+
+    /* LAYER CARD */
+    .layer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 18px 0; }
+    .layer { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 0 0 6px 6px; padding: 20px; }
+    .layer.orange { border-top-color: var(--orange); }
+    .layer.green  { border-top-color: var(--green); }
+    .layer.gold   { border-top-color: var(--gold); }
+    .layer .lnum  { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .layer .ltitle { font-size: 15px; font-weight: 700; color: var(--head); margin-bottom: 6px; }
+    .layer .lpalantir { font-size: 12px; color: var(--orange); font-weight: 600; margin-bottom: 8px; }
+    .layer .ldesc { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+    .layer .lcost { font-size: 16px; font-weight: 800; color: var(--accent); }
+    .layer .lcost-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* SATELLITE CARD GRID */
+    .sat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 16px 0; }
+    .sat { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; }
+    .sat .sat-name { font-size: 14px; font-weight: 700; color: var(--head); margin-bottom: 3px; }
+    .sat .sat-type { font-size: 11px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .sat .sat-detail { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
+    .sat .sat-cost { font-size: 13px; font-weight: 700; color: var(--green); }
+    .sat .sat-palantir { font-size: 11px; background: rgba(196,82,0,0.1); color: var(--orange); padding: 3px 8px; border-radius: 3px; display: inline-block; margin-bottom: 6px; }
+
+    /* KPI */
+    .kpi-row { display: flex; gap: 4px; flex-wrap: wrap; margin: 18px 0; }
+    .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 20px; flex: 1; min-width: 130px; text-align: center; }
+    .kpi .kv { font-size: 22px; font-weight: 800; color: var(--accent); }
+    .kpi .kl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+    /* PHASE */
+    .phase-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 16px 0; }
+    .ph { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid; border-radius: 0 0 4px 4px; padding: 16px; }
+    .ph:nth-child(1) { border-top-color: var(--accent); }
+    .ph:nth-child(2) { border-top-color: var(--gold); }
+    .ph:nth-child(3) { border-top-color: var(--green); }
+    .ph .pn { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 3px; }
+    .ph .pc { font-size: 20px; font-weight: 800; color: var(--accent); margin-bottom: 2px; }
+    .ph .pt { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+    .ph ul { font-size: 12px; padding-left: 14px; }
+    .ph li { margin-bottom: 3px; }
+
+    .green-text { color: var(--green); font-weight: 600; }
+    .red-text { color: var(--red); font-weight: 600; }
+    .orange-text { color: var(--orange); font-weight: 700; }
+    .blue-text { color: var(--accent); font-weight: 700; }
+
+    /* ARCH BOX */
+    .arch { background: var(--s2); border: 1px solid var(--border); border-radius: 8px; padding: 28px 32px; margin: 18px 0; font-family: 'Courier New', monospace; font-size: 12.5px; color: var(--a2); line-height: 1.9; overflow-x: auto; white-space: pre; }
+
+    /* IMG */
+    .img-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 16px 0; }
+    .ic { border: 1px solid var(--border); border-radius: 7px; overflow: hidden; background: var(--surface); }
+    .ic img { width: 100%; height: 170px; object-fit: cover; display: block; }
+    .ic .cap { padding: 8px 12px; font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--border); }
+    .ic .cap strong { color: var(--head); font-size: 12px; display: block; margin-bottom: 2px; }
+
+    footer { background: var(--head); color: #a0b0c8; text-align: center; padding: 32px; font-size: 12px; line-height: 1.7; }
+    footer strong { color: #fff; }
+
+    /* NAV */
+    .topnav { position: sticky; top: 0; z-index: 100; background: var(--head); border-bottom: 2px solid var(--accent); display: flex; align-items: center; gap: 0; overflow-x: auto; }
+    .topnav a { display: block; padding: 13px 18px; font-size: 11px; font-weight: 600; color: #7090b0; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.06); transition: color 0.15s, background 0.15s; }
+    .topnav a:hover { color: #fff; background: rgba(255,255,255,0.06); }
+    .topnav a.active { color: #4da6ff; border-bottom: 2px solid #4da6ff; }
+    .topnav .nav-logo { padding: 10px 20px; font-size: 13px; font-weight: 900; color: #fff; letter-spacing: 2px; border-right: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; }
+
+    /* BUSINESS MODEL */
+    .bm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 18px 0; }
+    .bm-card { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 0 0 6px 6px; padding: 20px; }
+    .bm-card.orange { border-top-color: var(--orange); }
+    .bm-card.green  { border-top-color: var(--green); }
+    .bm-card.gold   { border-top-color: var(--gold); }
+    .bm-card.red    { border-top-color: var(--red); }
+    .bm-card .bm-icon { font-size: 22px; margin-bottom: 8px; }
+    .bm-card .bm-title { font-size: 14px; font-weight: 700; color: var(--head); margin-bottom: 4px; }
+    .bm-card .bm-sub { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; margin-bottom: 10px; }
+    .bm-card .bm-desc { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin-bottom: 10px; }
+    .bm-card .bm-rev { font-size: 16px; font-weight: 800; color: var(--green); }
+    .bm-card .bm-rev-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+    .funnel { display: flex; flex-direction: column; gap: 4px; margin: 18px 0; }
+    .funnel-step { display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 0 6px 6px 0; padding: 14px 18px; }
+    .funnel-step.s2 { border-left-color: var(--gold); margin: 0 20px; }
+    .funnel-step.s3 { border-left-color: var(--orange); margin: 0 40px; }
+    .funnel-step.s4 { border-left-color: var(--green); margin: 0 60px; }
+    .funnel-step .fn { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; width: 70px; flex-shrink: 0; }
+    .funnel-step .ft { font-size: 13px; font-weight: 700; color: var(--head); }
+    .funnel-step .fd { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .funnel-step .fv { margin-left: auto; font-size: 15px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
+
+    @media (max-width: 700px) {
+      .phase-row { grid-template-columns: 1fr; }
+      .layer-grid { grid-template-columns: 1fr; }
+      .sat-grid { grid-template-columns: 1fr; }
+      .bm-grid { grid-template-columns: 1fr; }
+      .container { padding: 0 16px; }
+      .funnel-step.s2, .funnel-step.s3, .funnel-step.s4 { margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="nav-logo">PROJECT MAX</div>
+  <a href="#s1">Palantir Stack</a>
+  <a href="#s2">Replication Plan</a>
+  <a href="#s3">AI Engine</a>
+  <a href="#s4">Cost Breakdown</a>
+  <a href="#s5">Tech Stack</a>
+  <a href="#s6">90-Day Plan</a>
+  <a href="#s7">Video Satellites</a>
+  <a href="#s8">Business Model</a>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="badge">Palantir Takedown Insider</div>
+  <h1>Project<br><span>MAX</span></h1>
+  <div class="sub">Maximum Awareness &amp; Xray-Intelligence Platform</div>
+  <div class="desc">A full-spectrum space-based surveillance and AI threat detection system — satellite constellation, real-time AI recognition, and sovereign infrastructure built and owned independently.</div>
+  <div class="cover-stats">
+    <div class="cs"><div class="v">$1.3B+</div><div class="l">Palantir Maven contract</div></div>
+    <div class="cs"><div class="v">8</div><div class="l">Satellite partners</div></div>
+    <div class="cs"><div class="v">$180M</div><div class="l">Own stack — Year 1</div></div>
+    <div class="cs"><div class="v">$620M</div><div class="l">Own stack — Full build</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 1 — WHAT PALANTIR ACTUALLY USES          -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section" id="s1">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 01</div><div class="st">What Palantir Actually Uses</div></div>
+
+    <p>Palantir does not own any satellites. Their model is a <strong>software aggregation layer</strong> — they license data feeds from commercial satellite operators, fuse them through their AI platform (AIP / MetaConstellation), and sell the output to governments and defence agencies as a managed service. Their advantage is entirely in the software and AI layer, not the space hardware.</p>
+
+    <div class="arch">┌──────────────────────────────────────────────────────────────┐
+│                  PALANTIR STACK — AS BUILT                   │
+├───────────────────────┬──────────────────────────────────────┤
+│  LAYER 1: SATELLITES  │  NOT OWNED — licensed from partners  │
+│  (Space segment)      │  Planet Labs · Maxar · BlackSky      │
+│                       │  ICEYE · Satellogic · Voyager        │
+│                       │  Tomorrow.io · World View            │
+├───────────────────────┼──────────────────────────────────────┤
+│  LAYER 2: DATA INGEST │  MetaConstellation platform          │
+│  (Orchestration)      │  Multi-operator API aggregation      │
+│                       │  Satellite tasking &amp; scheduling       │
+│                       │  Real-time alert routing             │
+├───────────────────────┼──────────────────────────────────────┤
+│  LAYER 3: AI ENGINE   │  AIP (Artificial Intelligence        │
+│  (Analysis)           │  Platform) + Ontology data model     │
+│                       │  Object detection · Change detection │
+│                       │  Target identification · Kill chain  │
+│                       │  Trajectory prediction · Fusion      │
+├───────────────────────┼──────────────────────────────────────┤
+│  LAYER 4: DELIVERY    │  Maven Smart System (DoD)            │
+│  (Client interface)   │  Foundry (enterprise)                │
+│                       │  Apollo (deployment/CI/CD)           │
+│                       │  ATAK / C2 terminal integration      │
+└───────────────────────┴──────────────────────────────────────┘</div>
+
+    <h3>The 8 Satellite Partners Palantir Uses</h3>
+    <div class="sat-grid">
+
+      <div class="sat">
+        <div class="sat-name">Planet Labs</div>
+        <div class="sat-type">Electro-Optical (EO) · 200+ satellites</div>
+        <div class="sat-palantir">Palantir: Maven Smart System + MetaConstellation</div>
+        <div class="sat-detail">Daily global revisit. 3m–0.5m resolution. Continuous change detection. Palantir uses Planet for broad-area monitoring and daily update feeds across all theatres.</div>
+        <div class="sat-cost">API access: ~$180K–$2M/yr (enterprise tier)</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">Maxar Technologies</div>
+        <div class="sat-type">High-Resolution EO · WorldView constellation</div>
+        <div class="sat-palantir">Palantir: Maven Smart System targeting imagery</div>
+        <div class="sat-detail">0.3m GSD — highest commercial resolution. WorldView-3, WorldView Legion. Used for precision targeting imagery and detailed site analysis in Maven. Palantir named as integration partner.</div>
+        <div class="sat-cost">Tasking: $15–$30/km² · Archive: $3–$8/km²</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">BlackSky</div>
+        <div class="sat-type">EO Optical · 16 satellites · Rapid revisit</div>
+        <div class="sat-palantir">Palantir: MetaConstellation rapid monitoring</div>
+        <div class="sat-detail">Sub-hourly revisit over targets of interest. Real-time alerts on activity changes. NRO contract worth up to $1B over 10 years. Palantir uses BlackSky for time-sensitive site monitoring.</div>
+        <div class="sat-cost">Subscription from ~$85M/5yr (government tier)</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">ICEYE</div>
+        <div class="sat-type">SAR Radar · 35+ satellites · All-weather</div>
+        <div class="sat-palantir">Palantir: Maven — all-weather military tracking</div>
+        <div class="sat-detail">Penetrates cloud cover and darkness. Detects ships, vehicles, military equipment movement. Explicitly contracted for Maven Smart System along with Planet Labs. Finnish-made SAR constellation.</div>
+        <div class="sat-cost">Per-image: $500–$3,000 · Subscription: custom</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">Satellogic</div>
+        <div class="sat-type">EO + Edge AI onboard · 35 satellites</div>
+        <div class="sat-palantir">Palantir: Edge AI in space — most advanced integration</div>
+        <div class="sat-detail"><strong>Most technically advanced partner.</strong> Palantir AI models run onboard Satellogic satellites before downlink. Detections happen in orbit. Only flagged data transmitted. Cuts latency dramatically.</div>
+        <div class="sat-cost">$8/km² standard tasking · API: custom contract</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">Voyager Technologies</div>
+        <div class="sat-type">Space Domain Awareness · SIGINT</div>
+        <div class="sat-palantir">Palantir: Space object tracking + classification</div>
+        <div class="sat-detail">Signals intelligence from orbit. Tracks and classifies objects in space. Partnership announced 2025 — developing AI system for Space Domain Awareness using Palantir ML engines + Voyager signal processing hardware.</div>
+        <div class="sat-cost">Government programme pricing — not public</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">Tomorrow.io</div>
+        <div class="sat-type">Weather satellites · Atmospheric data</div>
+        <div class="sat-palantir">Palantir: Operational planning data layer</div>
+        <div class="sat-detail">Real-time weather data fused into Palantir operations platform. Improves targeting, mission planning, and logistics. Atmospheric data affects SAR quality, drone operations, and aircraft routing.</div>
+        <div class="sat-cost">API: $50K–$500K/yr depending on resolution</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">World View</div>
+        <div class="sat-type">Stratospheric balloon ISR · Near-space</div>
+        <div class="sat-palantir">Palantir: Persistent regional surveillance</div>
+        <div class="sat-detail">Stratospheric balloons at 18–25km altitude. Persistent stare over a region for weeks. Lower cost than satellites for fixed-area coverage. Partnership with Palantir + Ondas for multi-domain ISR platform (2026).</div>
+        <div class="sat-cost">Per-mission: $500K–$3M · Subscription: custom</div>
+      </div>
+
+    </div>
+
+    <h3>Palantir's AI Software Stack</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Product</th><th>Function</th><th>What it does in the satellite context</th></tr></thead>
+        <tbody>
+          <tr><td><strong>MetaConstellation</strong></td><td>Satellite orchestration layer</td><td>Tasks multiple satellite operators simultaneously, routes imagery, manages priority queues, delivers real-time alerts</td></tr>
+          <tr><td><strong>AIP (AI Platform)</strong></td><td>Core AI engine</td><td>Object detection, change detection, target classification, kill chain automation, natural language query on imagery</td></tr>
+          <tr><td><strong>Ontology</strong></td><td>Data model / knowledge graph</td><td>Links objects across sensor feeds — a tank spotted by SAR matched to same tank in EO imagery from 6 hours earlier</td></tr>
+          <tr><td><strong>Maven Smart System</strong></td><td>DoD military interface</td><td>Full ISR-to-strike workflow. Ingests satellite + drone + SIGINT. AI generates target packages. Used operationally in Ukraine and Middle East.</td></tr>
+          <tr><td><strong>Foundry</strong></td><td>Enterprise data platform</td><td>Data pipeline management, integration, analyst workbench, reporting</td></tr>
+          <tr><td><strong>Apollo</strong></td><td>Deployment / CI/CD</td><td>Manages software deployment across classified and unclassified environments, edge devices, and satellite payloads</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Palantir Contract Values (Government)</h3>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kv">$1.3B</div><div class="kl">Maven Smart System (DoD) through 2029</div></div>
+      <div class="kpi"><div class="kv">$480M</div><div class="kv" style="font-size:14px">+$795M</div><div class="kl">Original + expansion (May 2024 → May 2025)</div></div>
+      <div class="kpi"><div class="kv">$100M</div><div class="kl">All-branch military access contract (Sep 2024)</div></div>
+      <div class="kpi"><div class="kv">NATO</div><div class="kl">Maven deal signed April 2025 — value undisclosed</div></div>
+    </div>
+
+    <div class="note"><strong>Key insight:</strong> Palantir charges governments $480M–$1.3B for a platform built primarily on <em>licensed</em> commercial satellite data + proprietary AI software. They don't own the sensors. The premium is entirely for the AI fusion, workflow automation, and security clearances.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 2 — INDEPENDENT REPLICATION PLAN         -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section" id="s2">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 02</div><div class="st">Independent Replication Plan</div></div>
+
+    <p>To replicate what Palantir delivers — without depending on Palantir's platform or its pricing — you need to build the same four layers independently: satellite data access, orchestration, AI analytics, and client delivery. You do not need to own satellites to start. The fastest path mirrors Palantir's own model: license the same satellite feeds, build your own AI layer on top.</p>
+
+    <h3>Build vs License Decision</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th class="palantir-head">Palantir's Approach</th>
+            <th class="own-head">Independent Approach</th>
+            <th>Recommendation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Satellites</strong></td>
+            <td class="palantir-col">License from 8 operators — no ownership</td>
+            <td class="own-col">License same operators OR own constellation Phase 2+</td>
+            <td>License first, own later</td>
+          </tr>
+          <tr>
+            <td><strong>Orchestration</strong></td>
+            <td class="palantir-col">MetaConstellation (proprietary)</td>
+            <td class="own-col">Build open-architecture tasking platform</td>
+            <td>Build — 12–18 months</td>
+          </tr>
+          <tr>
+            <td><strong>AI Engine</strong></td>
+            <td class="palantir-col">AIP + Ontology (proprietary)</td>
+            <td class="own-col">Build on open-source CV + custom fusion engine</td>
+            <td>Build — core differentiator</td>
+          </tr>
+          <tr>
+            <td><strong>Client Interface</strong></td>
+            <td class="palantir-col">Maven / Foundry / Apollo</td>
+            <td class="own-col">Build secure web dashboard + API + C2 integration</td>
+            <td>Build — 6–12 months</td>
+          </tr>
+          <tr>
+            <td><strong>Edge AI (satellite)</strong></td>
+            <td class="palantir-col">Satellogic partnership (onboard inference)</td>
+            <td class="own-col">Replicate via Satellogic API OR own onboard AI chips</td>
+            <td>License Satellogic first</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The 4 Layers — Independent Build Specification</h3>
+    <div class="layer-grid">
+
+      <div class="layer">
+        <div class="lnum">Layer 1</div>
+        <div class="ltitle">Satellite Data Access</div>
+        <div class="lpalantir">Palantir uses: Planet + Maxar + BlackSky + ICEYE + Satellogic</div>
+        <div class="ldesc">License the same five commercial operators directly. No satellite ownership required. You get the same imagery feeds Palantir uses — without paying Palantir's markup.</div>
+        <div class="lcost-label">Annual licensing cost</div>
+        <div class="lcost">$15M – $45M/yr</div>
+      </div>
+
+      <div class="layer orange">
+        <div class="lnum">Layer 2</div>
+        <div class="ltitle">Orchestration Platform</div>
+        <div class="lpalantir">Palantir uses: MetaConstellation</div>
+        <div class="ldesc">Custom satellite tasking engine — APIs to all operators, priority queue management, real-time alert routing, constellation scheduling optimizer. Build on cloud-native microservices.</div>
+        <div class="lcost-label">Build cost (one-time)</div>
+        <div class="lcost">$15M – $30M</div>
+      </div>
+
+      <div class="layer gold">
+        <div class="lnum">Layer 3</div>
+        <div class="ltitle">AI Analytics Engine</div>
+        <div class="lpalantir">Palantir uses: AIP + Ontology knowledge graph</div>
+        <div class="ldesc">Object detection (PyTorch / TensorRT), multi-sensor fusion, change detection, trajectory modelling, knowledge graph linking objects across time and sensor types. GPU cluster required.</div>
+        <div class="lcost-label">Build + infrastructure cost</div>
+        <div class="lcost">$40M – $90M</div>
+      </div>
+
+      <div class="layer green">
+        <div class="lnum">Layer 4</div>
+        <div class="ltitle">Client Delivery System</div>
+        <div class="lpalantir">Palantir uses: Maven Smart System / Foundry</div>
+        <div class="ldesc">Secure web dashboard, real-time globe interface, C2 terminal integration (ATAK/STANAG), alert APIs, analyst workbench, mobile apps. Deployable classified + unclassified environments.</div>
+        <div class="lcost-label">Build cost (one-time)</div>
+        <div class="lcost">$10M – $25M</div>
+      </div>
+
+    </div>
+
+    <h3>Satellite Data Licensing — Direct Cost (No Palantir)</h3>
+    <p>By going direct to the satellite operators, you bypass the Palantir markup entirely and get the same underlying data:</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Operator</th><th>Type</th><th>What You Get</th><th>Direct Annual Cost</th><th>Palantir Equivalent Value</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Planet Labs</strong></td>
+            <td>EO optical</td>
+            <td>Daily global basemap, archive access, tasking API, PlanetScope + SkySat feeds</td>
+            <td>$500K–$5M/yr</td>
+            <td>~$50M of Palantir contract value</td>
+          </tr>
+          <tr>
+            <td><strong>Maxar</strong></td>
+            <td>High-res EO</td>
+            <td>On-demand tasking at 0.3m GSD, archive library, SecureWatch platform API</td>
+            <td>$1M–$10M/yr</td>
+            <td>~$80M of Palantir contract value</td>
+          </tr>
+          <tr>
+            <td><strong>BlackSky</strong></td>
+            <td>Rapid-revisit EO</td>
+            <td>Sub-hourly revisit tasking, real-time alerts, site monitoring, dynamic collect</td>
+            <td>$2M–$8M/yr</td>
+            <td>~$40M of Palantir contract value</td>
+          </tr>
+          <tr>
+            <td><strong>ICEYE</strong></td>
+            <td>SAR radar</td>
+            <td>All-weather tasking, archive SAR, ship detection, COSMO-SkyMed class resolution</td>
+            <td>$2M–$8M/yr</td>
+            <td>~$60M of Palantir contract value</td>
+          </tr>
+          <tr>
+            <td><strong>Satellogic</strong></td>
+            <td>EO + Edge AI</td>
+            <td>Tasking API, onboard AI inference, multispectral imagery, hyperspectral option</td>
+            <td>$1M–$5M/yr</td>
+            <td>~$30M of Palantir contract value</td>
+          </tr>
+          <tr>
+            <td><strong>Tomorrow.io</strong></td>
+            <td>Weather</td>
+            <td>Real-time atmospheric data, forecasting API, operational weather feeds</td>
+            <td>$100K–$500K/yr</td>
+            <td>~$5M of Palantir contract value</td>
+          </tr>
+          <tr>
+            <td><strong>Voyager / SIGINT</strong></td>
+            <td>Space awareness</td>
+            <td>Space domain awareness data, orbital object tracking (government programme)</td>
+            <td>TBD — gov't contract</td>
+            <td>Defence programme value</td>
+          </tr>
+          <tr class="tr">
+            <td><strong>Total direct licensing</strong></td>
+            <td></td>
+            <td></td>
+            <td><strong>$6.6M–$36.5M/yr</strong></td>
+            <td><strong>vs $480M+ charged by Palantir</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip"><strong>The math:</strong> The raw satellite data costs $7M–$37M/yr. Palantir charges governments $480M–$1.3B for the same data + their AI layer on top. Your independent AI layer can be built for $40M–$90M one-time. After Year 2, you have an equivalent capability for ~$40M/yr in running costs vs $100M+/yr to Palantir.</div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 3 — AI ENGINE REPLICATION                -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section" id="s3">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 03</div><div class="st">AI Engine — Replicating AIP + Ontology</div></div>
+
+    <p>The core of Palantir's value is the AI Platform (AIP) and its Ontology — a knowledge graph that links objects, events, and entities across sensor feeds over time. This is buildable with open-source tools and commodity GPU infrastructure.</p>
+
+    <h3>AIP Capability Replication Map</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Palantir AIP Capability</th>
+            <th class="own-head">Independent Equivalent</th>
+            <th>Tools / Stack</th>
+            <th>Build Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Object detection in imagery</td>
+            <td class="own-col">Custom CV model (PyTorch + TensorRT)</td>
+            <td>YOLOv9, SAM2, custom fine-tuned on satellite data</td>
+            <td>$3M–$8M</td>
+          </tr>
+          <tr>
+            <td>Change detection</td>
+            <td class="own-col">Temporal diff + semantic segmentation</td>
+            <td>Siamese networks, ChangeFormer, custom pipeline</td>
+            <td>$2M–$5M</td>
+          </tr>
+          <tr>
+            <td>Multi-sensor fusion</td>
+            <td class="own-col">EO + SAR + IR + Radar fusion engine</td>
+            <td>Custom transformer-based fusion, spatial-temporal indexing</td>
+            <td>$5M–$12M</td>
+          </tr>
+          <tr>
+            <td>Ontology / knowledge graph</td>
+            <td class="own-col">Entity-relationship graph linking objects across time</td>
+            <td>Neo4j, Amazon Neptune, custom graph DB</td>
+            <td>$3M–$7M</td>
+          </tr>
+          <tr>
+            <td>Target identification</td>
+            <td class="own-col">Military object classifier (tanks, missiles, ships, aircraft)</td>
+            <td>Fine-tuned ViT / EfficientDet on military imagery datasets</td>
+            <td>$4M–$10M</td>
+          </tr>
+          <tr>
+            <td>Trajectory prediction</td>
+            <td class="own-col">Ballistic / vehicle path prediction model</td>
+            <td>Physics-informed neural networks + Kalman filter</td>
+            <td>$3M–$6M</td>
+          </tr>
+          <tr>
+            <td>Natural language query (LLM)</td>
+            <td class="own-col">LLM interface over imagery + intelligence data</td>
+            <td>Claude API / GPT-4 API + RAG over structured intel data</td>
+            <td>$1M–$3M + API costs</td>
+          </tr>
+          <tr>
+            <td>Kill chain automation</td>
+            <td class="own-col">Human-in-loop target package generation</td>
+            <td>Custom workflow engine + analyst review interface</td>
+            <td>$5M–$10M</td>
+          </tr>
+          <tr>
+            <td>Apollo (CI/CD deployment)</td>
+            <td class="own-col">Kubernetes + GitOps deployment pipeline</td>
+            <td>K8s, ArgoCD, Helm — standard DevSecOps stack</td>
+            <td>$1M–$2M</td>
+          </tr>
+          <tr class="tr">
+            <td><strong>Total AI engine build</strong></td>
+            <td></td>
+            <td></td>
+            <td><strong>$27M–$63M</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>GPU Infrastructure Required</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Component</th><th>Specification</th><th>Purpose</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Primary inference cluster</td><td>64–128× NVIDIA H100 SXM5</td><td>Real-time object detection on incoming imagery streams</td><td>$20M–$40M</td></tr>
+          <tr><td>Training cluster</td><td>32–64× H100 (or cloud burst)</td><td>Model training, fine-tuning, quarterly retraining cycles</td><td>$10M–$20M or $2M/yr cloud</td></tr>
+          <tr><td>Storage (imagery archive)</td><td>5–20 PB object storage</td><td>Raw imagery, processed tiles, vector detections, tracks</td><td>$2M–$8M</td></tr>
+          <tr><td>Network fabric</td><td>400GbE InfiniBand interconnect</td><td>High-throughput data movement between GPUs and storage</td><td>$1M–$3M</td></tr>
+          <tr class="tr"><td><strong>Total GPU infrastructure</strong></td><td></td><td></td><td><strong>$33M–$71M</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Edge AI on Satellites (replicating Satellogic partnership)</h4>
+    <p>Palantir's most technically advanced integration is with Satellogic — AI runs onboard the satellite before downlink. Two ways to replicate this:</p>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Option</th><th>Approach</th><th>Cost</th><th>Timeline</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Option A (fast)</strong></td>
+            <td>License Satellogic API directly — same partner Palantir uses. Deploy your AI models to their onboard processor via their edge AI SDK.</td>
+            <td>$1M–$5M/yr licence</td>
+            <td>3–6 months</td>
+          </tr>
+          <tr>
+            <td><strong>Option B (own)</strong></td>
+            <td>Procure satellites with radiation-hardened NPUs (Ubotica/Spiral). Deploy your own models onboard your own fleet.</td>
+            <td>+$500K–$2M per satellite</td>
+            <td>2–3 years</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 4 — FULL COST BREAKDOWN                  -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section" id="s4">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 04</div><div class="st">Full Independent Build Cost</div></div>
+
+    <h3>Build Phases</h3>
+    <div class="phase-row">
+      <div class="ph">
+        <div class="pn">Phase 1 — MVP (Months 1–12)</div>
+        <div class="pc">$70M–$110M</div>
+        <div class="pt">Palantir-equivalent capability within 12 months</div>
+        <ul>
+          <li>License Planet + ICEYE + Satellogic: $5M/yr</li>
+          <li>Hire core AI + engineering team (80 people): $25M</li>
+          <li>GPU cluster (64× H100): $20M</li>
+          <li>Orchestration platform v1: $8M</li>
+          <li>Object detection + change detection AI: $8M</li>
+          <li>Secure web dashboard + API: $5M</li>
+          <li>Storage + cloud infrastructure: $3M</li>
+          <li>Security, legal, compliance: $5M</li>
+          <li>Contingency 15%: $11M</li>
+        </ul>
+      </div>
+      <div class="ph">
+        <div class="pn">Phase 2 — Full Capability (Months 12–30)</div>
+        <div class="pc">$120M–$200M</div>
+        <div class="pt">Full Palantir AIP/Maven equivalent</div>
+        <ul>
+          <li>Add Maxar + BlackSky licensing: $10M/yr</li>
+          <li>Full AI engine (all 9 capabilities): $25M</li>
+          <li>Expand GPU cluster to 256× H100: $40M</li>
+          <li>Ontology / knowledge graph: $7M</li>
+          <li>Kill chain + target workflow: $10M</li>
+          <li>ATAK / C2 / STANAG integration: $8M</li>
+          <li>Scale team to 200 people: $30M</li>
+          <li>Classified deployment capability: $10M</li>
+          <li>Contingency: $25M</li>
+        </ul>
+      </div>
+      <div class="ph">
+        <div class="pn">Phase 3 — Sovereign Stack (Months 30–60)</div>
+        <div class="pc">$340M–$1.5B</div>
+        <div class="pt">Own satellites — no dependency on commercial operators</div>
+        <ul>
+          <li>Own 30–50 satellites — see tier options below: $180M–$1.2B</li>
+          <li>Launch services (8–12 launches): $60M</li>
+          <li>4 ground stations: $50M</li>
+          <li>Onboard AI chips (all sats): $30M</li>
+          <li>ISL terminals: $20M</li>
+          <li>AI v3.0 upgrade: $15M</li>
+          <li>Scale team to 350 people: $50M</li>
+          <li>Contingency: $40M</li>
+        </ul>
+      </div>
+    </div>
+
+
+    <h3>Satellite Tier Options for Phase 3 — What $300M Actually Buys</h3>
+    <p>The $300M figure assumed budget smallsats (1m–3m resolution). Here is the full picture across all tiers, including real-time video options:</p>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Tier</th>
+            <th>Satellite Class</th>
+            <th>Resolution</th>
+            <th>Video Capable</th>
+            <th>Unit Cost</th>
+            <th>30-sat cost</th>
+            <th>50-sat cost</th>
+            <th>Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Budget</strong></td>
+            <td>Smallsat — Planet Dove / ICEYE class</td>
+            <td>1m–3m EO / 1m SAR</td>
+            <td>No (stills only)</td>
+            <td>$3M–$8M</td>
+            <td>$90M–$240M</td>
+            <td>$150M–$400M</td>
+            <td>Change detection, ship/vehicle tracking. Good enough for AI fusion.</td>
+          </tr>
+          <tr style="background:#f0f7ff">
+            <td><strong>Mid-Range ✓ Recommended</strong></td>
+            <td>Planet SkySat / Satellogic / BlackSky Gen-2 class</td>
+            <td>0.5m–1m EO</td>
+            <td><strong>Yes — 30fps, 90s clips</strong></td>
+            <td>$15M–$25M</td>
+            <td>$450M–$750M</td>
+            <td>$750M–$1.25B</td>
+            <td>Individual vehicles, aircraft ID, video stare. Palantir-equivalent tier.</td>
+          </tr>
+          <tr>
+            <td><strong>High-Res</strong></td>
+            <td>BlackSky Gen-3 / Maxar WorldView-class</td>
+            <td>0.3m–0.5m EO</td>
+            <td><strong>Yes — 30fps, limited duration</strong></td>
+            <td>$35M–$80M</td>
+            <td>$1.05B–$2.4B</td>
+            <td>$1.75B–$4B</td>
+            <td>Licence plate-level detail. Full precision targeting. Premium tier.</td>
+          </tr>
+          <tr>
+            <td><strong>Ultra-High (VLEO)</strong></td>
+            <td>Albedo Clarity class — 320km orbit</td>
+            <td><strong>10cm EO + 2m thermal</strong></td>
+            <td><strong>Yes — continuous stare mode</strong></td>
+            <td>$50M–$120M</td>
+            <td>$1.5B–$3.6B</td>
+            <td>$2.5B–$6B</td>
+            <td>Unprecedented commercial resolution. Individual person identification. Highest cost.</td>
+          </tr>
+          <tr>
+            <td><strong>All-Weather SAR</strong></td>
+            <td>Umbra / ICEYE XL class</td>
+            <td>0.25m SAR + SAR video</td>
+            <td><strong>Yes — SAR video mode</strong></td>
+            <td>$15M–$30M</td>
+            <td>$450M–$900M</td>
+            <td>$750M–$1.5B</td>
+            <td>Works through cloud, night, smoke. Best for persistent all-weather surveillance.</td>
+          </tr>
+          <tr class="tr">
+            <td colspan="5"><strong>Recommended mix: 15 mid-range EO + 10 SAR + 5 VLEO</strong></td>
+            <td colspan="2"><strong>~$600M–$1.1B for 30 satellites</strong></td>
+            <td><strong>Balanced capability across all conditions</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Total Cost Summary</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Phase</th><th>Cost</th><th>Timeline</th><th>Capability Achieved</th></tr></thead>
+        <tbody>
+          <tr><td>Phase 1 — MVP</td><td class="blue-text">$70M–$110M</td><td>12 months</td><td>MetaConstellation + basic AIP equivalent. Real-time EO + SAR + AI object detection. First government demo-ready product.</td></tr>
+          <tr><td>Phase 2 — Full AIP</td><td class="blue-text">$120M–$200M</td><td>30 months</td><td>Full Maven Smart System equivalent. Kill chain automation, ontology, all sensor types, C2 integration, classified deployment.</td></tr>
+          <tr><td>Phase 3 — Sovereign (budget tier)</td><td class="blue-text">$340M–$560M</td><td>60 months</td><td>30–50 smallsats at 1m–3m resolution + video mode. Full AI stack. Zero operator dependency.</td></tr><tr><td>Phase 3 — Sovereign (premium tier)</td><td class="blue-text">$700M–$1.5B</td><td>72 months</td><td>30–50 mid/high-res satellites at 0.3m–0.5m with real-time video feed. Albedo VLEO option included.</td></tr>
+          <tr class="tr"><td><strong>Total (full sovereign)</strong></td><td class="blue-text" style="font-size:15px;font-weight:800">$440M–$760M</td><td>5 years</td><td>Complete independent equivalent of Palantir's full stack + own constellation</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Annual Operating Cost (from Year 3)</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Category</th><th>Annual Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Satellite data licensing (Phase 1–2: all 6 operators)</td><td>$15M–$40M</td></tr>
+          <tr><td>GPU compute + cloud infrastructure</td><td>$10M–$25M</td></tr>
+          <tr><td>Staff (200–350 engineers, AI, ops, BD)</td><td>$50M–$100M</td></tr>
+          <tr><td>Satellite operations (Phase 3 own fleet)</td><td>$20M–$40M</td></tr>
+          <tr><td>Cybersecurity + compliance</td><td>$5M–$15M</td></tr>
+          <tr><td>R&amp;D + model retraining</td><td>$10M–$20M</td></tr>
+          <tr class="tr"><td><strong>Total annual OpEx</strong></td><td><strong>$110M–$240M/yr</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Palantir vs Independent — Head-to-Head</h3>
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Factor</th>
+            <th class="palantir-head">Palantir (licence their platform)</th>
+            <th class="own-head">Independent Build</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Year 1 cost</strong></td>
+            <td class="palantir-col">$100M–$200M/yr (licence fee)</td>
+            <td class="own-col">$70M–$110M (build) + $15M/yr data</td>
+          </tr>
+          <tr>
+            <td><strong>Year 3 cost</strong></td>
+            <td class="palantir-col">$150M–$300M/yr ongoing licence</td>
+            <td class="own-col">$110M–$240M/yr OpEx (own platform)</td>
+          </tr>
+          <tr>
+            <td><strong>5-year total</strong></td>
+            <td class="palantir-col">$750M–$1.5B (pure licence, no assets)</td>
+            <td class="own-col">$440M–$760M (own platform + satellites)</td>
+          </tr>
+          <tr>
+            <td><strong>Data sovereignty</strong></td>
+            <td class="palantir-col red-text">All intelligence data flows through Palantir servers</td>
+            <td class="own-col green-text">Full control — air-gapped option available</td>
+          </tr>
+          <tr>
+            <td><strong>Satellite access risk</strong></td>
+            <td class="palantir-col red-text">Palantir can terminate — operators can withdraw</td>
+            <td class="own-col green-text">Own constellation = zero dependency</td>
+          </tr>
+          <tr>
+            <td><strong>AI model access</strong></td>
+            <td class="palantir-col red-text">Black box — you see outputs, not models</td>
+            <td class="own-col green-text">Full model ownership, auditable, customisable</td>
+          </tr>
+          <tr>
+            <td><strong>Customisation</strong></td>
+            <td class="palantir-col">Limited to Palantir's product roadmap</td>
+            <td class="own-col green-text">Fully customisable to your specific threats/region</td>
+          </tr>
+          <tr>
+            <td><strong>IP ownership</strong></td>
+            <td class="palantir-col red-text">Palantir owns all IP</td>
+            <td class="own-col green-text">You own all IP — licensable to third parties</td>
+          </tr>
+          <tr>
+            <td><strong>Time to first capability</strong></td>
+            <td class="palantir-col green-text">3–6 months (sign contract)</td>
+            <td class="own-col">12 months (MVP build)</td>
+          </tr>
+          <tr>
+            <td><strong>Revenue potential</strong></td>
+            <td class="palantir-col red-text">None — you are the customer</td>
+            <td class="own-col green-text">Sell to other nations — $100M–$500M/yr potential</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip"><strong>Bottom line:</strong> At full scale, the independent build costs less over 5 years than licensing Palantir — and you end up owning the platform, the IP, the data, and the satellites. The only thing Palantir wins on is speed to first deployment (6 months vs 12).</div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 5 — RECOMMENDED TECH STACK               -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section" id="s5">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 05</div><div class="st">Recommended Technology Stack</div></div>
+
+    <h3>Satellite Data (license directly — same as Palantir)</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Operator</th><th>Why</th><th>Integration</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Planet Labs</strong></td><td>Daily global coverage, large archive, mature API</td><td>Planet SDK (Python), STAC API</td><td>Day 1</td></tr>
+          <tr><td><strong>ICEYE</strong></td><td>All-weather SAR — works at night and through cloud</td><td>ICEYE API, GeoTIFF delivery</td><td>Day 1</td></tr>
+          <tr><td><strong>Satellogic</strong></td><td>Edge AI on satellite — sub-minute detection latency</td><td>Aleph platform API, edge AI SDK</td><td>Day 1</td></tr>
+          <tr><td><strong>Maxar SecureWatch</strong></td><td>Highest resolution (0.3m) for precision analysis</td><td>SecureWatch WMS/WMTS/API</td><td>Month 3</td></tr>
+          <tr><td><strong>BlackSky</strong></td><td>Sub-hourly revisit — fastest response to events</td><td>BlackSky API, webhook alerts</td><td>Month 6</td></tr>
+          <tr><td><strong>Tomorrow.io</strong></td><td>Weather data improves SAR quality scoring + ops planning</td><td>REST API</td><td>Month 6</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>AI / ML Stack</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Component</th><th>Technology</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Object detection</td><td>YOLOv9 / RT-DETR fine-tuned on satellite imagery</td><td>Fine-tune on xView, DOTA, FAIR1M military datasets</td></tr>
+          <tr><td>Change detection</td><td>ChangeFormer / BIT / custom Siamese CNN</td><td>Pre-/post-event comparison at pixel level</td></tr>
+          <tr><td>SAR analysis</td><td>SARVIT / custom transformer for SAR data</td><td>Separate model pipeline — SAR ≠ optical preprocessing</td></tr>
+          <tr><td>Sensor fusion</td><td>Custom transformer with spatial-temporal attention</td><td>Fuse EO + SAR + IR + Radar into unified object track</td></tr>
+          <tr><td>Knowledge graph</td><td>Neo4j Enterprise or Amazon Neptune</td><td>Link detections across time, sensor, and location</td></tr>
+          <tr><td>LLM interface</td><td>Claude API (Anthropic) or GPT-4 Turbo + RAG</td><td>Natural language query over intelligence data</td></tr>
+          <tr><td>Inference serving</td><td>NVIDIA Triton Inference Server + TensorRT</td><td>Sub-100ms inference at scale</td></tr>
+          <tr><td>Training platform</td><td>PyTorch + Weights &amp; Biases + MLflow</td><td>Experiment tracking, model registry, retraining pipelines</td></tr>
+          <tr><td>Data pipeline</td><td>Apache Kafka + Apache Flink + dbt</td><td>Real-time stream processing of incoming satellite data</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Infrastructure Stack</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Layer</th><th>Technology</th><th>Cost Model</th></tr></thead>
+        <tbody>
+          <tr><td>Compute</td><td>On-premise NVIDIA H100 cluster (primary) + AWS/Azure GPU burst</td><td>$20M–$40M CapEx + $5M/yr cloud</td></tr>
+          <tr><td>Storage</td><td>Pure Storage / NetApp (on-prem) + S3-compatible object store</td><td>$3M–$8M for 10PB</td></tr>
+          <tr><td>Orchestration</td><td>Kubernetes (EKS/GKE) + Helm + ArgoCD</td><td>Infrastructure as code</td></tr>
+          <tr><td>Security</td><td>Zero-trust (BeyondCorp model), HSMs, AES-256, FIPS 140-3</td><td>$3M–$8M setup + $2M/yr</td></tr>
+          <tr><td>Classified deployments</td><td>Air-gapped on-prem Kubernetes clusters, NSA Type 1 crypto</td><td>$5M–$15M per classified environment</td></tr>
+          <tr><td>APIs / delivery</td><td>REST + WebSocket + gRPC, API Gateway, CDN for imagery tiles</td><td>Included in engineering build</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 6 — QUICK START ACTION PLAN              -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section" id="s6">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 06</div><div class="st">Quick Start — 90-Day Action Plan</div></div>
+
+    <p>To replicate Palantir's Phase 1 capability (MetaConstellation + basic AIP equivalent) within 12 months, the first 90 days are critical:</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Days</th><th>Action</th><th>Cost</th><th>Output</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Days 1–30</strong></td>
+            <td>
+              Sign data agreements with Planet Labs, ICEYE, Satellogic<br>
+              Hire CTO + Chief AI Officer + 10 senior engineers<br>
+              Procure GPU cluster (32× H100 to start)<br>
+              Set up secure cloud infrastructure (AWS GovCloud or Azure Government)
+            </td>
+            <td>$12M–$20M</td>
+            <td>Data flowing. Team hired. Infra live.</td>
+          </tr>
+          <tr>
+            <td><strong>Days 31–60</strong></td>
+            <td>
+              Ingest and index first satellite data feeds<br>
+              Deploy baseline object detection model (fine-tuned on xView dataset)<br>
+              Build orchestration API v0.1 — task satellites, receive imagery<br>
+              Set up analyst dashboard skeleton
+            </td>
+            <td>$8M–$12M</td>
+            <td>First AI detections on live satellite imagery.</td>
+          </tr>
+          <tr>
+            <td><strong>Days 61–90</strong></td>
+            <td>
+              Add change detection pipeline<br>
+              Integrate SAR (ICEYE) into fusion layer<br>
+              Add Satellogic edge AI — onboard detections<br>
+              Internal demo — live detection of vehicles, ships, activity changes
+            </td>
+            <td>$5M–$8M</td>
+            <td>Demo-ready system. First government pilot conversation.</td>
+          </tr>
+          <tr class="tr">
+            <td><strong>Day 90 total</strong></td>
+            <td>Working prototype: 3 satellite feeds, 2 AI models, live dashboard</td>
+            <td><strong>$25M–$40M</strong></td>
+            <td><strong>Functional MVP — government demo ready</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note"><strong>Milestone:</strong> By Day 90, for $25M–$40M, you have a working prototype that demonstrates the same core capability as Palantir's MetaConstellation + basic Maven object detection — running on the same satellite data feeds they use.</div>
+
+    <h3>Key Hires — First 30 Days</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Role</th><th>Background Required</th><th>Annual Cost</th></tr></thead>
+        <tbody>
+          <tr><td>CTO</td><td>Space / defence AI systems, 15+ years. ex-Palantir, Planet, or national lab.</td><td>$400K–$700K</td></tr>
+          <tr><td>Chief AI Officer</td><td>Computer vision, satellite imagery AI. Published research or ex-DARPA/DIU.</td><td>$350K–$600K</td></tr>
+          <tr><td>Geospatial Engineering Lead</td><td>EO/SAR data pipelines, GDAL, STAC, cloud-native geospatial.</td><td>$200K–$350K</td></tr>
+          <tr><td>ML Platform Lead</td><td>PyTorch, TensorRT, Triton, GPU cluster management at scale.</td><td>$220K–$380K</td></tr>
+          <tr><td>Senior CV Engineers (×5)</td><td>Object detection, segmentation, satellite imagery domain.</td><td>$180K–$280K each</td></tr>
+          <tr><td>DevSecOps Lead</td><td>K8s, classified deployments, zero-trust, FedRAMP experience.</td><td>$200K–$320K</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 7 — REAL-TIME VIDEO SATELLITES            -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section" id="s7">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 07</div><div class="st">Real-Time Video Satellites — All Options</div></div>
+
+    <p>True continuous real-time video from orbit does not yet exist commercially at global scale — but several systems deliver <strong>high-frame-rate video clips, persistent stare modes, and near-continuous coverage</strong> that enable real-time AI analysis. Here is every viable option as of 2026, from commercial to classified.</p>
+
+    <h3>Commercial Real-Time Video Options</h3>
+
+    <div class="sat-grid">
+
+      <div class="sat">
+        <div class="sat-name">Planet SkySat</div>
+        <div class="sat-type">EO Optical Video · 15 satellites · 0.5m resolution</div>
+        <div class="sat-palantir">Used by Palantir via Planet Labs contract</div>
+        <div class="sat-detail">
+          <strong>50cm resolution. 30 fps. Up to 90 seconds per video clip.</strong> Coverage area ~1×2.5 km per clip. Up to 10 revisits/day per location. Best commercial video option available today. Palantir uses this directly in Maven.<br><br>
+          Limitation: 90-second clips, not continuous stream. You task it, it films, downlinks. Latency ~15–45 min from collection to delivery.
+        </div>
+        <div class="sat-cost">License: ~$500K–$3M/yr · Own equivalent: $15M–$25M/sat</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">Satellogic NewSat</div>
+        <div class="sat-type">EO Optical Video + Edge AI · 50+ satellites · 1m resolution</div>
+        <div class="sat-palantir">Used by Palantir — edge AI partnership</div>
+        <div class="sat-detail">
+          <strong>1m resolution. 10 fps. Up to 60 seconds video per pass.</strong> Unique advantage: Palantir AI models run onboard before downlink — detections happen in orbit. Up to 8 revisits/day at scale. Multispectral + hyperspectral options.<br><br>
+          Best for: AI inference latency reduction. Detection result downlinked in seconds instead of raw video.
+        </div>
+        <div class="sat-cost">License: $1M–$5M/yr · Own equivalent: $10M–$20M/sat</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">BlackSky Gen-3</div>
+        <div class="sat-type">EO Optical · 35cm resolution · Sub-hourly revisit</div>
+        <div class="sat-palantir">Used by Palantir via MetaConstellation</div>
+        <div class="sat-detail">
+          <strong>35cm resolution — near-military grade commercial imagery.</strong> Launched Feb 2025. NIIRS-5+ rating. Multiple passes per day over priority targets. Delivers imagery in as little as 60 minutes after collection. Video mode in development.<br><br>
+          Best for: Highest-resolution commercial stills with very fast delivery. Bridges commercial and military-grade capability.
+        </div>
+        <div class="sat-cost">License: $2M–$8M/yr · Own equivalent: $35M–$60M/sat</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">Albedo Clarity (VLEO)</div>
+        <div class="sat-type">EO + Thermal · 10cm resolution · 320km orbit</div>
+        <div class="sat-palantir">Not yet used by Palantir — emerging 2025–2026</div>
+        <div class="sat-detail">
+          <strong>10cm visible / 2m thermal — best commercial resolution ever built.</strong> Operates at Very Low Earth Orbit (VLEO) at 320km — half the altitude of normal EO satellites. Launched first satellite (Clarity-1) March 2025. Planned 24-satellite constellation by 2028.<br><br>
+          At 10cm: individual people visible. Vehicles fully identified. Aircraft type readable. Unprecedented for non-classified systems. Also carries thermal band for heat detection.
+        </div>
+        <div class="sat-cost">Imagery service launching 2026 · Own equivalent: $50M–$120M/sat</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">Umbra SAR (Extended Dwell / Video)</div>
+        <div class="sat-type">SAR Radar Video · 8 satellites · 0.25m resolution</div>
+        <div class="sat-palantir">Not a Palantir partner — independent capability</div>
+        <div class="sat-detail">
+          <strong>0.25m SAR resolution with SAR video mode.</strong> Extended Dwell mode enables SAR video — moving objects tracked through cloud and darkness. 5×5 km scene. Sub-hourly revisit for high-latitude regions. Works through rain, smoke, night — completely weather-independent.<br><br>
+          Best for: All-weather persistent surveillance where optical fails. Ship tracking, vehicle movement, military logistics.
+        </div>
+        <div class="sat-cost">Per image: $500–$3,000 · Own SAR equivalent: $15M–$30M/sat</div>
+      </div>
+
+      <div class="sat">
+        <div class="sat-name">ICEYE XL SAR</div>
+        <div class="sat-type">SAR Radar · 35+ satellites · 0.5m resolution</div>
+        <div class="sat-palantir">Used by Palantir in Maven Smart System</div>
+        <div class="sat-detail">
+          <strong>0.5m SAR resolution. 35+ satellite constellation. Sub-hourly revisit.</strong> Best commercially available SAR constellation by size. All-weather day/night. Ship detection automated. Explicitly used in Maven for military vehicle and naval tracking. Rapid tasking API.<br><br>
+          Best for: Complementing optical — when Planet SkySat is clouded out, ICEYE sees through it.
+        </div>
+        <div class="sat-cost">License: $2M–$8M/yr · Own equivalent: $15M–$25M/sat</div>
+      </div>
+
+    </div>
+
+    <h3>Classified / Government Real-Time Video Systems</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>System</th><th>Operator</th><th>Capability</th><th>Access</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Starshield</strong></td>
+            <td>SpaceX / NRO (US classified)</td>
+            <td><strong>Continuous real-time EO + IR video stare.</strong> 183+ satellites launched by April 2025. $1.8B classified contract. Advanced IR sensors tracking ballistic + hypersonic missiles. Built with Northrop Grumman. First true persistent global video surveillance constellation.</td>
+            <td>US government only. Not commercially licensable. Partnership with US DoD required.</td>
+          </tr>
+          <tr>
+            <td><strong>NRO EOCL</strong></td>
+            <td>NRO + Planet + BlackSky + Maxar</td>
+            <td>Electro-Optical Commercial Layer — NRO contracts with Planet ($undisclosed), BlackSky ($1B/10yr), Maxar for priority tasking and rapid delivery of commercial imagery for classified use.</td>
+            <td>Allied nation intelligence agencies via Five Eyes / bilateral agreements.</td>
+          </tr>
+          <tr>
+            <td><strong>French CSO / Optical</strong></td>
+            <td>Airbus / DGA France</td>
+            <td>0.35m resolution military EO. 3-satellite constellation. Priority tasking for NATO allies. Video mode available at classified tier.</td>
+            <td>French MoD + NATO partner nations.</td>
+          </tr>
+          <tr>
+            <td><strong>Israeli Ofek / OPTSAT</strong></td>
+            <td>IAI / Israeli MoD</td>
+            <td>Sub-0.5m military EO. Rapid revisit over Middle East. Real-time video mode for priority targets.</td>
+            <td>Israeli MoD + select partner nations.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Real-Time Video — Technical Constraints Explained</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Constraint</th><th>Why it exists</th><th>Workaround</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>No true continuous video yet</strong></td>
+            <td>A LEO satellite passes over a point in 90–120 seconds. It physically moves too fast for a continuous stare from one satellite.</td>
+            <td>Multiple satellites in sequence — as one leaves, the next arrives. With 50+ sats over a region you approach pseudo-continuous coverage.</td>
+          </tr>
+          <tr>
+            <td><strong>Downlink bandwidth</strong></td>
+            <td>Raw 30fps 0.5m video generates terabytes per hour. Ground stations can't receive it all in real-time.</td>
+            <td>Onboard AI (Satellogic model) — only detections, not raw video, are downlinked. Reduces bandwidth 100–1000×.</td>
+          </tr>
+          <tr>
+            <td><strong>Ground station contact windows</strong></td>
+            <td>Satellite can only downlink when over a ground station — typically 8–12 min per pass.</td>
+            <td>ISL (inter-satellite links) relay data between satellites to the nearest ground station in real-time.</td>
+          </tr>
+          <tr>
+            <td><strong>Cloud cover blocks optical video</strong></td>
+            <td>Optical cameras see nothing through thick cloud.</td>
+            <td>SAR radar (ICEYE/Umbra) provides all-weather backup. Fuse both into AI pipeline.</td>
+          </tr>
+          <tr>
+            <td><strong>VLEO orbital decay</strong></td>
+            <td>At 320km (Albedo), atmospheric drag degrades orbit faster. Satellites need periodic re-boost.</td>
+            <td>Ion propulsion system on satellite. Adds cost but enables far better resolution than standard 500km orbit.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Recommended Video Satellite Mix for Independent System</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Satellite</th><th>Type</th><th>Qty</th><th>Role</th><th>Cost (own)</th></tr></thead>
+        <tbody>
+          <tr style="background:#f0f7ff">
+            <td><strong>Albedo Clarity-class</strong></td>
+            <td>VLEO 10cm EO + thermal video</td>
+            <td>5–8</td>
+            <td>Precision stare over highest-priority targets. 10cm resolution + thermal. Unprecedented detail.</td>
+            <td>$400M–$960M</td>
+          </tr>
+          <tr>
+            <td><strong>SkySat-class</strong></td>
+            <td>0.5m EO video (30fps, 90s)</td>
+            <td>10–15</td>
+            <td>Broad area video tasking. 30fps clips. Palantir-equivalent imagery quality.</td>
+            <td>$150M–$375M</td>
+          </tr>
+          <tr>
+            <td><strong>BlackSky Gen-3-class</strong></td>
+            <td>0.35m EO, rapid revisit</td>
+            <td>8–10</td>
+            <td>Sub-hourly revisit. Fills coverage gaps between video passes. Near-military resolution.</td>
+            <td>$280M–$600M</td>
+          </tr>
+          <tr>
+            <td><strong>ICEYE / Umbra SAR class</strong></td>
+            <td>0.25m–0.5m SAR + video</td>
+            <td>10–12</td>
+            <td>All-weather backup. Night operations. SAR video for moving target tracking.</td>
+            <td>$150M–$360M</td>
+          </tr>
+          <tr>
+            <td><strong>Satellogic-class + edge AI</strong></td>
+            <td>1m EO + onboard inference</td>
+            <td>10–15</td>
+            <td>High-volume coverage with AI detections transmitted in orbit. Lowest latency alerts.</td>
+            <td>$100M–$300M</td>
+          </tr>
+          <tr class="tr">
+            <td><strong>Total recommended mix</strong></td>
+            <td>43–60 satellites</td>
+            <td><strong>43–60</strong></td>
+            <td>Persistent coverage, real-time video, all-weather, 10cm precision strikes capability</td>
+            <td><strong>$1.08B–$2.59B</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note"><strong>What this gives you:</strong> With this 43–60 satellite mixed constellation you get: 10cm precision imaging on priority targets, 30fps video clips from 0.5m sats over any location within 30–90 minutes, all-weather SAR coverage 24/7, and AI detections downlinked within seconds via onboard edge inference. This exceeds what Palantir's licensed commercial feeds deliver — at the cost of owning the assets.</div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- SECTION 8 — BUSINESS MODEL                       -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="section" id="s8">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 08</div><div class="st">Business Model</div></div>
+
+    <p>Project MAX is built on a single core business model: <strong>long-term sovereign defence contracts with governments</strong>. The platform is contracted nation-by-nation, with each government signing 5–15 year agreements for persistent AI-ISR coverage, missile and drone early warning, and border surveillance. Phase 1 secures the first $10B–$20B in contracts. Phase 2 scales to a $500B multi-decade global contract portfolio across 20–30 governments worldwide.</p>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kv">$10B–$20B</div><div class="kl">Phase 1 Contract Target</div></div>
+      <div class="kpi"><div class="kv">$500B</div><div class="kl">Phase 2 Contract Portfolio</div></div>
+      <div class="kpi"><div class="kv">20–30</div><div class="kl">Target Governments</div></div>
+      <div class="kpi"><div class="kv">5–15 yrs</div><div class="kl">Contract Duration</div></div>
+      <div class="kpi"><div class="kv">78%</div><div class="kl">Gross Margin at Scale</div></div>
+    </div>
+
+    <h3>Core Business Model — Government Defence Contracts</h3>
+    <div class="tip"><strong>One model. Maximum leverage.</strong> Each government signs a dedicated long-term contract. The same satellite constellation and AI platform serves all contracts simultaneously — marginal cost per new government client is near zero once the constellation is built. This creates extraordinary margin expansion as the client base grows.</div>
+
+    <div class="bm-grid">
+
+      <div class="bm-card">
+        <div class="bm-icon">🛡️</div>
+        <div class="bm-title">National Defence ISR Contract</div>
+        <div class="bm-sub">5–10 Year Agreement · Core Revenue</div>
+        <div class="bm-desc">Full-spectrum persistent surveillance: missile early warning, drone detection, border monitoring, threat tracking. Delivered as a managed service — government receives AI-processed threat intelligence, not raw data. Turnkey — includes platform, analysts, and system integration.</div>
+        <div class="bm-rev">$300M–$2B per contract</div>
+        <div class="bm-rev-label">Depending on nation size and coverage scope</div>
+      </div>
+
+      <div class="bm-card orange">
+        <div class="bm-icon">🌐</div>
+        <div class="bm-title">Allied Theatre Coverage</div>
+        <div class="bm-sub">10–15 Year Agreement · Strategic Tier</div>
+        <div class="bm-desc">Multi-nation theatre-level contracts covering entire regions — e.g. NATO Eastern Flank, GCC Peninsula, Indo-Pacific Arc. Governments co-sign a shared theatre agreement, reducing per-nation cost while expanding coverage. Structured as a consortium contract, billed per nation annually.</div>
+        <div class="bm-rev">$1B–$5B per theatre bloc</div>
+        <div class="bm-rev-label">5–8 nation blocs across 3 theatres</div>
+      </div>
+
+      <div class="bm-card green">
+        <div class="bm-icon">🔄</div>
+        <div class="bm-title">Contract Renewal &amp; Upgrade Cycle</div>
+        <div class="bm-sub">Built-In Recurring Revenue</div>
+        <div class="bm-desc">Every contract includes a mandatory technology refresh clause — at Year 5 or Year 7, the platform upgrades to the next generation AI models, sensors, and satellite tier at an additional fee. Clients cannot easily switch: data history, integration depth, and cleared personnel create near-permanent lock-in.</div>
+        <div class="bm-rev">+25–40% on renewal</div>
+        <div class="bm-rev-label">Automatic upsell at every contract renewal</div>
+      </div>
+
+      <div class="bm-card gold">
+        <div class="bm-icon">📡</div>
+        <div class="bm-title">Sovereign Data Hosting</div>
+        <div class="bm-sub">Add-On · High Margin</div>
+        <div class="bm-desc">Governments requiring in-country data residency pay a premium for a dedicated ground station and sovereign data node installed on their territory. All intelligence data processed and stored within national borders. Particularly attractive to non-Five Eyes nations with strict data sovereignty laws.</div>
+        <div class="bm-rev">$50M–$200M add-on</div>
+        <div class="bm-rev-label">Per sovereign ground station deployment</div>
+      </div>
+
+      <div class="bm-card red">
+        <div class="bm-icon">🚀</div>
+        <div class="bm-title">Dedicated Satellite Capacity</div>
+        <div class="bm-sub">Premium Tier · 15-Year Lock-In</div>
+        <div class="bm-desc">Tier 1 clients (major defence spenders: US allies, large NATO nations, GCC states) can contract dedicated satellite tasking priority — effectively reserving orbital capacity over their theatre 24/7. These are the largest contracts, structured as 10–15 year agreements with annual payments and no exit clause.</div>
+        <div class="bm-rev">$2B–$8B per contract</div>
+        <div class="bm-rev-label">Tier 1 nations only — 5–8 globally</div>
+      </div>
+
+      <div class="bm-card">
+        <div class="bm-icon">🎓</div>
+        <div class="bm-title">Embedded Operations &amp; Training</div>
+        <div class="bm-sub">Services Layer · All Contracts</div>
+        <div class="bm-desc">Every contract includes embedded Project MAX personnel operating alongside government analysts. Train local operators, maintain the platform, and provide 24/7 NOC/SOC support. Billed as an annual managed services fee on top of the base contract. Deepens dependency and relationship with each government client.</div>
+        <div class="bm-rev">$30M–$150M/yr add-on</div>
+        <div class="bm-rev-label">Per government, every year of contract</div>
+      </div>
+
+      <div class="bm-card" style="border-top-color:#8b00ff; grid-column: 1 / -1;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+          <div style="font-size:28px;">🤖</div>
+          <div>
+            <div class="bm-title" style="font-size:16px; color:#5500cc;">UNIT-X — Autonomous AI Robot Army</div>
+            <div class="bm-sub" style="color:#8b00ff;">Platform Multiplier · Maximum Value Booster</div>
+          </div>
+          <div style="margin-left:auto; text-align:right;">
+            <div style="font-size:20px; font-weight:900; color:#8b00ff;">+$300B–$500B</div>
+            <div class="bm-rev-label">Additional valuation contribution</div>
+          </div>
+        </div>
+        <div class="bm-desc" style="font-size:13px;">Project MAX's satellite AI layer sees everything from space. <strong>UNIT-X closes the loop on the ground.</strong> An autonomous robotic combat and logistics fleet — air, land, and sea drones — commanded in real-time by the same AI platform that processes the satellite feed. When the satellite detects a threat, UNIT-X responds. No human latency. Full-spectrum autonomous response from detection to neutralisation.</div>
+      </div>
+
+    </div>
+
+    <!-- UNIT-X FEATURE BLOCK -->
+    <div style="background: linear-gradient(135deg, #0a0a1a 0%, #1a0033 100%); border-radius: 10px; padding: 32px; margin: 28px 0; color:#fff; border: 1px solid #5500cc;">
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:24px;">
+        <div style="font-size:36px;">🤖</div>
+        <div>
+          <div style="font-size:11px; font-weight:700; letter-spacing:3px; color:#aa66ff; text-transform:uppercase; margin-bottom:4px;">Project MAX — Ground Layer</div>
+          <div style="font-size:26px; font-weight:900; color:#fff; line-height:1.1;">UNIT-X Autonomous AI Robot Army</div>
+          <div style="font-size:13px; color:#aa88ff; margin-top:4px;">Satellite sees it. UNIT-X kills it.</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:12px; margin-bottom:24px;">
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(170,100,255,0.3); border-top:3px solid #aa66ff; border-radius:0 0 6px 6px; padding:16px;">
+          <div style="font-size:20px; margin-bottom:6px;">🚁</div>
+          <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:4px;">Aerial Drone Swarms</div>
+          <div style="font-size:11px; color:#aa88ff; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Air Domain</div>
+          <div style="font-size:12px; color:#ccc; line-height:1.5;">Autonomous UAV swarms (50–500 units per deployment) for ISR, electronic warfare, and precision strike. AI-coordinated swarming behaviour. Satellite-cued targeting — satellite detects missile launch, UAV swarm intercepts within minutes. Loitering munitions + reusable ISR variants.</div>
+          <div style="font-size:14px; font-weight:800; color:#aa66ff; margin-top:8px;">$2B–$5B per government</div>
+          <div style="font-size:10px; color:#888; text-transform:uppercase;">Fleet contract + annual resupply</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(170,100,255,0.3); border-top:3px solid #4488ff; border-radius:0 0 6px 6px; padding:16px;">
+          <div style="font-size:20px; margin-bottom:6px;">🤖</div>
+          <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:4px;">Ground Combat Robots</div>
+          <div style="font-size:11px; color:#88aaff; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Land Domain</div>
+          <div style="font-size:12px; color:#ccc; line-height:1.5;">Autonomous ground units — wheeled and tracked — for border patrol, base defence, perimeter security, and direct combat support. Equipped with EO/IR sensors feeding back to the Project MAX AI layer. Satellite provides overwatch; ground robots execute. Zero soldier casualties on routine patrol.</div>
+          <div style="font-size:14px; font-weight:800; color:#4488ff; margin-top:8px;">$1B–$3B per government</div>
+          <div style="font-size:10px; color:#888; text-transform:uppercase;">Fleet + maintenance contract</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(170,100,255,0.3); border-top:3px solid #00aacc; border-radius:0 0 6px 6px; padding:16px;">
+          <div style="font-size:20px; margin-bottom:6px;">🚢</div>
+          <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:4px;">Naval Autonomous Vessels</div>
+          <div style="font-size:11px; color:#88ddff; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Sea Domain</div>
+          <div style="font-size:12px; color:#ccc; line-height:1.5;">Unmanned surface and subsurface vessels for maritime surveillance, anti-submarine patrol, and coastal defence. SAR satellites track vessel movements; autonomous naval units respond. Particularly high demand from Indo-Pacific and GCC clients managing contested maritime zones.</div>
+          <div style="font-size:14px; font-weight:800; color:#00aacc; margin-top:8px;">$1.5B–$4B per government</div>
+          <div style="font-size:10px; color:#888; text-transform:uppercase;">Fleet + operations contract</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(170,100,255,0.3); border-top:3px solid #00cc88; border-radius:0 0 6px 6px; padding:16px;">
+          <div style="font-size:20px; margin-bottom:6px;">🧠</div>
+          <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:4px;">Battlefield AI Command Brain</div>
+          <div style="font-size:11px; color:#88ffcc; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Command Layer</div>
+          <div style="font-size:12px; color:#ccc; line-height:1.5;">The central AI that connects satellite feeds to robot units. Real-time threat classification → autonomous mission assignment → robot fleet deployment — all in under 90 seconds. Runs on the same Project MAX AI engine. Government operators set rules of engagement; AI handles execution. Fully auditable decision log.</div>
+          <div style="font-size:14px; font-weight:800; color:#00cc88; margin-top:8px;">$500M–$1.5B per government</div>
+          <div style="font-size:10px; color:#888; text-transform:uppercase;">Command software license + integration</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(170,100,255,0.3); border-top:3px solid #ffaa00; border-radius:0 0 6px 6px; padding:16px;">
+          <div style="font-size:20px; margin-bottom:6px;">⚡</div>
+          <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:4px;">Counter-Drone &amp; Missile Defence</div>
+          <div style="font-size:11px; color:#ffcc66; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Active Defence</div>
+          <div style="font-size:12px; color:#ccc; line-height:1.5;">Dedicated autonomous intercept layer. IR satellites detect missile/drone launch in 2–5 seconds. AI calculates intercept trajectory. Autonomous kinetic or directed-energy interceptors deploy within 60 seconds. Closes the entire kill chain — detect, classify, intercept — without human-in-the-loop delay. The most time-critical use case for AI autonomy.</div>
+          <div style="font-size:14px; font-weight:800; color:#ffaa00; margin-top:8px;">$3B–$8B per government</div>
+          <div style="font-size:10px; color:#888; text-transform:uppercase;">Highest-value contract component</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(170,100,255,0.3); border-top:3px solid #ff4444; border-radius:0 0 6px 6px; padding:16px;">
+          <div style="font-size:20px; margin-bottom:6px;">🔄</div>
+          <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:4px;">Autonomous Resupply &amp; Logistics</div>
+          <div style="font-size:11px; color:#ff8888; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Support Layer</div>
+          <div style="font-size:12px; color:#ccc; line-height:1.5;">AI-coordinated autonomous logistics — unmanned cargo aircraft, ground resupply vehicles, and forward base management robots. Satellite imagery feeds real-time situational awareness into logistics routing. Reduces human supply chain exposure in contested zones. Annual resupply contracts create a recurring revenue tail on every robot fleet sold.</div>
+          <div style="font-size:14px; font-weight:800; color:#ff4444; margin-top:8px;">$200M–$800M/yr recurring</div>
+          <div style="font-size:10px; color:#888; text-transform:uppercase;">Annual consumables + software updates</div>
+        </div>
+
+      </div>
+
+      <!-- UNIT-X Value Table -->
+      <div style="background:rgba(0,0,0,0.4); border-radius:8px; padding:20px; margin-bottom:16px;">
+        <div style="font-size:11px; font-weight:700; color:#aa66ff; text-transform:uppercase; letter-spacing:2px; margin-bottom:14px;">UNIT-X Revenue Contribution — Path to $1T</div>
+        <table style="width:100%; border-collapse:collapse; font-size:12.5px; color:#ddd;">
+          <thead><tr style="border-bottom:1px solid rgba(170,100,255,0.4);">
+            <th style="padding:8px 10px; text-align:left; color:#aa66ff; font-size:11px; text-transform:uppercase;">Component</th>
+            <th style="padding:8px 10px; text-align:left; color:#aa66ff; font-size:11px; text-transform:uppercase;">Per Gov. Value</th>
+            <th style="padding:8px 10px; text-align:left; color:#aa66ff; font-size:11px; text-transform:uppercase;">20 Govs Total</th>
+            <th style="padding:8px 10px; text-align:left; color:#aa66ff; font-size:11px; text-transform:uppercase;">Valuation Impact</th>
+          </tr></thead>
+          <tbody>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.07);"><td style="padding:7px 10px;">Aerial Drone Swarms</td><td style="padding:7px 10px;">$2B–$5B</td><td style="padding:7px 10px; color:#aa66ff; font-weight:700;">$40B–$100B</td><td style="padding:7px 10px; color:#00cc88;">+$80B–$200B</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.07);"><td style="padding:7px 10px;">Ground Combat Robots</td><td style="padding:7px 10px;">$1B–$3B</td><td style="padding:7px 10px; color:#aa66ff; font-weight:700;">$20B–$60B</td><td style="padding:7px 10px; color:#00cc88;">+$40B–$120B</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.07);"><td style="padding:7px 10px;">Naval Autonomous Vessels</td><td style="padding:7px 10px;">$1.5B–$4B</td><td style="padding:7px 10px; color:#aa66ff; font-weight:700;">$30B–$80B</td><td style="padding:7px 10px; color:#00cc88;">+$60B–$160B</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.07);"><td style="padding:7px 10px;">Counter-Drone / Missile Defence</td><td style="padding:7px 10px;">$3B–$8B</td><td style="padding:7px 10px; color:#aa66ff; font-weight:700;">$60B–$160B</td><td style="padding:7px 10px; color:#00cc88;">+$120B–$320B</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.07);"><td style="padding:7px 10px;">Command AI + Logistics (recurring)</td><td style="padding:7px 10px;">$700M–$2.3B/yr</td><td style="padding:7px 10px; color:#aa66ff; font-weight:700;">$14B–$46B/yr</td><td style="padding:7px 10px; color:#00cc88;">+$140B–$460B</td></tr>
+            <tr style="background:rgba(170,100,255,0.15); font-weight:700;"><td style="padding:9px 10px; color:#fff;">UNIT-X Total</td><td style="padding:9px 10px; color:#fff;">$8B–$22B/gov</td><td style="padding:9px 10px; color:#ffcc00; font-size:14px;">$160B–$446B</td><td style="padding:9px 10px; color:#ffcc00; font-size:14px;">+$300B–$500B valuation</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background:rgba(170,100,255,0.15); border:1px solid rgba(170,100,255,0.4); border-left:4px solid #aa66ff; border-radius:0 6px 6px 0; padding:14px 18px; font-size:13px; color:#ddd;">
+        <strong style="color:#aa66ff;">Combined Valuation:</strong> Satellite AI-ISR platform ($500B–$700B) + UNIT-X Robot Army ($300B–$500B) = <strong style="color:#ffcc00; font-size:15px;">$800B–$1.2 Trillion.</strong> UNIT-X is not a separate company — it runs on the same AI brain, the same satellite feed, the same government contracts. It is the weapon system that makes Project MAX's intelligence layer indispensable and impossible to replace.
+      </div>
+    </div>
+
+    <h3>Two-Phase Contract Growth Plan</h3>
+    <div class="funnel">
+      <div class="funnel-step">
+        <div class="fn">Phase 1<br>Yrs 1–5</div>
+        <div>
+          <div class="ft">Establish Founding Contract Portfolio — $10B–$20B Total Contract Value</div>
+          <div class="fd">Sign 5–8 government contracts at 5–10 year terms. Target: home nation + 2 NATO allies + 2 GCC states + 1 Indo-Pacific partner. Average contract value $1.5B–$3B each. Contracts fund the full constellation build and deliver positive cash flow from Year 2. Establish the track record and operational proof required for Phase 2.</div>
+        </div>
+        <div class="fv" style="color:var(--accent)">$10B–$20B TCV</div>
+      </div>
+      <div class="funnel-step s2">
+        <div class="fn">Transition<br>Yrs 4–6</div>
+        <div>
+          <div class="ft">Constellation Fully Operational — Begin Scaling Government Pipeline</div>
+          <div class="fd">Full 43–60 satellite constellation live. AI platform battle-tested. Phase 1 governments renewing at +30% uplift. Begin active sales to 15–20 new nations across Africa, Southeast Asia, Eastern Europe, Latin America. Theatre bloc contracts introduced. First 10–15 year agreements signed.</div>
+        </div>
+        <div class="fv" style="color:var(--gold)">$40B–$80B new TCV</div>
+      </div>
+      <div class="funnel-step s3">
+        <div class="fn">Phase 2<br>Yrs 6–15</div>
+        <div>
+          <div class="ft">Global Government Portfolio — $500B+ Total Contract Value</div>
+          <div class="fd">20–30 active government contracts across all major theatres. Mix of 5, 10, and 15-year agreements. Tier 1 dedicated satellite contracts with 5–8 largest defence spenders. Theatre bloc agreements across NATO Eastern Flank, GCC, Indo-Pacific. Renewals compounding at 25–40% each cycle. Platform becomes the non-US global standard for sovereign AI-ISR. Contracted revenue base crosses $500B — the threshold required to support a $1 Trillion valuation at 2× revenue multiple.</div>
+        </div>
+        <div class="fv" style="color:var(--orange)">$500B+ TCV</div>
+      </div>
+      <div class="funnel-step s4">
+        <div class="fn">Exit<br>Yr 12–15</div>
+        <div>
+          <div class="ft">$1 Trillion Valuation — IPO or Strategic Sale</div>
+          <div class="fd">With $500B+ in locked contracted revenue, 78% software margins, and 20–30 sovereign government clients on 15-year agreements, Project MAX reaches a $1T valuation — joining Apple, Nvidia, and Microsoft in the trillion-dollar club. Justification: $50B+ annual recurring revenue at 20× forward multiple = $1T. Alternatively, sovereign wealth fund or consortium acquisition at full valuation. Project MAX becomes the most valuable defence technology company ever built outside the United States.</div>
+        </div>
+        <div class="fv" style="color:var(--green); font-size:18px;">$1 TRILLION</div>
+      </div>
+    </div>
+
+    <h3>Target Government Clients by Region</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Region</th><th>Target Nations</th><th>Contract Type</th><th>Est. Contract Value</th><th>Term</th></tr></thead>
+        <tbody>
+          <tr><td><strong>NATO Core</strong></td><td>UK, Germany, France, Poland, Netherlands</td><td>National ISR + Theatre Bloc</td><td>$1.5B–$4B each</td><td>10 yrs</td></tr>
+          <tr><td><strong>NATO Flank</strong></td><td>Romania, Bulgaria, Baltic States, Norway</td><td>Theatre Bloc (shared)</td><td>$500M–$1.2B each</td><td>10 yrs</td></tr>
+          <tr><td><strong>GCC / Middle East</strong></td><td>UAE, Saudi Arabia, Qatar, Israel, Jordan</td><td>National ISR + Dedicated Sat</td><td>$2B–$8B each</td><td>10–15 yrs</td></tr>
+          <tr><td><strong>Indo-Pacific</strong></td><td>Japan, South Korea, Australia, India, Singapore</td><td>National ISR + Theatre Bloc</td><td>$1B–$3B each</td><td>10 yrs</td></tr>
+          <tr><td><strong>Southeast Asia</strong></td><td>Philippines, Vietnam, Indonesia, Thailand</td><td>National ISR (standard)</td><td>$300M–$800M each</td><td>5–7 yrs</td></tr>
+          <tr><td><strong>Africa / Americas</strong></td><td>Nigeria, Kenya, Brazil, Colombia, Morocco</td><td>National ISR (entry tier)</td><td>$150M–$500M each</td><td>5 yrs</td></tr>
+          <tr class="tr"><td><strong>Total Portfolio</strong></td><td><strong>20–30 governments</strong></td><td><strong>Mixed</strong></td><td><strong>$500B TCV</strong></td><td><strong>Avg 10 yrs</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>10-Year Revenue Ramp</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Year</th><th>Active Contracts</th><th>Annual Revenue</th><th>Cumulative TCV Locked</th><th>EBITDA Margin</th><th>Key Milestone</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Year 1</strong></td><td>1–2 gov</td><td>$500M–$1B</td><td>$3B–$6B</td><td>20%</td><td>First founding contract signed, platform MVP live</td></tr>
+          <tr><td><strong>Year 2</strong></td><td>3–4 gov</td><td>$1.5B–$2.5B</td><td>$8B–$14B</td><td>45%</td><td>Constellation Phase 1 live, 3 active ISR operations</td></tr>
+          <tr><td><strong>Year 3</strong></td><td>5–8 gov</td><td>$3B–$4.5B</td><td>$15B–$22B</td><td>60%</td><td>Phase 1 portfolio complete ($10B–$20B TCV)</td></tr>
+          <tr><td><strong>Year 5</strong></td><td>10–14 gov</td><td>$6B–$9B</td><td>$50B–$80B</td><td>68%</td><td>Full constellation live, Phase 1 renewals begin</td></tr>
+          <tr><td><strong>Year 7</strong></td><td>18–22 gov</td><td>$14B–$20B</td><td>$150B–$250B</td><td>74%</td><td>Theatre blocs active, Tier 1 dedicated sat contracts</td></tr>
+          <tr><td><strong>Year 10</strong></td><td>25–30 gov</td><td>$28B–$40B</td><td>$400B–$500B</td><td>78%</td><td>Phase 2 complete — $500B portfolio, exit event</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Competitive Moat</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Advantage</th><th>Why It's Hard to Copy</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Sovereign satellite constellation</strong></td><td>Capital-intensive. 4–6 year build time. Regulatory approvals per orbit. First-mover owns the orbital slots and government relationships.</td></tr>
+          <tr><td><strong>15-year contract lock-in</strong></td><td>Once integrated into a government's defence infrastructure, switching cost is enormous — data history, cleared personnel, SOC integration, and political relationships all bind the client.</td></tr>
+          <tr><td><strong>Non-US sovereign positioning</strong></td><td>20+ nations refuse or are restricted from using US platforms (Palantir, Maxar, NGA). Project MAX is the only credible non-US alternative at this capability level.</td></tr>
+          <tr><td><strong>Classified AI training data</strong></td><td>Models trained on real-world missile, drone, and CBRN signature data from live operations are not reproducible — every year of operation makes the AI advantage wider.</td></tr>
+          <tr><td><strong>Network effect between contracts</strong></td><td>Intelligence from 25 governments feeding the same AI layer means threat models trained on global data. Each new client makes the platform smarter for all clients.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note"><strong>$1 Trillion Valuation Path:</strong> $500B+ contracted revenue × 2× revenue multiple = $1T. Or: $50B+ annual recurring revenue at Year 12–15 × 20× forward earnings multiple = $1T. Both routes are achievable with 20–30 government clients on 15-year contracts at 78% gross margins. Project MAX would be the most valuable defence technology company ever built outside the United States — surpassing Lockheed Martin, Raytheon, and BAE Systems combined.</div>
+
+  </div>
+</div>
+
+<footer>
+  <strong>PROJECT MAX — Sovereign AI-ISR Platform</strong><br><br>
+  All cost and revenue estimates are indicative based on publicly available market data as of April 2026.
+  Satellite pricing sourced from public NRO contracts, Satellogic published pricing, and commercial data feed market rates.
+  Palantir contract values sourced from public DoD announcements via DefenseScoop, Breaking Defense, and C4ISRNET.
+  This document is for strategic planning purposes only and does not constitute financial or legal advice.
+</footer>
+
+</body>
+</html>
