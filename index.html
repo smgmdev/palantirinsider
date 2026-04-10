@@ -160,13 +160,64 @@
     .funnel-step .fd { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .funnel-step .fv { margin-left: auto; font-size: 15px; font-weight: 800; color: var(--accent); flex-shrink: 0; }
 
-    @media (max-width: 700px) {
+    @media (max-width: 768px) {
+      /* COVER */
+      .cover { padding: 40px 20px; }
+      .cover h1 { font-size: 32px; }
+      .cover .sub { font-size: 10px; letter-spacing: 2px; }
+      .cover .desc { font-size: 13px; }
+      .cs { min-width: calc(50% - 4px); padding: 12px 10px; }
+      .cs .v { font-size: 18px; }
+
+      /* NAV */
+      .topnav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .topnav .nav-logo { font-size: 11px; padding: 10px 12px; }
+      .topnav a { padding: 12px 12px; font-size: 10px; letter-spacing: 0.5px; }
+
+      /* LAYOUT */
+      .container { padding: 0 16px; }
+      .section { padding: 36px 0; }
+      .st { font-size: 18px; }
+
+      /* GRIDS → single column */
       .phase-row { grid-template-columns: 1fr; }
       .layer-grid { grid-template-columns: 1fr; }
       .sat-grid { grid-template-columns: 1fr; }
       .bm-grid { grid-template-columns: 1fr; }
-      .container { padding: 0 16px; }
+      .img-row { grid-template-columns: 1fr; }
+
+      /* FUNNEL — remove indents */
+      .funnel-step { flex-wrap: wrap; gap: 8px; }
       .funnel-step.s2, .funnel-step.s3, .funnel-step.s4 { margin: 0; }
+      .funnel-step .fn { width: auto; }
+      .funnel-step .fv { margin-left: 0; width: 100%; font-size: 16px; }
+
+      /* KPI */
+      .kpi-row { gap: 6px; }
+      .kpi { min-width: calc(50% - 6px); padding: 12px 10px; }
+      .kpi .kv { font-size: 16px; }
+
+      /* TABLES — horizontal scroll */
+      .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table { min-width: 480px; }
+      td, th { padding: 8px 10px; font-size: 12px; }
+
+      /* ARCH BOX */
+      .arch { font-size: 11px; padding: 16px; }
+
+      /* UNIT-X dark block inner grid */
+      .bm-card[style*="grid-column"] { grid-column: auto !important; }
+
+      /* Typography */
+      h3 { font-size: 11px; }
+      p, li { font-size: 13px; }
+    }
+
+    @media (max-width: 420px) {
+      .cover h1 { font-size: 26px; }
+      .cs { min-width: 100%; }
+      .kpi { min-width: 100%; }
+      .badge { font-size: 9px; letter-spacing: 2px; padding: 5px 12px; }
     }
   </style>
 </head>
