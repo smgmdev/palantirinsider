@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Palantir Replication Targets — $3B–$30B Opportunity</title>
+  <style>
+    :root {
+      --bg: #ffffff; --surface: #f5f7fa; --s2: #edf0f5; --border: #d0d8e8;
+      --accent: #0055cc; --a2: #003a99; --head: #0a1628; --muted: #5a6a85;
+      --green: #007a44; --red: #cc2222; --gold: #b86a00; --orange: #c45200;
+      --text: #1a2333; --purple: #6600cc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.65; }
+
+    /* NAV */
+    .topnav { position: sticky; top: 0; z-index: 100; background: var(--head); border-bottom: 2px solid var(--green); display: flex; align-items: center; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .topnav .nav-logo { padding: 10px 20px; font-size: 13px; font-weight: 900; color: #fff; letter-spacing: 2px; border-right: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; }
+    .topnav a { display: block; padding: 13px 15px; font-size: 11px; font-weight: 600; color: #7090b0; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.06); transition: color 0.15s, background 0.15s; }
+    .topnav a:hover { color: #fff; background: rgba(255,255,255,0.06); }
+
+    /* COVER */
+    .cover { background: linear-gradient(135deg, #0a1628 0%, #001a0a 100%); color: #fff; padding: 60px 32px; text-align: center; }
+    .badge { display: inline-block; background: var(--green); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 3px; padding: 5px 18px; border-radius: 2px; margin-bottom: 28px; text-transform: uppercase; }
+    .cover h1 { font-size: 40px; font-weight: 900; line-height: 1.1; margin-bottom: 10px; }
+    .cover h1 span { color: #66ffaa; }
+    .cover .sub { font-size: 11px; letter-spacing: 4px; color: #66ffaa; text-transform: uppercase; margin-bottom: 18px; }
+    .cover .desc { font-size: 14px; color: #a8c0e0; max-width: 600px; margin: 0 auto 36px; }
+    .cover-stats { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+    .cs { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13); border-radius: 6px; padding: 14px 20px; min-width: 130px; text-align: center; }
+    .cs .v { font-size: 22px; font-weight: 800; color: #66ffaa; line-height: 1; margin-bottom: 4px; }
+    .cs .l { font-size: 10px; color: #7090b0; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* LAYOUT */
+    .container { max-width: 980px; margin: 0 auto; padding: 0 32px; }
+    .section { padding: 52px 0; border-bottom: 1px solid var(--border); }
+    .sh { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .sn { background: var(--green); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 4px 10px; border-radius: 3px; text-transform: uppercase; white-space: nowrap; }
+    .st { font-size: 22px; font-weight: 700; color: var(--head); }
+
+    h3 { font-size: 11px; font-weight: 700; color: var(--green); margin: 30px 0 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--s2); padding-bottom: 6px; }
+    h4 { font-size: 13px; font-weight: 700; color: var(--head); margin: 16px 0 6px; padding-left: 10px; border-left: 3px solid var(--green); }
+    p { margin-bottom: 10px; font-size: 13.5px; color: var(--muted); }
+    strong { color: var(--head); }
+
+    /* KPI */
+    .kpi-row { display: flex; gap: 4px; flex-wrap: wrap; margin: 18px 0; }
+    .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; flex: 1; min-width: 130px; text-align: center; }
+    .kpi .kv { font-size: 20px; font-weight: 800; color: var(--green); }
+    .kpi .kl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+    /* TARGET CARDS */
+    .target-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+    .tc-head { display: flex; align-items: center; gap: 16px; padding: 20px 24px; flex-wrap: wrap; }
+    .tc-rank { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; color: #fff; flex-shrink: 0; }
+    .tc-info { flex: 1; min-width: 200px; }
+    .tc-info .tc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+    .tc-info .tc-name { font-size: 18px; font-weight: 800; color: var(--head); margin-bottom: 2px; }
+    .tc-info .tc-sub { font-size: 12px; color: var(--muted); }
+    .tc-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-left: auto; }
+    .tc-stat { text-align: center; }
+    .tc-stat .sv { font-size: 16px; font-weight: 800; }
+    .tc-stat .sl { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 1px; }
+    .tc-body { padding: 0 24px 20px; background: var(--surface); }
+    .tc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 14px 0; }
+    .tc-item { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+    .tc-item .ti-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 4px; }
+    .tc-item .ti-val { font-size: 13px; font-weight: 700; color: var(--head); }
+    .tc-item .ti-desc { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+    /* DIFFICULTY BAR */
+    .diff-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+    .diff-label { font-size: 11px; color: var(--muted); width: 120px; flex-shrink: 0; }
+    .diff-bg { flex: 1; background: var(--s2); border-radius: 4px; height: 8px; overflow: hidden; }
+    .diff-bar { height: 100%; border-radius: 4px; }
+    .diff-val { font-size: 11px; font-weight: 700; width: 30px; text-align: right; flex-shrink: 0; }
+
+    /* TABLES */
+    .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+    thead tr { background: var(--head); }
+    thead th { padding: 10px 14px; text-align: left; color: #fff; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:hover { background: var(--surface); }
+    tbody tr:nth-child(even) { background: #fafbfd; }
+    td { padding: 9px 14px; vertical-align: middle; font-size: 13px; }
+    .win  { color: var(--green); font-weight: 700; }
+    .lose { color: var(--red);   font-weight: 600; }
+    .mid  { color: var(--gold);  font-weight: 600; }
+
+    /* NOTES */
+    .note { background: #fff8e6; border-left: 4px solid var(--gold); border-radius: 0 4px 4px 0; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #7a4a00; }
+    .note strong { color: var(--gold); }
+    .win-box { background: #f0faf4; border-left: 4px solid var(--green); border-radius: 0 4px 4px 0; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #003a20; }
+    .win-box strong { color: var(--green); }
+    .warn { background: #fff0f0; border-left: 4px solid var(--red); border-radius: 0 4px 4px 0; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #7a0000; }
+    .warn strong { color: var(--red); }
+
+    /* FINAL BOX */
+    .final { background: linear-gradient(135deg, #0a1628, #001a08); border-radius: 10px; padding: 32px; margin-top: 16px; color: #fff; }
+    .final h2 { font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 14px; }
+    .final p { color: #a8c0e0; font-size: 13.5px; margin-bottom: 10px; }
+    .fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 18px; }
+    .fcard { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 16px; }
+    .fcard .fl { font-size: 10px; color: #66ffaa; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 5px; }
+    .fcard .fv { font-size: 17px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+    .fcard .fd { font-size: 12px; color: #a0b8d0; line-height: 1.5; }
+
+    /* BURGER */
+    .burger-btn { position: fixed; bottom: 24px; right: 24px; z-index: 999; width: 52px; height: 52px; background: var(--green); border-radius: 50%; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: background 0.2s; }
+    .burger-btn:hover { background: #005a30; }
+    .burger-btn span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.3s; }
+    .burger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .burger-btn.open span:nth-child(2) { opacity: 0; }
+    .burger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .burger-menu { position: fixed; bottom: 86px; right: 24px; z-index: 998; background: var(--head); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px; min-width: 240px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none; flex-direction: column; gap: 4px; }
+    .burger-menu.open { display: flex; }
+    .burger-menu .bml { font-size: 10px; color: #506080; text-transform: uppercase; letter-spacing: 1.5px; padding: 6px 12px 2px; font-weight: 700; }
+    .burger-menu a { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 6px; text-decoration: none; color: #a0b8d0; font-size: 13px; font-weight: 600; transition: background 0.15s, color 0.15s; }
+    .burger-menu a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .burger-menu a.active-report { background: rgba(0,122,68,0.3); color: #66ffaa; }
+    .burger-menu .bm-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 4px 0; }
+
+    footer { background: var(--head); color: #a0b0c8; text-align: center; padding: 28px; font-size: 12px; line-height: 1.7; }
+    footer strong { color: #fff; }
+
+    @media (max-width: 768px) {
+      .cover { padding: 40px 20px; }
+      .cover h1 { font-size: 26px; }
+      .container { padding: 0 16px; }
+      .section { padding: 36px 0; }
+      .tc-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .tc-stats { margin-left: 0; }
+      .kpi { min-width: calc(50% - 4px); }
+      .cs { min-width: calc(50% - 4px); }
+      .fgrid { grid-template-columns: 1fr 1fr; }
+      .diff-label { width: 90px; font-size: 10px; }
+    }
+    @media (max-width: 420px) {
+      .kpi { min-width: 100%; }
+      .fgrid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-logo">OPPORTUNITY</div>
+  <a href="#overview">Overview</a>
+  <a href="#targets">Top Targets</a>
+  <a href="#scorecard">Scorecard</a>
+  <a href="#roadmap">Roadmap</a>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="badge">Project MAX — Strategic Analysis</div>
+  <h1>Which Palantir Services<br><span>Can We Replicate?</span></h1>
+  <div class="sub">$3B – $30B Opportunity Analysis</div>
+  <div class="desc">Palantir is a $300B company. Capturing just 1–10% of their market value means building a $3B–$30B business. This analysis identifies exactly which of their services are easiest to replicate, cheapest to build, and fastest to generate contracts — ranked by opportunity.</div>
+  <div class="cover-stats">
+    <div class="cs"><div class="v">$300B</div><div class="l">Palantir Market Cap</div></div>
+    <div class="cs"><div class="v">$3B–$30B</div><div class="l">Target (1–10%)</div></div>
+    <div class="cs"><div class="v">5</div><div class="l">High-Value Targets</div></div>
+    <div class="cs"><div class="v">3</div><div class="l">Avoid Entirely</div></div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="section" id="overview">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 01</div><div class="st">Why Palantir Is Worth $300B — And Where The Value Sits</div></div>
+
+    <p>Palantir's $300B valuation is not built on one product. It's a <strong>revenue multiple on a high-growth AI platform</strong> with sticky government contracts providing the floor. Understanding where the value actually lives tells you exactly what to replicate.</p>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kv">~$2.8B</div><div class="kl">2024 Annual Revenue</div></div>
+      <div class="kpi"><div class="kv">~107×</div><div class="kl">Revenue Multiple</div></div>
+      <div class="kpi"><div class="kv">55%</div><div class="kl">US Govt Revenue Share</div></div>
+      <div class="kpi"><div class="kv">40%+</div><div class="kl">Commercial Revenue Growth</div></div>
+      <div class="kpi"><div class="kv">30%+</div><div class="kl">Operating Margin</div></div>
+    </div>
+
+    <h3>Where Palantir's Valuation Actually Comes From</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Value Driver</th><th>Revenue Contribution</th><th>Valuation Weight</th><th>Why The Market Pays Up</th></tr></thead>
+        <tbody>
+          <tr><td><strong>US Government Contracts</strong></td><td>~$1.5B/yr (Maven, intel)</td><td class="win">~40%</td><td>10–15yr lock-in, no competition, classified moat</td></tr>
+          <tr><td><strong>AIP Commercial Growth</strong></td><td>~$800M/yr growing 40%+</td><td class="win">~35%</td><td>AI hype premium — market pays 150× on AI growth stories</td></tr>
+          <tr><td><strong>International Govt</strong></td><td>~$350M/yr</td><td class="mid">~15%</td><td>Recurring, but less sticky than US</td></tr>
+          <tr><td><strong>Platform Lock-In (Foundry)</strong></td><td>Embedded in revenue above</td><td class="mid">~10%</td><td>Switching cost moat — once in, never out</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note"><strong>Key insight:</strong> You don't need to replicate ALL of Palantir to hit $3B–$30B. You need to replicate ONE value driver well — either the government contract machine OR the commercial AI platform growth story — and execute it at scale. Both paths exist. The government path is what Project MAX already targets. The commercial path is the sleeper opportunity.</div>
+
+    <h3>Replication Difficulty Framework</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Factor</th><th>Easy</th><th>Hard</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Technology</strong></td><td>Open-source AI stack replicates 80% of AIP/Foundry</td><td>Ontology depth, classified integrations take years</td></tr>
+          <tr><td><strong>Sales</strong></td><td>Commercial enterprise — standard SaaS sales motion</td><td>US DoD — security clearances, ITAR, decade of trust</td></tr>
+          <tr><td><strong>Hardware</strong></td><td>Cloud GPU rental — no capital needed</td><td>Own satellite constellation — $600M+</td></tr>
+          <tr><td><strong>Data</strong></td><td>Commercial sectors — data available, regulation manageable</td><td>Classified intelligence — not accessible without clearances</td></tr>
+          <tr><td><strong>Competition</strong></td><td>Commercial AI — many players but fragmented</td><td>US defence AI — Palantir has near-monopoly</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TOP TARGETS -->
+<div class="section" id="targets">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 02</div><div class="st">Top 5 Replication Targets — Ranked by Opportunity</div></div>
+    <p>Ranked by: ease of replication + market size + speed to revenue + defensibility. Each target can independently reach $3B–$30B valuation.</p>
+
+    <!-- TARGET 1 -->
+    <div class="target-card">
+      <div class="tc-head" style="background: linear-gradient(135deg, #f0faf4, #e0f5ea); border-bottom: 3px solid var(--green);">
+        <div class="tc-rank" style="background: var(--green);">1</div>
+        <div class="tc-info">
+          <div class="tc-label" style="color: var(--green);">Easiest + Highest ROI</div>
+          <div class="tc-name">Non-US Government AI Platform</div>
+          <div class="tc-sub">Replicate Gotham + AIP for allied governments that can't use Palantir</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tc-stat"><div class="sv" style="color:var(--green);">$500B+</div><div class="sl">TAM</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--green);">$30B</div><div class="sl">10% Target</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--green);">18 mo</div><div class="sl">First Contract</div></div>
+        </div>
+      </div>
+      <div class="tc-body">
+        <p style="margin-top:14px;"><strong>The opportunity:</strong> 20–30 nations worldwide need exactly what Palantir sells to the US DoD — but they will never be allowed to buy it from an American company. ITAR restrictions, data sovereignty laws, and political risk from US intelligence access mean they are actively looking for a non-US alternative. That alternative does not exist at scale. This is Project MAX's primary mission and the single highest-value replication opportunity.</p>
+
+        <div class="tc-grid">
+          <div class="tc-item"><div class="ti-label">Build Cost</div><div class="ti-val">$70M–$200M</div><div class="ti-desc">AI platform MVP + satellite data licensing. No hardware ownership needed in Phase 1.</div></div>
+          <div class="tc-item"><div class="ti-label">First Revenue</div><div class="ti-val">Year 1–2</div><div class="ti-desc">First founding government contract signed before full build complete.</div></div>
+          <div class="tc-item"><div class="ti-label">Contract Size</div><div class="ti-val">$500M–$8B each</div><div class="ti-desc">5–15 year agreements. Palantir template = $480M–$1.3B for single DoD contract.</div></div>
+          <div class="tc-item"><div class="ti-label">Target Clients</div><div class="ti-val">NATO + GCC + Indo-Pacific</div><div class="ti-desc">UK, Germany, UAE, Saudi Arabia, Japan, Australia, Poland, France.</div></div>
+          <div class="tc-item"><div class="ti-label">Palantir Weakness Here</div><div class="ti-val">US company — ITAR risk</div><div class="ti-desc">EU GDPR, non-Five-Eyes sovereignty, political risk of US data access. Many nations explicitly block Palantir.</div></div>
+          <div class="tc-item"><div class="ti-label">Valuation Path</div><div class="ti-val">$30B–$100B</div><div class="ti-desc">$3B–$5B ARR × 10–20× multiple at scale. Exceeds 10% of Palantir market cap.</div></div>
+        </div>
+
+        <div class="diff-row"><div class="diff-label">Technology</div><div class="diff-bg"><div class="diff-bar" style="width:40%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">Easy</div></div>
+        <div class="diff-row"><div class="diff-label">Sales/Access</div><div class="diff-bg"><div class="diff-bar" style="width:55%; background:var(--gold);"></div></div><div class="diff-val" style="color:var(--gold);">Medium</div></div>
+        <div class="diff-row"><div class="diff-label">Capital Needed</div><div class="diff-bg"><div class="diff-bar" style="width:50%; background:var(--gold);"></div></div><div class="diff-val" style="color:var(--gold);">$70M–200M</div></div>
+        <div class="diff-row"><div class="diff-label">Competition</div><div class="diff-bg"><div class="diff-bar" style="width:15%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">Very low</div></div>
+
+        <div class="win-box" style="margin-top:14px;"><strong>Why this wins:</strong> Palantir cannot legally or politically sell to many of these nations. There is no other company in the world with a comparable platform targeting this specific buyer set. First-mover gets 10–15 year contracts with no re-compete risk.</div>
+      </div>
+    </div>
+
+    <!-- TARGET 2 -->
+    <div class="target-card">
+      <div class="tc-head" style="background: linear-gradient(135deg, #e8f4ff, #d0e8ff); border-bottom: 3px solid var(--accent);">
+        <div class="tc-rank" style="background: var(--accent);">2</div>
+        <div class="tc-info">
+          <div class="tc-label" style="color: var(--accent);">Fastest to Revenue</div>
+          <div class="tc-name">AI-Powered Anti-Money Laundering (AML)</div>
+          <div class="tc-sub">Replicate Palantir's AML product — financial crime AI for banks and regulators</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tc-stat"><div class="sv" style="color:var(--accent);">$15B</div><div class="sl">TAM/yr</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--accent);">$3B–$8B</div><div class="sl">Val Target</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--accent);">6–12 mo</div><div class="sl">First Contract</div></div>
+        </div>
+      </div>
+      <div class="tc-body">
+        <p style="margin-top:14px;"><strong>The opportunity:</strong> Financial crime compliance is a $15B/year software market growing at 15%+ annually. Regulators globally are mandating AI-native AML systems — legacy rule-based platforms (NICE Actimize, Oracle FCCM) are failing. Palantir's AML product is essentially Foundry + AIP applied to transaction data. It can be replicated in 6–12 months with a focused team, with no defence clearances, no satellites, and no hardware. Pure software SaaS — highest margin profile possible.</p>
+
+        <div class="tc-grid">
+          <div class="tc-item"><div class="ti-label">Build Cost</div><div class="ti-val">$5M–$20M</div><div class="ti-desc">AI transaction monitoring engine + case management + regulator reporting. Fully cloud-native.</div></div>
+          <div class="tc-item"><div class="ti-label">First Revenue</div><div class="ti-val">6–12 months</div><div class="ti-desc">Banks are actively replacing legacy AML systems. Regulatory pressure creates urgency to buy.</div></div>
+          <div class="tc-item"><div class="ti-label">Contract Size</div><div class="ti-val">$2M–$50M/yr</div><div class="ti-desc">Tier 1 global banks pay $10M–$50M/yr for AML platforms. Regional banks $2M–$5M.</div></div>
+          <div class="tc-item"><div class="ti-label">Target Clients</div><div class="ti-val">Global banks, regulators</div><div class="ti-desc">HSBC, Deutsche Bank, Standard Chartered, BAFIN, FCA, MAS. Banks outside the US are underserved.</div></div>
+          <div class="tc-item"><div class="ti-label">Palantir Weakness Here</div><div class="ti-val">Too expensive, too complex</div><div class="ti-desc">Palantir requires full Foundry deployment. Banks want a focused AML product, not a full data OS overhaul.</div></div>
+          <div class="tc-item"><div class="ti-label">Valuation Path</div><div class="ti-val">$3B–$8B</div><div class="ti-desc">$200M–$400M ARR × 15–20× SaaS multiple. Achievable in 4–5 years.</div></div>
+        </div>
+
+        <div class="diff-row"><div class="diff-label">Technology</div><div class="diff-bg"><div class="diff-bar" style="width:25%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">Very easy</div></div>
+        <div class="diff-row"><div class="diff-label">Sales/Access</div><div class="diff-bg"><div class="diff-bar" style="width:35%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">Easy</div></div>
+        <div class="diff-row"><div class="diff-label">Capital Needed</div><div class="diff-bg"><div class="diff-bar" style="width:20%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">$5M–20M</div></div>
+        <div class="diff-row"><div class="diff-label">Competition</div><div class="diff-bg"><div class="diff-bar" style="width:60%; background:var(--gold);"></div></div><div class="diff-val" style="color:var(--gold);">Medium</div></div>
+
+        <div class="win-box" style="margin-top:14px;"><strong>Why this wins:</strong> Lowest cost to build of any target on this list. Fastest path to first paying contract. Regulatory tailwinds mean banks must buy — not optional. An AI-native AML platform undercuts Palantir's complexity and NICE Actimize's legacy architecture simultaneously.</div>
+      </div>
+    </div>
+
+    <!-- TARGET 3 -->
+    <div class="target-card">
+      <div class="tc-head" style="background: linear-gradient(135deg, #fff8e6, #fff0c8); border-bottom: 3px solid var(--gold);">
+        <div class="tc-rank" style="background: var(--gold);">3</div>
+        <div class="tc-info">
+          <div class="tc-label" style="color: var(--gold);">Largest Market</div>
+          <div class="tc-name">Hospital Operations AI</div>
+          <div class="tc-sub">Replicate Palantir's hospital command centre — AI for healthcare delivery</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tc-stat"><div class="sv" style="color:var(--gold);">$50B+</div><div class="sl">TAM/yr</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--gold);">$5B–$15B</div><div class="sl">Val Target</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--gold);">12–18 mo</div><div class="sl">First Contract</div></div>
+        </div>
+      </div>
+      <div class="tc-body">
+        <p style="margin-top:14px;"><strong>The opportunity:</strong> Global healthcare spending on IT exceeds $500B/year. Hospital operations AI — bed management, staffing, OR scheduling, supply chain, patient flow — is a $50B addressable market with near-zero good solutions. Epic and Oracle Health are the incumbents but are decade-old systems with poor AI. Palantir's hospital operations product is Foundry applied to healthcare data. It can be replicated by a focused team with healthcare domain expertise in 12–18 months. No clearances, no hardware — pure software.</p>
+
+        <div class="tc-grid">
+          <div class="tc-item"><div class="ti-label">Build Cost</div><div class="ti-val">$10M–$40M</div><div class="ti-desc">AI ops engine + EHR integrations (Epic, Cerner) + real-time dashboard. HL7 FHIR-native.</div></div>
+          <div class="tc-item"><div class="ti-label">First Revenue</div><div class="ti-val">12–18 months</div><div class="ti-desc">Hospitals are actively buying. Post-COVID operational pressure means budget is there.</div></div>
+          <div class="tc-item"><div class="ti-label">Contract Size</div><div class="ti-val">$3M–$30M/yr</div><div class="ti-desc">Large hospital networks (NHS, Kaiser, Cleveland Clinic) pay $10M–$30M/yr for ops platforms.</div></div>
+          <div class="tc-item"><div class="ti-label">Target Clients</div><div class="ti-val">Large hospital networks</div><div class="ti-desc">NHS (UK), GHC (Germany), AP-HP (France), private US networks. 5,000+ large hospitals globally.</div></div>
+          <div class="tc-item"><div class="ti-label">Palantir Weakness Here</div><div class="ti-val">Not healthcare-native</div><div class="ti-desc">Palantir wins on data integration but loses to specialist healthcare AI companies on clinical workflows and HL7/FHIR depth.</div></div>
+          <div class="tc-item"><div class="ti-label">Valuation Path</div><div class="ti-val">$5B–$15B</div><div class="ti-desc">$300M–$600M ARR × 15–25× health-tech SaaS multiple. Comparable: Epic at $32B private valuation.</div></div>
+        </div>
+
+        <div class="diff-row"><div class="diff-label">Technology</div><div class="diff-bg"><div class="diff-bar" style="width:35%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">Easy</div></div>
+        <div class="diff-row"><div class="diff-label">Sales/Access</div><div class="diff-bg"><div class="diff-bar" style="width:45%; background:var(--gold);"></div></div><div class="diff-val" style="color:var(--gold);">Medium</div></div>
+        <div class="diff-row"><div class="diff-label">Capital Needed</div><div class="diff-bg"><div class="diff-bar" style="width:25%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">$10M–40M</div></div>
+        <div class="diff-row"><div class="diff-label">Competition</div><div class="diff-bg"><div class="diff-bar" style="width:55%; background:var(--gold);"></div></div><div class="diff-val" style="color:var(--gold);">Medium</div></div>
+
+        <div class="win-box" style="margin-top:14px;"><strong>Why this wins:</strong> Healthcare is the largest software market in the world with the worst existing software. A modern AI-native hospital ops platform beats Epic and Oracle on AI capability while undercutting Palantir on healthcare-specific depth. TAM is enormous, switching costs are high once embedded, and every government in the world has hospitals that need this.</div>
+      </div>
+    </div>
+
+    <!-- TARGET 4 -->
+    <div class="target-card">
+      <div class="tc-head" style="background: linear-gradient(135deg, #fff5f0, #ffe8e0); border-bottom: 3px solid var(--orange);">
+        <div class="tc-rank" style="background: var(--orange);">4</div>
+        <div class="tc-info">
+          <div class="tc-label" style="color: var(--orange);">Most Underserved Market</div>
+          <div class="tc-name">Supply Chain Intelligence</div>
+          <div class="tc-sub">Replicate Palantir's supply chain command — AI for disruption, inventory, and procurement</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tc-stat"><div class="sv" style="color:var(--orange);">$30B</div><div class="sl">TAM/yr</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--orange);">$3B–$10B</div><div class="sl">Val Target</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--orange);">12 mo</div><div class="sl">First Contract</div></div>
+        </div>
+      </div>
+      <div class="tc-body">
+        <p style="margin-top:14px;"><strong>The opportunity:</strong> COVID-19 exposed how catastrophically fragile global supply chains are. Every major manufacturer, retailer, and government is now actively buying supply chain AI. Palantir's solution is strong but expensive and complex. Competitors (o9 Solutions, Blue Yonder, Kinaxis) are technically inferior and not AI-native. A modern AI-first supply chain platform — real-time disruption detection, inventory AI, AI procurement — can be built fast and sold to large enterprises globally.</p>
+
+        <div class="tc-grid">
+          <div class="tc-item"><div class="ti-label">Build Cost</div><div class="ti-val">$8M–$30M</div><div class="ti-desc">AI disruption engine + inventory optimiser + supplier risk scoring + procurement analytics.</div></div>
+          <div class="tc-item"><div class="ti-label">First Revenue</div><div class="ti-val">12 months</div><div class="ti-desc">C-suite urgency post-COVID. Budget exists. Boards are mandating supply chain resilience investment.</div></div>
+          <div class="tc-item"><div class="ti-label">Contract Size</div><div class="ti-val">$2M–$20M/yr</div><div class="ti-desc">Large manufacturers (auto, pharma, defence contractors) pay $5M–$20M/yr for supply chain platforms.</div></div>
+          <div class="tc-item"><div class="ti-label">Target Clients</div><div class="ti-val">Manufacturers + retailers</div><div class="ti-desc">Automotive, pharma, aerospace, retail. Airbus, BMW, Nestlé, Walmart — all actively buying.</div></div>
+          <div class="tc-item"><div class="ti-label">Palantir Weakness Here</div><div class="ti-val">Overkill for most buyers</div><div class="ti-desc">Palantir requires full Foundry deployment. Most supply chain buyers want a focused point solution, not a platform rebuild.</div></div>
+          <div class="tc-item"><div class="ti-label">Valuation Path</div><div class="ti-val">$3B–$10B</div><div class="ti-desc">$200M–$400M ARR × 15× multiple. o9 Solutions valued at $3B+ private. This market supports multiple large players.</div></div>
+        </div>
+
+        <div class="diff-row"><div class="diff-label">Technology</div><div class="diff-bg"><div class="diff-bar" style="width:30%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">Easy</div></div>
+        <div class="diff-row"><div class="diff-label">Sales/Access</div><div class="diff-bg"><div class="diff-bar" style="width:40%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">Easy</div></div>
+        <div class="diff-row"><div class="diff-label">Capital Needed</div><div class="diff-bg"><div class="diff-bar" style="width:22%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">$8M–30M</div></div>
+        <div class="diff-row"><div class="diff-label">Competition</div><div class="diff-bg"><div class="diff-bar" style="width:50%; background:var(--gold);"></div></div><div class="diff-val" style="color:var(--gold);">Medium</div></div>
+      </div>
+    </div>
+
+    <!-- TARGET 5 -->
+    <div class="target-card">
+      <div class="tc-head" style="background: linear-gradient(135deg, #f5f0ff, #ece0ff); border-bottom: 3px solid var(--purple);">
+        <div class="tc-rank" style="background: var(--purple);">5</div>
+        <div class="tc-info">
+          <div class="tc-label" style="color: var(--purple);">Highest Margin</div>
+          <div class="tc-name">MetaConstellation — Satellite Orchestration Layer</div>
+          <div class="tc-sub">Replicate Palantir's multi-satellite tasking API — without owning any satellites</div>
+        </div>
+        <div class="tc-stats">
+          <div class="tc-stat"><div class="sv" style="color:var(--purple);">$8B</div><div class="sl">TAM/yr</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--purple);">$3B–$6B</div><div class="sl">Val Target</div></div>
+          <div class="tc-stat"><div class="sv" style="color:var(--purple);">6 mo</div><div class="sl">MVP Build</div></div>
+        </div>
+      </div>
+      <div class="tc-body">
+        <p style="margin-top:14px;"><strong>The opportunity:</strong> Palantir's MetaConstellation is an orchestration API that sits above multiple commercial satellite operators and coordinates tasking. It does not own satellites — it licenses access to Planet, ICEYE, BlackSky, Satellogic, and Maxar, then routes tasking requests to the optimal operator and fuses the imagery into a single intelligence feed. This is a pure software product. The hard part (building satellites) has already been done by the commercial operators. The orchestration layer is buildable in 6 months with 10–15 engineers.</p>
+
+        <div class="tc-grid">
+          <div class="tc-item"><div class="ti-label">Build Cost</div><div class="ti-val">$3M–$15M</div><div class="ti-desc">API integrations with Planet, ICEYE, BlackSky, Satellogic APIs. Tasking logic + AI fusion layer.</div></div>
+          <div class="tc-item"><div class="ti-label">First Revenue</div><div class="ti-val">6–9 months</div><div class="ti-desc">Sell to defence ministries, intelligence agencies, and commercial geospatial users as a managed service.</div></div>
+          <div class="tc-item"><div class="ti-label">Contract Size</div><div class="ti-val">$5M–$100M/yr</div><div class="ti-desc">Government clients pay for managed satellite access + AI fusion. Palantir charges $50M–$200M/yr for MetaConstellation access.</div></div>
+          <div class="tc-item"><div class="ti-label">Target Clients</div><div class="ti-val">Non-US govts + defence</div><div class="ti-desc">Same NATO/GCC targets as Project MAX core mission. Natural feeder product into full ISR platform.</div></div>
+          <div class="tc-item"><div class="ti-label">Palantir Weakness Here</div><div class="ti-val">US-only access, ITAR</div><div class="ti-desc">Many nations can't access Palantir's MetaConstellation due to US restrictions on the underlying satellite data contracts.</div></div>
+          <div class="tc-item"><div class="ti-label">Valuation Path</div><div class="ti-val">$3B–$6B</div><div class="ti-desc">$150M–$300M ARR × 15–20× govtech multiple. Profitable from Day 1 — pure software, satellite data is pass-through cost.</div></div>
+        </div>
+
+        <div class="diff-row"><div class="diff-label">Technology</div><div class="diff-bg"><div class="diff-bar" style="width:20%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">Very easy</div></div>
+        <div class="diff-row"><div class="diff-label">Sales/Access</div><div class="diff-bg"><div class="diff-bar" style="width:45%; background:var(--gold);"></div></div><div class="diff-val" style="color:var(--gold);">Medium</div></div>
+        <div class="diff-row"><div class="diff-label">Capital Needed</div><div class="diff-bg"><div class="diff-bar" style="width:15%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">$3M–15M</div></div>
+        <div class="diff-row"><div class="diff-label">Competition</div><div class="diff-bg"><div class="diff-bar" style="width:20%; background:var(--green);"></div></div><div class="diff-val" style="color:var(--green);">Very low</div></div>
+
+        <div class="win-box" style="margin-top:14px;"><strong>Why this wins:</strong> Cheapest product on this list to build. Near-zero marginal cost — software only. Acts as the natural entry point for government clients before they buy the full Project MAX ISR platform. Start with MetaConstellation, upsell to full sovereign build.</div>
+      </div>
+    </div>
+
+    <!-- WHAT TO AVOID -->
+    <h3 style="color:var(--red); border-color:#ffcccc;">What NOT to Replicate</h3>
+    <div class="warn">
+      <strong>Avoid these 3 Palantir products — the moat is unbreakable without 10+ years and billions of dollars:</strong><br><br>
+      <strong>1. Gotham for US DoD / Maven Smart System</strong> — Requires US security clearances (10-year process), ITAR compliance, existing DoD relationships, and classified data access. Palantir spent 20 years and $2B building this. You cannot shortcut it.<br><br>
+      <strong>2. Apollo (Deployment Infrastructure)</strong> — Deeply technical, requires years of classified environment certifications (FedRAMP IL-5, airgap validation), and competes with AWS/Azure on one side and Palantir's own moat on the other. Low commercial TAM for a standalone product.<br><br>
+      <strong>3. Palantir Foundry (Full Enterprise OS)</strong> — Competing with Palantir's core enterprise platform means competing with Databricks, Snowflake, Microsoft Fabric, and every major cloud vendor simultaneously. The Ontology depth took 15 years to build. Open-source can replicate 70% but the last 30% is where the lock-in lives — and that 30% takes years.
+    </div>
+  </div>
+</div>
+
+<!-- SCORECARD -->
+<div class="section" id="scorecard">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 03</div><div class="st">Full Scorecard — All Palantir Products</div></div>
+    <p>Every Palantir product scored across 5 dimensions. Green = replicate now. Yellow = replicate later. Red = do not attempt.</p>
+
+    <div class="tw">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Build Cost</th>
+            <th>Time to Revenue</th>
+            <th>TAM</th>
+            <th>Competition</th>
+            <th>Val. Potential</th>
+            <th>Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Non-US Govt AI Platform</strong></td><td class="win">$70M–$200M</td><td class="win">18 months</td><td class="win">$500B+</td><td class="win">Very low</td><td class="win">$30B–$100B</td><td class="win">✓ Build Now</td></tr>
+          <tr><td><strong>AML / Financial Crime AI</strong></td><td class="win">$5M–$20M</td><td class="win">6–12 months</td><td class="win">$15B/yr</td><td class="mid">Medium</td><td class="win">$3B–$8B</td><td class="win">✓ Build Now</td></tr>
+          <tr><td><strong>Hospital Operations AI</strong></td><td class="win">$10M–$40M</td><td class="win">12–18 months</td><td class="win">$50B+</td><td class="mid">Medium</td><td class="win">$5B–$15B</td><td class="win">✓ Build Now</td></tr>
+          <tr><td><strong>Supply Chain Intelligence</strong></td><td class="win">$8M–$30M</td><td class="win">12 months</td><td class="win">$30B</td><td class="mid">Medium</td><td class="win">$3B–$10B</td><td class="win">✓ Build Now</td></tr>
+          <tr><td><strong>MetaConstellation API</strong></td><td class="win">$3M–$15M</td><td class="win">6–9 months</td><td class="mid">$8B/yr</td><td class="win">Very low</td><td class="win">$3B–$6B</td><td class="win">✓ Build Now</td></tr>
+          <tr><td><strong>AI Procurement Platform</strong></td><td class="win">$5M–$15M</td><td class="win">12 months</td><td class="mid">$10B/yr</td><td class="mid">Medium</td><td class="mid">$2B–$5B</td><td class="mid">⚡ Consider</td></tr>
+          <tr><td><strong>Edge AI (non-US military)</strong></td><td class="mid">$30M–$80M</td><td class="mid">18–24 months</td><td class="win">$20B+</td><td class="win">Low</td><td class="win">$5B–$15B</td><td class="mid">⚡ Phase 2</td></tr>
+          <tr><td><strong>Secure Collaboration</strong></td><td class="win">$10M–$25M</td><td class="mid">18 months</td><td class="mid">$5B/yr</td><td class="mid">Medium</td><td class="mid">$2B–$5B</td><td class="mid">⚡ Consider</td></tr>
+          <tr><td><strong>Palantir Foundry (full)</strong></td><td class="lose">$300M–$1B+</td><td class="lose">4–5 years</td><td class="win">$200B</td><td class="lose">Extreme</td><td class="mid">Uncertain</td><td class="lose">✗ Avoid</td></tr>
+          <tr><td><strong>Apollo (deployment OS)</strong></td><td class="lose">$200M–$500M</td><td class="lose">3–4 years</td><td class="lose">Limited</td><td class="lose">High</td><td class="lose">$1B–$3B</td><td class="lose">✗ Avoid</td></tr>
+          <tr><td><strong>Maven (US DoD)</strong></td><td class="lose">Impossible</td><td class="lose">10+ years</td><td class="win">$100B+</td><td class="lose">No access</td><td class="lose">$0</td><td class="lose">✗ Impossible</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div class="section" id="roadmap">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 04</div><div class="st">Recommended Build Sequence — Path to $30B</div></div>
+    <p>Build these products in sequence. Each one funds the next and compounds the government relationships needed for the larger contracts.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Phase</th><th>Products to Build</th><th>Investment</th><th>Revenue Target</th><th>Valuation</th><th>Time</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Phase 0<br>Quick Win</strong></td>
+            <td>MetaConstellation API layer<br><small>Satellite orchestration — pure software, fastest to market</small></td>
+            <td class="win">$3M–$15M</td>
+            <td>$20M–$80M ARR</td>
+            <td class="win">$300M–$1.5B</td>
+            <td>6–9 months</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 1<br>Commercial</strong></td>
+            <td>AML Platform + Hospital Ops AI<br><small>Two highest-ROI commercial products in parallel</small></td>
+            <td class="win">$15M–$60M</td>
+            <td>$100M–$300M ARR</td>
+            <td class="win">$2B–$6B</td>
+            <td>Yr 1–2</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 2<br>Government</strong></td>
+            <td>Non-US Govt AI Platform (Gotham equivalent)<br><small>Sign first 3–5 founding government contracts</small></td>
+            <td class="mid">$70M–$200M</td>
+            <td>$500M–$1.5B ARR</td>
+            <td class="win">$8B–$20B</td>
+            <td>Yr 2–4</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 3<br>Dominance</strong></td>
+            <td>Full ISR + UNIT-X + Supply Chain + Edge AI<br><small>20–30 government contracts, full Project MAX stack</small></td>
+            <td class="mid">$400M–$800M</td>
+            <td>$3B–$8B ARR</td>
+            <td class="win">$30B–$100B</td>
+            <td>Yr 4–8</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="final">
+      <h2>The $30B Verdict</h2>
+      <p>You don't need to out-Palantir Palantir. You need to build the products Palantir either can't sell (non-US govts), won't prioritise (AML, Healthcare), or overcharges for (MetaConstellation). Start cheap, get to revenue fast, use commercial profits to fund the sovereign government platform.</p>
+      <p>The fastest path to $3B is AML + MetaConstellation simultaneously — both buildable in under 12 months for under $30M combined. The path to $30B is the sovereign government AI platform. Both are on the same roadmap.</p>
+      <div class="fgrid">
+        <div class="fcard">
+          <div class="fl">Fastest $3B path</div>
+          <div class="fv">AML + MetaConstellation</div>
+          <div class="fd">Under $30M to build. Revenue in 6–12 months. $3B–$8B combined valuation in 3–4 years.</div>
+        </div>
+        <div class="fcard">
+          <div class="fl">Largest opportunity</div>
+          <div class="fv">Non-US Govt Platform</div>
+          <div class="fd">$70M–$200M to build. $30B–$100B valuation. The Palantir model, but sovereign and accessible.</div>
+        </div>
+        <div class="fcard">
+          <div class="fl">Minimum viable product</div>
+          <div class="fv">MetaConstellation API</div>
+          <div class="fd">$3M–$15M to build in 6 months. Pure software. First government contract funds everything else.</div>
+        </div>
+        <div class="fcard">
+          <div class="fl">Combined target</div>
+          <div class="fv">$30B+ by Year 8</div>
+          <div class="fd">All 5 targets operational. 20+ government clients. Project MAX at full scale. IPO or strategic sale.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>PROJECT MAX — Palantir Replication Opportunity Analysis</strong><br>
+  Strategic analysis based on palantir.com product data and public market intelligence, April 2026.
+</footer>
+
+<!-- BURGER MENU -->
+<button class="burger-btn" id="burgerBtn" onclick="toggleBurger()" aria-label="Reports menu">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="KLEOS_ANALYSIS.html"><span>📡</span> Kleos Space — Analysis</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html" class="active-report"><span>💰</span> Replication Targets</a>
+  <div class="bm-divider"></div>
+  <div class="bml">Sections</div>
+  <a href="#overview"><span>📊</span> Overview</a>
+  <a href="#targets"><span>🎯</span> Top 5 Targets</a>
+  <a href="#scorecard"><span>📋</span> Scorecard</a>
+  <a href="#roadmap"><span>🗺️</span> Roadmap</a>
+</div>
+<script>
+  function toggleBurger() {
+    document.getElementById('burgerBtn').classList.toggle('open');
+    document.getElementById('burgerMenu').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    var btn = document.getElementById('burgerBtn');
+    var menu = document.getElementById('burgerMenu');
+    if (!btn.contains(e.target) && !menu.contains(e.target)) {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+    }
+  });
+</script>
+</body>
+</html>
