@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Palantir — Full Service Offerings Analysis</title>
+  <style>
+    :root {
+      --bg: #ffffff; --surface: #f5f7fa; --s2: #edf0f5; --border: #d0d8e8;
+      --accent: #0055cc; --a2: #003a99; --head: #0a1628; --muted: #5a6a85;
+      --green: #007a44; --red: #cc2222; --gold: #b86a00; --orange: #c45200;
+      --text: #1a2333;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; line-height: 1.65; }
+
+    /* NAV */
+    .topnav { position: sticky; top: 0; z-index: 100; background: var(--head); border-bottom: 2px solid var(--orange); display: flex; align-items: center; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .topnav .nav-logo { padding: 10px 20px; font-size: 13px; font-weight: 900; color: #fff; letter-spacing: 2px; border-right: 2px solid rgba(255,255,255,0.15); flex-shrink: 0; }
+    .topnav a { display: block; padding: 13px 15px; font-size: 11px; font-weight: 600; color: #7090b0; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; border-right: 1px solid rgba(255,255,255,0.06); transition: color 0.15s, background 0.15s; }
+    .topnav a:hover { color: #fff; background: rgba(255,255,255,0.06); }
+
+    /* COVER */
+    .cover { background: linear-gradient(135deg, #0a1628 0%, #1a0a00 100%); color: #fff; padding: 60px 32px; text-align: center; }
+    .badge { display: inline-block; background: var(--orange); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 3px; padding: 5px 18px; border-radius: 2px; margin-bottom: 28px; text-transform: uppercase; }
+    .cover h1 { font-size: 42px; font-weight: 900; line-height: 1.1; margin-bottom: 10px; }
+    .cover h1 span { color: #ffaa66; }
+    .cover .sub { font-size: 11px; letter-spacing: 4px; color: #ffaa66; text-transform: uppercase; margin-bottom: 18px; }
+    .cover .desc { font-size: 14px; color: #a8c0e0; max-width: 580px; margin: 0 auto 36px; }
+    .cover-stats { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+    .cs { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.13); border-radius: 6px; padding: 14px 20px; min-width: 130px; text-align: center; }
+    .cs .v { font-size: 22px; font-weight: 800; color: #ffaa66; line-height: 1; margin-bottom: 4px; }
+    .cs .l { font-size: 10px; color: #7090b0; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* LAYOUT */
+    .container { max-width: 980px; margin: 0 auto; padding: 0 32px; }
+    .section { padding: 52px 0; border-bottom: 1px solid var(--border); }
+    .sh { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+    .sn { background: var(--orange); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 4px 10px; border-radius: 3px; text-transform: uppercase; white-space: nowrap; }
+    .st { font-size: 22px; font-weight: 700; color: var(--head); }
+
+    h3 { font-size: 11px; font-weight: 700; color: var(--orange); margin: 30px 0 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--s2); padding-bottom: 6px; }
+    h4 { font-size: 13px; font-weight: 700; color: var(--head); margin: 18px 0 6px; padding-left: 10px; border-left: 3px solid var(--orange); }
+    p { margin-bottom: 10px; font-size: 13.5px; color: var(--muted); }
+    ul { padding-left: 18px; margin-bottom: 10px; }
+    li { margin-bottom: 4px; font-size: 13px; color: var(--muted); }
+    strong { color: var(--head); }
+
+    /* PLATFORM CARDS */
+    .platform-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 18px 0; }
+    .pcard { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .pcard-head { padding: 18px 20px 14px; }
+    .pcard-head .pc-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; opacity: 0.85; }
+    .pcard-head .pc-name { font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+    .pcard-head .pc-tagline { font-size: 11.5px; color: rgba(255,255,255,0.75); line-height: 1.4; }
+    .pcard-body { padding: 16px 20px; background: var(--surface); }
+    .pcard-body p { font-size: 12.5px; margin-bottom: 10px; }
+    .feature-list { list-style: none; padding: 0; margin: 0; }
+    .feature-list li { font-size: 12px; color: var(--muted); padding: 4px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: flex-start; }
+    .feature-list li:last-child { border-bottom: none; }
+    .feature-list li::before { content: '→'; color: var(--orange); font-weight: 700; flex-shrink: 0; }
+
+    /* OFFERING CARDS */
+    .offering-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 16px 0; }
+    .ocard { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--orange); border-radius: 0 6px 6px 0; padding: 16px 18px; }
+    .ocard .oc-industry { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--orange); margin-bottom: 4px; }
+    .ocard .oc-name { font-size: 14px; font-weight: 700; color: var(--head); margin-bottom: 6px; }
+    .ocard .oc-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+    /* TABLES */
+    .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 14px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 460px; }
+    thead tr { background: var(--orange); }
+    thead th { padding: 10px 14px; text-align: left; color: #fff; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:hover { background: var(--surface); }
+    tbody tr:nth-child(even) { background: #fafbfd; }
+    td { padding: 9px 14px; vertical-align: top; font-size: 13px; }
+
+    /* KPI */
+    .kpi-row { display: flex; gap: 4px; flex-wrap: wrap; margin: 18px 0; }
+    .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; flex: 1; min-width: 130px; text-align: center; }
+    .kpi .kv { font-size: 20px; font-weight: 800; color: var(--orange); }
+    .kpi .kl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+    /* NOTE */
+    .note { background: #fff8e6; border-left: 4px solid var(--gold); border-radius: 0 4px 4px 0; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #7a4a00; }
+    .note strong { color: var(--gold); }
+    .tip { background: #e8f4ff; border-left: 4px solid var(--accent); border-radius: 0 4px 4px 0; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #003080; }
+    .tip strong { color: var(--accent); }
+
+    /* BURGER */
+    .burger-btn { position: fixed; bottom: 24px; right: 24px; z-index: 999; width: 52px; height: 52px; background: var(--orange); border-radius: 50%; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: background 0.2s; }
+    .burger-btn:hover { background: #a03e00; }
+    .burger-btn span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.3s; }
+    .burger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .burger-btn.open span:nth-child(2) { opacity: 0; }
+    .burger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .burger-menu { position: fixed; bottom: 86px; right: 24px; z-index: 998; background: var(--head); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px; min-width: 230px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); display: none; flex-direction: column; gap: 4px; }
+    .burger-menu.open { display: flex; }
+    .burger-menu .bml { font-size: 10px; color: #506080; text-transform: uppercase; letter-spacing: 1.5px; padding: 6px 12px 2px; font-weight: 700; }
+    .burger-menu a { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 6px; text-decoration: none; color: #a0b8d0; font-size: 13px; font-weight: 600; transition: background 0.15s, color 0.15s; }
+    .burger-menu a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .burger-menu a.active-report { background: rgba(196,82,0,0.25); color: #ffaa66; }
+    .burger-menu .bm-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 4px 0; }
+
+    footer { background: var(--head); color: #a0b0c8; text-align: center; padding: 28px; font-size: 12px; line-height: 1.7; }
+    footer strong { color: #fff; }
+
+    @media (max-width: 768px) {
+      .cover { padding: 40px 20px; }
+      .cover h1 { font-size: 28px; }
+      .container { padding: 0 16px; }
+      .section { padding: 36px 0; }
+      .platform-grid { grid-template-columns: 1fr; }
+      .offering-grid { grid-template-columns: 1fr; }
+      .kpi-row { gap: 6px; }
+      .kpi { min-width: calc(50% - 6px); }
+      .cs { min-width: calc(50% - 4px); }
+    }
+    @media (max-width: 420px) {
+      .kpi { min-width: 100%; }
+      .cs { min-width: 100%; }
+      .cover h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="nav-logo">PALANTIR</div>
+  <a href="#platforms">Core Platforms</a>
+  <a href="#aip">AIP</a>
+  <a href="#foundry">Foundry</a>
+  <a href="#gotham">Gotham</a>
+  <a href="#apollo">Apollo</a>
+  <a href="#industries">Industries</a>
+  <a href="#tools">Tools</a>
+</nav>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="badge">Palantir Takedown Insider</div>
+  <h1>Palantir<br><span>Full Service Offerings</span></h1>
+  <div class="sub">Complete Product &amp; Platform Breakdown</div>
+  <div class="desc">Every platform, product, industry solution, and tool Palantir offers clients — sourced directly from palantir.com. What they sell, who they sell it to, and what each product actually does.</div>
+  <div class="cover-stats">
+    <div class="cs"><div class="v">4</div><div class="l">Core Platforms</div></div>
+    <div class="cs"><div class="v">10+</div><div class="l">Industries Served</div></div>
+    <div class="cs"><div class="v">30+</div><div class="l">Specific Solutions</div></div>
+    <div class="cs"><div class="v">$80B+</div><div class="l">Market Cap</div></div>
+    <div class="cs"><div class="v">$1.3B</div><div class="l">Largest Contract</div></div>
+  </div>
+</div>
+
+<!-- CORE PLATFORMS -->
+<div class="section" id="platforms">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 01</div><div class="st">4 Core Platforms</div></div>
+    <p>Everything Palantir sells runs on one of four platforms. Each targets a different part of the stack — data integration, AI, decision-making, or deployment. Clients rarely buy just one.</p>
+
+    <div class="platform-grid">
+
+      <div class="pcard">
+        <div class="pcard-head" style="background: linear-gradient(135deg, #1a0055, #0a0030);">
+          <div class="pc-tag" style="color:#aa88ff;">Artificial Intelligence</div>
+          <div class="pc-name">AIP</div>
+          <div class="pc-tagline">Artificial Intelligence Platform — AI on your private network, under full control</div>
+        </div>
+        <div class="pcard-body">
+          <p>Deploys LLMs and AI models inside a client's secure environment. The AI reasons on live enterprise data without sending anything to the cloud. Ranked #1 in AI/ML by Dresner Advisory, IDC, and Forrester (2024).</p>
+          <ul class="feature-list">
+            <li>AIP Logic — author LLM-driven functions, no coding required</li>
+            <li>AIP Scenarios — simulate AI decisions before executing them</li>
+            <li>AIP Automate — AI-triggered automations on new data/events</li>
+            <li>AIP Tool Factory — converts data & models into AI-usable tools</li>
+            <li>Vector Management — embeddings & semantic search via Ontology</li>
+            <li>AIP Bootcamps — zero to production in days, not months</li>
+            <li>Granular AI Guardrails — role, classification, purpose-based access</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-head" style="background: linear-gradient(135deg, #002244, #001133);">
+          <div class="pc-tag" style="color:#66aaff;">Enterprise Operating System</div>
+          <div class="pc-name">Foundry</div>
+          <div class="pc-tagline">The Ontology-Powered Operating System for the Modern Enterprise</div>
+        </div>
+        <div class="pcard-body">
+          <p>Connects every data source, model, and team inside a company into one unified operating layer. The Ontology maps every object, action, and process in real time — enabling AI workflows across the entire organisation.</p>
+          <ul class="feature-list">
+            <li>Data Integration — multi-source connectors, no duplication</li>
+            <li>Pipeline Builder — code-free production data pipelines</li>
+            <li>Digital Twin — virtual system representation for simulation</li>
+            <li>Process Mining — analyse & optimise workflows automatically</li>
+            <li>Dynamic Scheduling — AI resource allocation in real time</li>
+            <li>Streaming — real-time data processing layer</li>
+            <li>Real-Time Alerting — automated notifications from live data</li>
+            <li>Marketplace — share and reuse ontology components across teams</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-head" style="background: linear-gradient(135deg, #001a00, #0a2200);">
+          <div class="pc-tag" style="color:#66cc88;">Defence & Intelligence</div>
+          <div class="pc-name">Gotham</div>
+          <div class="pc-tagline">The Operating System for Global Decision Making</div>
+        </div>
+        <div class="pcard-body">
+          <p>The original Palantir product. Fuses massive volumes of near-real-time data from thousands of sensors into a single operational picture. Used by defence agencies and intelligence communities for over a decade. From HQ to forward-deployed edge.</p>
+          <ul class="feature-list">
+            <li>Single pane of glass across millions of sensors</li>
+            <li>Operational AI with live feedback loops — models improve during ops</li>
+            <li>Certified: FedRAMP, IL-5 DoD SRG, SOC 2, ISO 27001</li>
+            <li>Anti-lock-in — all data exportable with provenance</li>
+            <li>Edge deployment — works offline in forward positions</li>
+            <li>Multi-domain: land, air, sea, space, cyber integration</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pcard">
+        <div class="pcard-head" style="background: linear-gradient(135deg, #1a0a00, #2a1200);">
+          <div class="pc-tag" style="color:#ffaa44;">Deployment Infrastructure</div>
+          <div class="pc-name">Apollo</div>
+          <div class="pc-tagline">The Operating System for Continuous Delivery — anywhere, any environment</div>
+        </div>
+        <div class="pcard-body">
+          <p>The engine that runs Palantir's other platforms everywhere — cloud, on-prem, airgapped networks, ruggedised edge devices, submarines. Moves from manual deployment to fully autonomous with zero human intervention required.</p>
+          <ul class="feature-list">
+            <li>Software Control Center — full visibility across all deployments</li>
+            <li>Autonomous continuous deployment — self-managing releases</li>
+            <li>Multi-cloud: AWS, Azure, GCP, private cloud, hybrid</li>
+            <li>Airgapped & high-side network support</li>
+            <li>SecOps — encode and enforce security policies at scale</li>
+            <li>Day 2 Operations — rule-based compliance and reliability</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- AIP DEEP DIVE -->
+<div class="section" id="aip">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 02</div><div class="st">AIP — AI Platform Deep Dive</div></div>
+    <p>AIP is Palantir's fastest-growing product and the centrepiece of their commercial expansion. It sits on top of Foundry and brings AI into live operational decision-making — without exposing private data to third-party AI providers.</p>
+
+    <div class="kpi-row">
+      <div class="kpi"><div class="kv">#1</div><div class="kl">AI/ML Platform — IDC Worldwide</div></div>
+      <div class="kpi"><div class="kv">#1</div><div class="kv" style="font-size:14px;">ModelOps Vendor</div><div class="kl">Dresner Advisory 2024</div></div>
+      <div class="kpi"><div class="kv">Leader</div><div class="kl">Forrester Wave AI/ML 2024</div></div>
+      <div class="kpi"><div class="kv">Days</div><div class="kl">Zero to production (Bootcamp)</div></div>
+    </div>
+
+    <h3>3-Layer Architecture</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Layer</th><th>Name</th><th>What It Does</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Layer 1</strong></td><td>Semantic Data Layer</td><td>Integrates structured, unstructured, streaming, and geospatial data into a secure real-time multi-modal foundation. No raw data leaves the environment.</td></tr>
+          <tr><td><strong>Layer 2</strong></td><td>Dynamic Logic Layer</td><td>Anchors AI reasoning in deterministic calculations, business rules, ML models, and optimisers. AI can't hallucinate past the logic guardrails.</td></tr>
+          <tr><td><strong>Layer 3</strong></td><td>Kinetic Action Layer</td><td>Syncs AI decisions back to ERPs, MES, SCMs, scheduling platforms, and edge systems. The AI doesn't just advise — it executes.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>AIP Core Products</h3>
+    <div class="offering-grid">
+      <div class="ocard"><div class="oc-industry">Authoring</div><div class="oc-name">AIP Logic</div><div class="oc-desc">Build, manage, and deploy LLM-driven functions with full testing and debugging. No coding required. Functions usable by humans and AI agents interchangeably.</div></div>
+      <div class="ocard"><div class="oc-industry">Safety</div><div class="oc-name">AIP Scenarios</div><div class="oc-desc">Simulate and examine AI-driven decisions and their downstream consequences before committing to action. Full data introspection at every step.</div></div>
+      <div class="ocard"><div class="oc-industry">Automation</div><div class="oc-name">AIP Automate</div><div class="oc-desc">Define AI-driven automations that trigger within specific, scoped boundaries when new data arrives or conditions change. Human-in-the-loop optional.</div></div>
+      <div class="ocard"><div class="oc-industry">AI Infrastructure</div><div class="oc-name">AIP Tool Factory</div><div class="oc-desc">Converts existing data pipelines, models, and enterprise processes into AI-tuned tools — callable by both human analysts and autonomous AI agents.</div></div>
+      <div class="ocard"><div class="oc-industry">Search & Retrieval</div><div class="oc-name">Vector Management</div><div class="oc-desc">Generates embeddings, manages vector stores, and powers semantic search across all enterprise data via the Palantir Ontology framework.</div></div>
+      <div class="ocard"><div class="oc-industry">Onboarding</div><div class="oc-name">AIP Bootcamps</div><div class="oc-desc">Intensive hands-on programmes that take client teams from zero to a live production AI use case in days. Not a demo — actual deployed software.</div></div>
+    </div>
+
+    <div class="tip"><strong>Why AIP matters for Project MAX:</strong> AIP is exactly what Project MAX needs to replicate — the AI layer that turns raw satellite data into actionable threat intelligence. The open-source equivalents (PyTorch + TensorRT + LangChain + custom ontology) can replicate 80% of this at a fraction of the cost.</div>
+  </div>
+</div>
+
+<!-- FOUNDRY -->
+<div class="section" id="foundry">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 03</div><div class="st">Foundry — Enterprise Data OS</div></div>
+    <p>Foundry is Palantir's commercial flagship — the platform that took them from a pure defence company to a commercial enterprise. It turns data chaos into a structured, AI-ready operational layer without replacing existing systems.</p>
+
+    <h3>Core Capabilities</h3>
+    <div class="offering-grid">
+      <div class="ocard"><div class="oc-industry">Data Layer</div><div class="oc-name">Data Integration</div><div class="oc-desc">Connects every data source across the enterprise — databases, APIs, files, streams — without duplicating underlying data or replacing existing systems.</div></div>
+      <div class="ocard"><div class="oc-industry">Automation</div><div class="oc-name">Pipeline Builder</div><div class="oc-desc">Build production data pipelines without code. Drag-and-drop transformations, joins, and enrichments that run at enterprise scale automatically.</div></div>
+      <div class="ocard"><div class="oc-industry">Simulation</div><div class="oc-name">Digital Twin</div><div class="oc-desc">Create virtual representations of physical systems — factories, supply chains, grids — to simulate operational changes before real-world execution.</div></div>
+      <div class="ocard"><div class="oc-industry">Analytics</div><div class="oc-name">Process Mining</div><div class="oc-desc">Automatically discovers, analyses, and optimises workflows from event logs. Reveals inefficiencies invisible to human analysts.</div></div>
+      <div class="ocard"><div class="oc-industry">Operations</div><div class="oc-name">Dynamic Scheduling</div><div class="oc-desc">AI-powered resource allocation and scheduling — workforce, assets, production — updated continuously as real-time data changes.</div></div>
+      <div class="ocard"><div class="oc-industry">Real-Time</div><div class="oc-name">Streaming</div><div class="oc-desc">Ingest and process high-velocity data streams in real time. Connect IoT sensors, market data feeds, satellite downlinks, and more.</div></div>
+      <div class="ocard"><div class="oc-industry">Monitoring</div><div class="oc-name">Real-Time Alerting</div><div class="oc-desc">Automated alerts triggered by conditions in live data. Route to the right operator, team, or system the moment a threshold is crossed.</div></div>
+      <div class="ocard"><div class="oc-industry">Collaboration</div><div class="oc-name">Marketplace</div><div class="oc-desc">Internal app store for ontology components, datasets, and workflows. Teams share, reuse, and build on each other's work across the organisation.</div></div>
+    </div>
+
+    <h3>HyperAuto (New)</h3>
+    <div class="ocard" style="margin-top:8px;">
+      <div class="oc-industry">AI-Accelerated</div>
+      <div class="oc-name">Palantir HyperAuto</div>
+      <div class="oc-desc">Automatically builds data pipelines from existing enterprise systems in hours — not months. AI analyses source systems and generates the integration code. Dramatically reduces implementation time for new Foundry deployments.</div>
+    </div>
+  </div>
+</div>
+
+<!-- GOTHAM -->
+<div class="section" id="gotham">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 04</div><div class="st">Gotham — Defence & Intelligence OS</div></div>
+    <p>Palantir's original product. Built for the intelligence community and now used across defence, law enforcement, and national security worldwide. Gotham fuses data from thousands of sources into a single operational picture — from satellite feeds to field reports.</p>
+
+    <h3>Key Capabilities</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Capability</th><th>Description</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Single Pane of Glass</strong></td><td>Unified view across millions of sensors, databases, and feeds in near-real-time</td><td>Battlefield ISR, national threat picture</td></tr>
+          <tr><td><strong>Operational AI</strong></td><td>ML models with live feedback loops — trains on operator actions during real operations</td><td>Object detection improvement in-field</td></tr>
+          <tr><td><strong>Edge Deployment</strong></td><td>Runs fully offline at forward-deployed positions, reconnects and syncs automatically</td><td>Forward operating bases, naval vessels</td></tr>
+          <tr><td><strong>Multi-Domain Fusion</strong></td><td>Integrates land, air, sea, space, and cyber data streams simultaneously</td><td>Joint operations, multi-domain command</td></tr>
+          <tr><td><strong>Granular Access Control</strong></td><td>Role, classification, and purpose-based access — each user sees only what they're cleared for</td><td>Coalition ops with mixed clearances</td></tr>
+          <tr><td><strong>Anti-Lock-In Export</strong></td><td>All data products exportable with full provenance in standard formats</td><td>Vendor independence compliance</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Security Certifications</h3>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kv" style="font-size:13px;">FedRAMP</div><div class="kl">Moderate / IL2 DoD SRG</div></div>
+      <div class="kpi"><div class="kv" style="font-size:13px;">IL-5</div><div class="kl">DoD SRG (classified)</div></div>
+      <div class="kpi"><div class="kv" style="font-size:13px;">SOC 2</div><div class="kl">Type II + SOC 3</div></div>
+      <div class="kpi"><div class="kv" style="font-size:13px;">ISO</div><div class="kl">27001, 27017, 27018</div></div>
+    </div>
+
+    <h3>Maven Smart System (Gotham for DoD)</h3>
+    <div class="ocard">
+      <div class="oc-industry">US Department of Defense</div>
+      <div class="oc-name">Palantir Maven Smart System</div>
+      <div class="oc-desc">The military-specific deployment of Gotham — integrating ISR data, targeting workflows, and AI-assisted decision-making across the DoD. Initial contract $480M (2022), expanded to $1.3B (2024). Covers object detection from satellite/aerial imagery, sensor fusion, and kill-chain decision support across all US military branches.</div>
+    </div>
+
+    <h3>MetaConstellation (Gotham + Space)</h3>
+    <div class="ocard">
+      <div class="oc-industry">Satellite Intelligence</div>
+      <div class="oc-name">MetaConstellation</div>
+      <div class="oc-desc">Palantir's satellite orchestration layer built on Gotham. Coordinates tasking across multiple commercial satellite operators (Planet, ICEYE, BlackSky, Satellogic, Maxar) through a single API. Optimises which satellite to task, when, and at what resolution — then fuses the resulting imagery into the Gotham operational picture automatically.</div>
+    </div>
+  </div>
+</div>
+
+<!-- APOLLO -->
+<div class="section" id="apollo">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 05</div><div class="st">Apollo — Deployment Infrastructure</div></div>
+    <p>The least-talked-about Palantir product and possibly the most important for their defence business. Apollo is what makes Palantir work in submarines, airgapped classified networks, forward operating bases, and ruggedised field equipment — anywhere.</p>
+
+    <div class="offering-grid">
+      <div class="ocard"><div class="oc-industry">Visibility</div><div class="oc-name">Software Control Center</div><div class="oc-desc">Discover and map your entire software deployment landscape within hours. Every version, every environment, every dependency — visible in one place.</div></div>
+      <div class="ocard"><div class="oc-industry">Deployment</div><div class="oc-name">Continuous Autonomous Deployment</div><div class="oc-desc">Automatically deploys software updates across all environments — from cloud to airgapped — without human intervention. Self-healing on failure.</div></div>
+      <div class="ocard"><div class="oc-industry">Security</div><div class="oc-name">SecOps Enforcement</div><div class="oc-desc">Encode security, compliance, and access policies as code. Apollo enforces them across every deployment automatically — not via audits.</div></div>
+      <div class="ocard"><div class="oc-industry">Operations</div><div class="oc-name">Day 2 Operations</div><div class="oc-desc">Ongoing management, monitoring, and reliability enforcement for live deployments. Rule-based automation handles routine operational tasks.</div></div>
+    </div>
+
+    <h3>Supported Environments</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Environment</th><th>Examples</th><th>Relevance</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Multi-Cloud</strong></td><td>AWS, Azure, GCP</td><td>Commercial enterprise deployments</td></tr>
+          <tr><td><strong>On-Premises</strong></td><td>Client data centres</td><td>Data sovereignty requirements</td></tr>
+          <tr><td><strong>Private Cloud</strong></td><td>Sovereign cloud environments</td><td>Government classified deployments</td></tr>
+          <tr><td><strong>Airgapped / High-Side</strong></td><td>SCIF, classified networks, IL-5+</td><td>Intelligence community, nuclear command</td></tr>
+          <tr><td><strong>Edge / Ruggedised</strong></td><td>Forward bases, vehicles, ships</td><td>Battlefield deployment, naval ops</td></tr>
+          <tr><td><strong>Hybrid</strong></td><td>Cloud + on-prem simultaneously</td><td>Mixed-classification environments</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- INDUSTRIES -->
+<div class="section" id="industries">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 06</div><div class="st">Industry Solutions</div></div>
+    <p>Palantir sells industry-specific products built on top of their core platforms. Each solution is a pre-configured Foundry/AIP deployment tuned for that sector's data models, workflows, and compliance requirements.</p>
+
+    <h3>Defence &amp; Government</h3>
+    <div class="offering-grid">
+      <div class="ocard"><div class="oc-industry">Military</div><div class="oc-name">Maven Smart System</div><div class="oc-desc">AI-powered ISR-to-strike decision system. Object detection, sensor fusion, targeting workflow. $1.3B DoD contract.</div></div>
+      <div class="ocard"><div class="oc-industry">Intelligence</div><div class="oc-name">Intelligence Operations</div><div class="oc-desc">Derive actionable intelligence from classified, sensitive, and multi-source data at scale. Used by CIA, NSA, GCHQ-adjacent programmes.</div></div>
+      <div class="ocard"><div class="oc-industry">Government</div><div class="oc-name">Readiness</div><div class="oc-desc">Asset, personnel, and financial readiness management for military and government agencies. Real-time operational readiness dashboard.</div></div>
+      <div class="ocard"><div class="oc-industry">Government</div><div class="oc-name">FedStart</div><div class="oc-desc">Accelerated government solution delivery — takes agencies from contract award to operational deployment at commercial speed.</div></div>
+      <div class="ocard"><div class="oc-industry">Space</div><div class="oc-name">MetaConstellation</div><div class="oc-desc">Multi-operator satellite tasking, data ingestion, and AI fusion across commercial constellation partners.</div></div>
+      <div class="ocard"><div class="oc-industry">Defence Tech</div><div class="oc-name">Warp Speed</div><div class="oc-desc">Defence acquisition and supply chain acceleration — used during COVID-19 vaccine distribution and subsequent US government programmes.</div></div>
+    </div>
+
+    <h3>Financial Services</h3>
+    <div class="offering-grid">
+      <div class="ocard"><div class="oc-industry">Compliance</div><div class="oc-name">Anti-Money Laundering (AML)</div><div class="oc-desc">Transaction monitoring, suspicious activity detection, and threat intelligence integration to combat financial crime. Replaces legacy rule-based systems with AI-driven detection.</div></div>
+      <div class="ocard"><div class="oc-industry">Customer</div><div class="oc-name">Applied Customer Intelligence</div><div class="oc-desc">Operationalise customer data across banking, wealth, and insurance. AI-driven Next Best Offer, client segmentation, and relationship management.</div></div>
+      <div class="ocard"><div class="oc-industry">Government Finance</div><div class="oc-name">Government Financial Management</div><div class="oc-desc">Secure, collaborative platform for government budget, spend, and financial operations management at national scale.</div></div>
+    </div>
+
+    <h3>Healthcare &amp; Life Sciences</h3>
+    <div class="offering-grid">
+      <div class="ocard"><div class="oc-industry">Hospital Ops</div><div class="oc-name">Hospital Operations</div><div class="oc-desc">Virtual command centre for healthcare delivery — bed management, OR utilisation, staffing, patient flow, and supply chain integrated in real time.</div></div>
+      <div class="ocard"><div class="oc-industry">Federal</div><div class="oc-name">Federal Health</div><div class="oc-desc">Connectivity across the federal health data ecosystem — CDC, HHS, VA, DoD health data unified for population-scale analytics and emergency response.</div></div>
+      <div class="ocard"><div class="oc-industry">Research</div><div class="oc-name">Life Sciences</div><div class="oc-desc">AI-driven transformation across drug discovery, clinical trials, regulatory submissions, and commercial launch. Accelerates time from lab to market.</div></div>
+    </div>
+
+    <h3>Industrial &amp; Manufacturing</h3>
+    <div class="offering-grid">
+      <div class="ocard"><div class="oc-industry">Automotive</div><div class="oc-name">Automotive &amp; Mobility</div><div class="oc-desc">Manufacturing quality, supply chain, and autonomous vehicle development data platform. Used by major OEMs for production optimisation.</div></div>
+      <div class="ocard"><div class="oc-industry">Construction</div><div class="oc-name">Construction AI</div><div class="oc-desc">AI-powered automation for project management, cost control, schedule adherence, and safety monitoring across large construction programmes.</div></div>
+      <div class="ocard"><div class="oc-industry">Semiconductors</div><div class="oc-name">Semiconductor Intelligence</div><div class="oc-desc">Sensitivity analysis, chip yield improvement, and fab optimisation. Palantir works with leading fabs to reduce defect rates and improve throughput.</div></div>
+    </div>
+
+    <h3>Supply Chain &amp; Energy</h3>
+    <div class="offering-grid">
+      <div class="ocard"><div class="oc-industry">Supply Chain</div><div class="oc-name">Supply Chain Command</div><div class="oc-desc">Real-time supply chain visualisation, disruption detection, and AI-driven response planning. Inventory optimisation and supplier risk scoring.</div></div>
+      <div class="ocard"><div class="oc-industry">Procurement</div><div class="oc-name">AI Procurement</div><div class="oc-desc">AI-powered procurement and finance platform — spend analytics, supplier intelligence, contract compliance, and savings identification.</div></div>
+      <div class="ocard"><div class="oc-industry">Rail</div><div class="oc-name">Rail Operations</div><div class="oc-desc">Operational workflows for major rail operators — timetabling, incident management, fleet maintenance, and passenger disruption response.</div></div>
+      <div class="ocard"><div class="oc-industry">Energy</div><div class="oc-name">Energy Intelligence</div><div class="oc-desc">Competitive advantage platform for energy companies — production optimisation, carbon emissions modelling, and regulatory compliance.</div></div>
+      <div class="ocard"><div class="oc-industry">Utilities</div><div class="oc-name">Connected Grid</div><div class="oc-desc">Build the connected grid of the future — integrating IoT sensors, weather forecasting, AI-enabled inspections, and solar production data.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS & SPECIAL PRODUCTS -->
+<div class="section" id="tools">
+  <div class="container">
+    <div class="sh"><div class="sn">Section 07</div><div class="st">Specialist Tools &amp; Emerging Products</div></div>
+    <p>Beyond the four core platforms, Palantir has a growing catalogue of standalone tools, emerging products, and specialist solutions targeting specific buyer profiles.</p>
+
+    <div class="offering-grid">
+      <div class="ocard"><div class="oc-industry">Edge AI</div><div class="oc-name">Edge AI</div><div class="oc-desc">AI inference pushed to the tactical edge — running on ruggedised hardware in vehicles, aircraft, and ships with no connectivity required. AIP models deployed and updated via Apollo without downtime.</div></div>
+      <div class="ocard"><div class="oc-industry">Titanium</div><div class="oc-name">Titanium</div><div class="oc-desc">Palantir's hardened, classified-grade AI deployment layer. Designed for the most sensitive national security environments where no commercial cloud is permitted.</div></div>
+      <div class="ocard"><div class="oc-industry">Startups</div><div class="oc-name">Palantir for Builders</div><div class="oc-desc">AIP platform access for startups and SMBs. Palantir's attempt to enter the developer/startup market and grow their commercial base beyond enterprise clients.</div></div>
+      <div class="ocard"><div class="oc-industry">Secure Sharing</div><div class="oc-name">Secure Collaboration</div><div class="oc-desc">Tools for sharing intelligence and data between organisations with different classification levels and security requirements. Used in coalition military operations.</div></div>
+      <div class="ocard"><div class="oc-industry">Privacy</div><div class="oc-name">Data Protection</div><div class="oc-desc">Privacy-preserving analytics and data governance. Enables analysis of sensitive personal data without exposing individual records — used in healthcare and financial services.</div></div>
+      <div class="ocard"><div class="oc-industry">Crypto</div><div class="oc-name">Cryptocurrency Solutions</div><div class="oc-desc">Platform for crypto companies to manage compliance, transaction monitoring, and operational intelligence. Emerging product targeting regulated crypto exchanges and custodians.</div></div>
+      <div class="ocard"><div class="oc-industry">Insurance</div><div class="oc-name">Insurance Intelligence</div><div class="oc-desc">Claims processing efficiency, fraud detection, underwriting analytics, and operational cost reduction for insurers.</div></div>
+      <div class="ocard"><div class="oc-industry">Retail</div><div class="oc-name">Retail Intelligence</div><div class="oc-desc">Data investment maximisation, demand forecasting, inventory optimisation, and supply chain intelligence for retail and consumer goods companies.</div></div>
+    </div>
+
+    <h3>Full Product Summary</h3>
+    <div class="tw">
+      <table>
+        <thead><tr><th>Product</th><th>Category</th><th>Primary Buyer</th><th>Built On</th></tr></thead>
+        <tbody>
+          <tr><td><strong>AIP</strong></td><td>AI Platform</td><td>Enterprise, DoD</td><td>Foundry + Ontology</td></tr>
+          <tr><td><strong>Foundry</strong></td><td>Data OS</td><td>Commercial Enterprise</td><td>Core Platform</td></tr>
+          <tr><td><strong>Gotham</strong></td><td>Decision OS</td><td>Defence, Intelligence</td><td>Core Platform</td></tr>
+          <tr><td><strong>Apollo</strong></td><td>Deployment OS</td><td>All clients</td><td>Core Infrastructure</td></tr>
+          <tr><td><strong>Maven Smart System</strong></td><td>Military AI</td><td>US DoD</td><td>Gotham + AIP</td></tr>
+          <tr><td><strong>MetaConstellation</strong></td><td>Satellite Ops</td><td>DoD, Intelligence</td><td>Gotham</td></tr>
+          <tr><td><strong>Edge AI</strong></td><td>Tactical AI</td><td>Military, field ops</td><td>AIP + Apollo</td></tr>
+          <tr><td><strong>Titanium</strong></td><td>Classified AI</td><td>Intelligence community</td><td>AIP + Apollo</td></tr>
+          <tr><td><strong>HyperAuto</strong></td><td>Data Pipeline AI</td><td>Enterprise</td><td>Foundry</td></tr>
+          <tr><td><strong>FedStart</strong></td><td>Gov Deployment</td><td>Federal agencies</td><td>Foundry + AIP</td></tr>
+          <tr><td><strong>Warp Speed</strong></td><td>Supply Chain</td><td>DoD, Government</td><td>Foundry</td></tr>
+          <tr><td><strong>For Builders</strong></td><td>SMB/Startup AI</td><td>Startups, developers</td><td>AIP</td></tr>
+          <tr><td><strong>Secure Collaboration</strong></td><td>Classified Sharing</td><td>Military coalitions</td><td>Gotham + Apollo</td></tr>
+          <tr><td><strong>AML</strong></td><td>Financial Crime</td><td>Banks, regulators</td><td>Foundry + AIP</td></tr>
+          <tr><td><strong>Hospital Operations</strong></td><td>Healthcare Ops</td><td>Hospital systems</td><td>Foundry + AIP</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note"><strong>Project MAX Takeaway:</strong> Palantir's power is not in any single product — it's in the platform lock-in. Once a government client runs Gotham + AIP + Apollo together, switching cost is enormous. Every system, every analyst workflow, every AI model is embedded. Project MAX must replicate this same deep integration model — not just match the features, but own the operational dependency.</div>
+  </div>
+</div>
+
+<footer>
+  <strong>PROJECT MAX — Palantir Service Offerings Analysis</strong><br>
+  Data sourced from palantir.com, April 2026. For strategic planning purposes only.
+</footer>
+
+<!-- BURGER MENU -->
+<button class="burger-btn" id="burgerBtn" onclick="toggleBurger()" aria-label="Reports menu">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="KLEOS_ANALYSIS.html"><span>📡</span> Kleos Space — Analysis</a>
+  <a href="PALANTIR_OFFERINGS.html" class="active-report"><span>🔍</span> Palantir Service Offerings</a>
+  <div class="bm-divider"></div>
+  <div class="bml">Sections</div>
+  <a href="#platforms"><span>⚙️</span> Core Platforms</a>
+  <a href="#aip"><span>🤖</span> AIP</a>
+  <a href="#foundry"><span>🏗️</span> Foundry</a>
+  <a href="#gotham"><span>🛡️</span> Gotham</a>
+  <a href="#apollo"><span>🚀</span> Apollo</a>
+  <a href="#industries"><span>🌐</span> Industries</a>
+  <a href="#tools"><span>🔧</span> Tools</a>
+</div>
+<script>
+  function toggleBurger() {
+    document.getElementById('burgerBtn').classList.toggle('open');
+    document.getElementById('burgerMenu').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    var btn = document.getElementById('burgerBtn');
+    var menu = document.getElementById('burgerMenu');
+    if (!btn.contains(e.target) && !menu.contains(e.target)) {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+    }
+  });
+</script>
+
+</body>
+</html>
