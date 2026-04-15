@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ukraine Defence AI — What Can Be Built Now</title>
+<style>
+  :root {
+    --accent: #1d4ed8;
+    --accent2: #1e40af;
+    --gold: #ca8a04;
+    --gold2: #fbbf24;
+    --bg: #ffffff;
+    --bg2: #f0f4ff;
+    --bg3: #e0e8ff;
+    --border: #bfdbfe;
+    --text: #0a0f2e;
+    --muted: #3b4f7a;
+    --green: #16a34a;
+    --red: #dc2626;
+    --orange: #ea580c;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; line-height:1.65; }
+
+  nav {
+    position:sticky; top:0; z-index:100;
+    background:rgba(255,255,255,0.97); border-bottom:1px solid var(--border);
+    display:flex; align-items:center; padding:0 24px; height:52px;
+    backdrop-filter:blur(10px);
+  }
+  .nav-brand { font-size:13px; font-weight:800; color:var(--accent2); letter-spacing:0.08em; text-transform:uppercase; }
+  .nav-links { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin-left:20px; padding-left:20px; border-left:1px solid var(--border); }
+  .nav-links::-webkit-scrollbar { display:none; }
+  .nav-links a { color:var(--muted); text-decoration:none; font-size:12px; padding:5px 10px; border-radius:6px; white-space:nowrap; transition:all 0.2s; }
+  .nav-links a:hover { color:var(--accent2); background:rgba(29,78,216,0.08); }
+
+  /* HERO — Ukrainian flag colours */
+  .hero {
+    background: linear-gradient(180deg, #1d4ed8 0%, #1d4ed8 48%, #ca8a04 48%, #fbbf24 100%);
+    padding: 72px 24px 56px; text-align:center; position:relative; overflow:hidden;
+  }
+  .hero::before {
+    content:''; position:absolute; inset:0;
+    background:rgba(0,0,0,0.55);
+  }
+  .hero-badge {
+    display:inline-block; position:relative;
+    background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.4);
+    color:#fff; font-size:11px; font-weight:700;
+    letter-spacing:0.12em; text-transform:uppercase;
+    padding:5px 16px; border-radius:20px; margin-bottom:20px;
+  }
+  .hero h1 { font-size:clamp(24px,4.5vw,50px); font-weight:900; letter-spacing:-0.02em; margin-bottom:14px; position:relative; color:#fff; }
+  .hero h1 span { color:var(--gold2); }
+  .hero p { color:rgba(255,255,255,0.8); font-size:15px; max-width:620px; margin:0 auto 32px; position:relative; }
+  .hero-stats { display:flex; justify-content:center; gap:32px; flex-wrap:wrap; position:relative; }
+  .hero-stat .val { font-size:clamp(20px,3vw,32px); font-weight:900; color:var(--gold2); display:block; }
+  .hero-stat .lbl { font-size:11px; color:rgba(255,255,255,0.7); text-transform:uppercase; letter-spacing:0.08em; }
+
+  section { max-width:1040px; margin:0 auto; padding:56px 24px; }
+  hr.divider { border:none; border-top:1px solid var(--border); }
+  .section-label {
+    display:inline-block;
+    background:rgba(29,78,216,0.07); border:1px solid rgba(29,78,216,0.3);
+    color:var(--accent2); font-size:11px; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase;
+    padding:4px 12px; border-radius:4px; margin-bottom:14px;
+  }
+  section h2 { font-size:clamp(18px,2.5vw,30px); font-weight:800; margin-bottom:6px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:32px; }
+
+  /* PRIORITY TABLE */
+  .priority-grid { display:flex; flex-direction:column; gap:0; margin-bottom:40px; }
+  .priority-item {
+    display:grid; grid-template-columns:56px 1fr auto;
+    align-items:center; gap:20px;
+    padding:20px 24px; border:1px solid var(--border);
+    border-top:none; background:#fff;
+    transition:background 0.15s;
+  }
+  .priority-item:first-child { border-top:1px solid var(--border); border-radius:12px 12px 0 0; }
+  .priority-item:last-child { border-radius:0 0 12px 12px; }
+  .priority-item:hover { background:var(--bg2); }
+  .p-num {
+    width:44px; height:44px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; font-weight:900; flex-shrink:0;
+  }
+  .p-num.p1 { background:#fee2e2; color:#991b1b; border:2px solid #fca5a5; }
+  .p-num.p2 { background:#fef3c7; color:#92400e; border:2px solid #fde68a; }
+  .p-num.p3 { background:#dbeafe; color:#1e40af; border:2px solid #93c5fd; }
+  .p-num.p4 { background:#d1fae5; color:#065f46; border:2px solid #6ee7b7; }
+  .p-num.p5 { background:#ede9fe; color:#5b21b6; border:2px solid #c4b5fd; }
+  .p-num.p6 { background:#fce7f3; color:#9d174d; border:2px solid #f9a8d4; }
+  .p-body h4 { font-size:15px; font-weight:800; margin-bottom:4px; }
+  .p-body p { font-size:13px; color:var(--muted); }
+  .p-meta { text-align:right; flex-shrink:0; }
+  .p-meta .pt { font-size:12px; font-weight:700; color:var(--accent2); white-space:nowrap; }
+  .p-meta .pi { font-size:11px; color:var(--muted); white-space:nowrap; margin-top:3px; }
+
+  /* PRODUCT CARDS */
+  .product { background:#fff; border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:40px; }
+  .product-header {
+    padding:24px 28px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .ph-left h3 { font-size:clamp(17px,2vw,22px); font-weight:900; margin-bottom:6px; }
+  .ph-left p { font-size:13px; color:var(--muted); max-width:580px; }
+  .product-body { padding:24px 28px; }
+
+  .tag { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:5px 12px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
+  .tag-red    { background:rgba(220,38,38,0.1);  color:#b91c1c; border:1px solid #fecaca; }
+  .tag-blue   { background:rgba(29,78,216,0.1);  color:#1e40af; border:1px solid #bfdbfe; }
+  .tag-green  { background:rgba(22,163,74,0.1);  color:#166534; border:1px solid #bbf7d0; }
+  .tag-gold   { background:rgba(202,138,4,0.1);  color:#92400e; border:1px solid #fde68a; }
+  .tag-purple { background:rgba(124,58,237,0.1); color:#5b21b6; border:1px solid #ddd6fe; }
+
+  /* MINI GRID */
+  .mini-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin-bottom:20px; }
+  .mini-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:16px 18px; }
+  .mini-card h5 { font-size:13px; font-weight:700; color:var(--accent2); margin-bottom:8px; }
+  .mini-card ul { list-style:none; display:flex; flex-direction:column; gap:6px; }
+  .mini-card ul li { font-size:13px; color:var(--muted); display:flex; gap:7px; align-items:flex-start; }
+  .mini-card ul li::before { content:'›'; color:var(--accent); font-weight:700; flex-shrink:0; margin-top:1px; }
+
+  /* METRICS */
+  .metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin-bottom:16px; }
+  .metric { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; text-align:center; }
+  .metric .mv { font-size:clamp(14px,2vw,20px); font-weight:900; color:var(--accent2); }
+  .metric .ml { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-top:3px; }
+
+  /* HOW IT WORKS FLOW */
+  .flow { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; align-items:center; }
+  .fi { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:7px 13px; font-size:13px; font-weight:600; color:var(--accent2); }
+  .fa { color:var(--accent); font-size:18px; font-weight:700; }
+  .fi-result { background:#dbeafe; border:2px solid var(--accent); border-radius:8px; padding:7px 13px; font-size:13px; font-weight:700; color:var(--accent2); }
+
+  /* BEFORE / AFTER */
+  .ba-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+  .ba-card { border-radius:10px; padding:18px 20px; }
+  .ba-before { background:#fff5f5; border:1px solid #fecaca; }
+  .ba-after  { background:#f0fdf4; border:1px solid #bbf7d0; }
+  .ba-card h5 { font-size:13px; font-weight:700; margin-bottom:10px; }
+  .ba-before h5 { color:#991b1b; }
+  .ba-after  h5 { color:#166534; }
+  .ba-card ul { list-style:none; display:flex; flex-direction:column; gap:7px; }
+  .ba-card ul li { font-size:13px; display:flex; gap:8px; }
+  .ba-before ul li { color:#7f1d1d; }
+  .ba-after  ul li { color:#14532d; }
+  .ba-card ul li::before { font-weight:700; flex-shrink:0; }
+  .ba-before ul li::before { content:'✗'; color:#dc2626; }
+  .ba-after  ul li::before { content:'✓'; color:#16a34a; }
+
+  /* NOTES */
+  .note-blue   { background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:16px 20px; margin-bottom:20px; font-size:14px; color:#1e3a5f; }
+  .note-green  { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:16px 20px; margin-bottom:20px; font-size:14px; color:#14532d; }
+  .note-orange { background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:16px 20px; margin-bottom:20px; font-size:14px; color:#7c2d12; }
+  .note-red    { background:#fff1f2; border:1px solid #fecdd3; border-radius:10px; padding:16px 20px; margin-bottom:20px; font-size:14px; color:#881337; }
+  .highlight { background:var(--bg2); border-left:4px solid var(--accent); border-radius:0 10px 10px 0; padding:18px 20px; margin-bottom:24px; font-size:14px; color:var(--muted); }
+  .highlight strong { color:var(--text); }
+
+  /* TECH STACK REVEAL */
+  .tech-stack { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .ts-row { display:flex; align-items:center; gap:14px; background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:12px 16px; }
+  .ts-label { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; min-width:100px; flex-shrink:0; }
+  .ts-value { font-size:13px; font-weight:600; color:var(--text); }
+  .ts-note { font-size:12px; color:var(--muted); margin-left:auto; flex-shrink:0; }
+
+  /* FINAL */
+  .final-box {
+    background:linear-gradient(180deg, #1d4ed8 0%, #1d4ed8 48%, #ca8a04 48%, #ca8a04 100%);
+    border-radius:16px; padding:2px; margin-top:8px;
+  }
+  .final-box-inner { background:#fff; border-radius:14px; padding:40px 32px; text-align:center; }
+  .final-box-inner h3 { font-size:clamp(18px,2.5vw,26px); font-weight:900; margin-bottom:12px; }
+  .final-box-inner p { color:var(--muted); max-width:640px; margin:0 auto 28px; font-size:14px; }
+  .fb-stats { display:flex; justify-content:center; gap:40px; flex-wrap:wrap; }
+  .fb-stat .fv { font-size:clamp(18px,2.5vw,26px); font-weight:900; color:var(--accent2); }
+  .fb-stat .fl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:4px; }
+
+  /* BURGER */
+  .bm-btn {
+    position:fixed; bottom:24px; right:24px; z-index:999;
+    width:50px; height:50px; border-radius:50%;
+    background:var(--accent); border:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:5px;
+    box-shadow:0 4px 16px rgba(29,78,216,0.4); transition:transform 0.2s;
+  }
+  .bm-btn:hover { transform:scale(1.08); }
+  .bm-btn span { display:block; width:18px; height:2px; background:#fff; border-radius:2px; transition:all 0.3s; }
+  .bm-btn.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+  .bm-btn.open span:nth-child(2) { opacity:0; }
+  .bm-btn.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+  .burger-menu {
+    position:fixed; bottom:82px; right:24px; z-index:998;
+    background:#fff; border:1px solid var(--border);
+    border-radius:14px; padding:14px; width:250px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.12);
+    display:none; flex-direction:column; gap:4px;
+  }
+  .burger-menu.open { display:flex; }
+  .burger-menu a { color:var(--text); text-decoration:none; font-size:13px; font-weight:500; padding:9px 12px; border-radius:8px; display:flex; align-items:center; gap:10px; transition:all 0.15s; }
+  .burger-menu a:hover { background:rgba(29,78,216,0.07); color:var(--accent2); }
+  .burger-menu a.active-report { background:rgba(29,78,216,0.07); color:var(--accent2); }
+  .bml { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.12em; padding:4px 12px 2px; }
+
+  @media (max-width:768px) {
+    .hero { padding:52px 16px 40px; }
+    section { padding:44px 16px; }
+    .product-header { padding:20px; }
+    .product-body { padding:20px; }
+    .ba-grid { grid-template-columns:1fr; }
+    .priority-item { grid-template-columns:44px 1fr; }
+    .p-meta { display:none; }
+    .final-box-inner { padding:28px 20px; }
+  }
+  @media (max-width:480px) {
+    .hero-stats { gap:20px; }
+    .flow { gap:6px; }
+    .fa { display:none; }
+    .ts-note { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">🇺🇦 Ukraine Defence AI</div>
+  <div class="nav-links">
+    <a href="#priorities">Priorities</a>
+    <a href="#picture">Unified Picture</a>
+    <a href="#drone">Drone AI</a>
+    <a href="#ammo">Ammo AI</a>
+    <a href="#predict">Attack Prediction</a>
+    <a href="#ew">EW Detection</a>
+    <a href="#intel">Captured Intel</a>
+    <a href="#build">Build Plan</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Sovereign Defence AI Brief</div>
+  <h1>What Ukraine Needs<br>But Doesn't Have <span>Yet</span></h1>
+  <p>Six specific AI tools Ukraine can't buy from Palantir, can't build alone, and doesn't currently have — each buildable in weeks, each a genuine force multiplier.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="val">6</span><span class="lbl">Critical gaps identified</span></div>
+    <div class="hero-stat"><span class="val">3–10 weeks</span><span class="lbl">Build time per tool</span></div>
+    <div class="hero-stat"><span class="val">$19M–$51M</span><span class="lbl">Total package cost</span></div>
+    <div class="hero-stat"><span class="val">0 satellites</span><span class="lbl">Required</span></div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECTION 01 — PRIORITY ORDER -->
+<section id="priorities">
+  <div class="section-label">Section 01</div>
+  <h2>Priority Order — Impact vs. Build Time</h2>
+  <p class="sub">Ranked by lives saved per week of deployment. Start with #1, ship it, then build the rest in parallel.</p>
+
+  <div class="priority-grid">
+    <div class="priority-item">
+      <div class="p-num p1">1</div>
+      <div class="p-body">
+        <h4>🗺️ Unified Frontline Picture</h4>
+        <p>Every unit, every fire, every enemy sighting — one shared live map. The single biggest gap. Solves friendly fire, coordination failure, and information blindness simultaneously.</p>
+      </div>
+      <div class="p-meta"><div class="pt">4–6 weeks</div><div class="pi">$3M–$8M</div></div>
+    </div>
+    <div class="priority-item">
+      <div class="p-num p2">2</div>
+      <div class="p-body">
+        <h4>📦 Predictive Ammo & Resupply AI</h4>
+        <p>Units running out of ammunition mid-battle because resupply is reactive. AI predicts depletion before it happens and auto-generates resupply orders. Currently done on spreadsheets.</p>
+      </div>
+      <div class="p-meta"><div class="pt">3–4 weeks</div><div class="pi">$2M–$5M</div></div>
+    </div>
+    <div class="priority-item">
+      <div class="p-num p3">3</div>
+      <div class="p-body">
+        <h4>🚁 Drone Video Auto-Detection AI</h4>
+        <p>Operators manually watch footage and call targets by voice. AI that identifies and classifies Russian equipment in real time — operator confirms. Saves critical seconds per engagement.</p>
+      </div>
+      <div class="p-meta"><div class="pt">6–8 weeks</div><div class="pi">$5M–$12M</div></div>
+    </div>
+    <div class="priority-item">
+      <div class="p-num p4">4</div>
+      <div class="p-body">
+        <h4>🔮 Russian Attack Prediction Model</h4>
+        <p>Russia follows patterns before every attack — artillery surges, EW activation, supply convoy movements. AI trained on 3 years of Ukraine conflict data that predicts attacks 24–72 hours ahead.</p>
+      </div>
+      <div class="p-meta"><div class="pt">6–10 weeks</div><div class="pi">$3M–$8M</div></div>
+    </div>
+    <div class="priority-item">
+      <div class="p-num p5">5</div>
+      <div class="p-body">
+        <h4>📡 Electronic Warfare / GPS Jam AI</h4>
+        <p>Russia jams GPS constantly over the front. Drones crash, artillery GPS rounds go dumb. AI that detects jamming in real time, maps the zone, and reroutes automatically.</p>
+      </div>
+      <div class="p-meta"><div class="pt">8–12 weeks</div><div class="pi">$4M–$10M</div></div>
+    </div>
+    <div class="priority-item">
+      <div class="p-num p6">6</div>
+      <div class="p-body">
+        <h4>🔎 Captured Intelligence Fusion</h4>
+        <p>When Russian soldiers are captured or equipment seized, intelligence is processed slowly and manually. AI that cross-references captured data against intercepts, builds unit maps, finds patterns in hours not weeks.</p>
+      </div>
+      <div class="p-meta"><div class="pt">4–5 weeks</div><div class="pi">$2M–$8M</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PRODUCT 1 — UNIFIED PICTURE -->
+<section id="picture">
+  <div class="section-label">Priority 1 — Highest Impact</div>
+  <h2>🗺️ Unified Frontline Picture</h2>
+  <p class="sub">The single most valuable thing you can build. Every other product plugs into this. It is literally what Palantir was invented to do.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>One Map. Every Unit. Live.</h3>
+        <p>Right now a Ukrainian company commander has one app. Artillery has a different system. Intelligence has a third. Drone operators have a fourth. None of them talk to each other. Friendly fire happens. Artillery fires into positions friendlies just moved into. Reinforcements go to the wrong grid. This fixes all of it.</p>
+      </div>
+      <div class="tag tag-red">🔴 Critical Gap — Build First</div>
+    </div>
+    <div class="product-body">
+
+      <div class="ba-grid">
+        <div class="ba-card ba-before">
+          <h5>Ukraine Today — Without This</h5>
+          <ul>
+            <li>Company commander uses one app, artillery uses another — they never sync</li>
+            <li>Enemy position reported by phone call, written on paper map</li>
+            <li>Drone operator spots a tank, calls it in by radio, delays 3–10 minutes</li>
+            <li>Friendly positions unknown to adjacent units — friendly fire risk</li>
+            <li>No shared picture above company level — battalion commanders are blind</li>
+            <li>Resupply trucks get lost because nobody shared current route safety</li>
+          </ul>
+        </div>
+        <div class="ba-card ba-after">
+          <h5>Ukraine With This System</h5>
+          <ul>
+            <li>Every unit's position auto-reported via GPS tracker on vehicles + phones</li>
+            <li>Enemy sighting entered once — visible to every unit in the theatre instantly</li>
+            <li>Drone detection appears on the map in under 5 seconds</li>
+            <li>Artillery fire requests auto-deconflicted against friendly positions</li>
+            <li>Battalion commander sees every company in real time on one screen</li>
+            <li>Resupply routing shows live threats along every possible road</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="fi">📍 GPS Unit Trackers</div><div class="fa">+</div>
+        <div class="fi">🚁 Drone Detections</div><div class="fa">+</div>
+        <div class="fi">📡 SIGINT Alerts</div><div class="fa">+</div>
+        <div class="fi">👤 Soldier Reports (App)</div><div class="fa">+</div>
+        <div class="fi">🎯 Artillery Fire Requests</div><div class="fa">+</div>
+        <div class="fi">🚛 Logistics Positions</div>
+        <div class="fa">→</div>
+        <div class="fi-result">🗺️ One Live Map — Every Level</div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>What Gets Displayed</h5>
+          <ul>
+            <li>All friendly unit positions — updated every 30 seconds</li>
+            <li>All confirmed enemy contacts — timestamped, confidence-scored</li>
+            <li>Active fire missions — deconfliction zones shown automatically</li>
+            <li>Logistics routes — green/amber/red based on threat level</li>
+            <li>Drone coverage areas — who can see what right now</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>AI Layer on Top</h5>
+          <ul>
+            <li>Auto-deconfliction: blocks artillery request if friendlies in danger zone</li>
+            <li>Anomaly alert: unit hasn't reported in 20 min — flag for command</li>
+            <li>Pattern detection: enemy positions forming a line = likely assault</li>
+            <li>Route AI: calculates safest resupply route in real time</li>
+            <li>Prediction overlay: where contact is most likely in next 2 hours</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>How Soldiers Use It</h5>
+          <ul>
+            <li>Rugged tablet or phone app — works offline, syncs when connected</li>
+            <li>One button to report enemy contact — fills in their location automatically</li>
+            <li>Voice input — soldier speaks, AI transcribes and places on map</li>
+            <li>Works in GPS-jammed environments via dead reckoning fallback</li>
+            <li>No internet required — peer-to-peer mesh network between units</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Tech Stack</h5>
+          <ul>
+            <li>Map: Mapbox GL offline tiles + custom military symbology (NATO APP-6)</li>
+            <li>Backend: PostGIS spatial database + WebSocket real-time push</li>
+            <li>Mobile: React Native app — Android (rugged Kyocera/Samsung)</li>
+            <li>Sync: Peer mesh via LoRa radio when no internet available</li>
+            <li>AI: Python microservices for deconfliction + pattern detection</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="mv">$3M–$8M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">4–6 weeks</div><div class="ml">To First Deploy</div></div>
+        <div class="metric"><div class="mv">All units</div><div class="ml">Every level plugs in</div></div>
+        <div class="metric"><div class="mv">~0ms</div><div class="ml">Contact-to-map delay</div></div>
+      </div>
+      <div class="note-blue"><strong>Why this is #1:</strong> Every other product on this list feeds data INTO this map. Build the map first, and every subsequent product becomes an additional layer on top rather than a separate system. This is the foundation of the entire sovereign stack.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PRODUCT 2 — DRONE AI -->
+<section id="drone">
+  <div class="section-label">Priority 3 — Tactical Edge</div>
+  <h2>🚁 Drone Video Auto-Detection AI</h2>
+  <p class="sub">Ukraine has thousands of drone operators. Every one of them manually watches footage and calls out targets by voice. AI changes this entirely.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>Eyes That Never Tire — AI on Every Feed</h3>
+        <p>A single drone operator currently watches one feed. With AI, one operator supervises 10–20 drones simultaneously. The AI watches every pixel of every feed, flags targets instantly, the human confirms and acts. The engagement cycle drops from minutes to seconds.</p>
+      </div>
+      <div class="tag tag-blue">Drone feeds only — no satellite</div>
+    </div>
+    <div class="product-body">
+
+      <div class="ba-grid">
+        <div class="ba-card ba-before">
+          <h5>Without Drone AI</h5>
+          <ul>
+            <li>Operator stares at screen, manually spots target</li>
+            <li>Calls target by voice — delay, miscommunication risk</li>
+            <li>Can only effectively watch 1 feed at a time</li>
+            <li>Night / thermal footage is hard to read — many misses</li>
+            <li>Target ID requires experienced operator — hard to train at scale</li>
+          </ul>
+        </div>
+        <div class="ba-card ba-after">
+          <h5>With Drone AI</h5>
+          <ul>
+            <li>AI watches all feeds simultaneously — flags the moment a target appears</li>
+            <li>Target auto-tagged with type, confidence, GPS coordinates</li>
+            <li>One operator handles 10–20 drones — 10x force multiplication</li>
+            <li>Night / thermal / degraded video handled equally well</li>
+            <li>Junior operators as effective as veterans — AI carries the expertise</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>What It Detects</h5>
+          <ul>
+            <li>Tanks — classified by type (T-72, T-80, T-90, T-14)</li>
+            <li>APCs, IFVs, wheeled vehicles — type and direction of travel</li>
+            <li>Artillery systems — Grad, Msta, howitzers, mortars</li>
+            <li>Personnel — count, formation type (patrol vs assault)</li>
+            <li>Air defence systems — SA-series, Buk, Pantsir — high priority flag</li>
+            <li>Supply depots, ammo storage — thermal signature detection</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>How It Works</h5>
+          <ul>
+            <li>Fine-tuned YOLO v10 or RT-DETR on Russian military imagery</li>
+            <li>Training data: 3 years of Ukraine conflict drone footage — richest dataset on Earth</li>
+            <li>Runs on-device (edge GPU on ground station) — no cloud needed</li>
+            <li>Detection appears on the Unified Frontline Map automatically</li>
+            <li>Confidence score shown — operator sees "T-72, 94% confident, grid 4782"</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>FPV Kamikaze Integration</h5>
+          <ul>
+            <li>For FPV attack drones: AI guides final approach to target centre</li>
+            <li>Operator steers to target area — AI takes terminal guidance</li>
+            <li>Works in GPS-jammed environments (uses visual guidance not GPS)</li>
+            <li>Reduces operator workload during high-stress terminal phase</li>
+            <li>Human always in the loop — AI assists, doesn't decide</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Unique Ukraine Advantage</h5>
+          <ul>
+            <li>Ukraine has the world's largest labelled military drone video dataset</li>
+            <li>3 years of real combat footage — no other country has this</li>
+            <li>Models trained on this data are uniquely accurate for this threat environment</li>
+            <li>Each new mission generates more training data — system gets smarter daily</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="mv">$5M–$12M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">6–8 weeks</div><div class="ml">To First Deploy</div></div>
+        <div class="metric"><div class="mv">10–20x</div><div class="ml">Operator Leverage</div></div>
+        <div class="metric"><div class="mv">&lt;1 sec</div><div class="ml">Detection Latency</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PRODUCT 3 — AMMO AI -->
+<section id="ammo">
+  <div class="section-label">Priority 2 — Saves Lives Weekly</div>
+  <h2>📦 Predictive Ammo & Resupply AI</h2>
+  <p class="sub">Units run out of ammunition mid-battle. Not because there isn't enough ammo — because nobody knew it was running out until it was gone. This is a pure data problem.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>Never Run Dry — Logistics That Sees the Future</h3>
+        <p>Every unit reports its ammo consumption. AI tracks consumption rate, calculates time-to-zero, and automatically generates resupply orders before the unit hits critical levels. Works for ammunition, fuel, food, medical supplies, spare parts — anything consumable.</p>
+      </div>
+      <div class="tag tag-green">Pure data — no hardware needed</div>
+    </div>
+    <div class="product-body">
+
+      <div class="flow">
+        <div class="fi">📊 Unit Consumption Reports</div><div class="fa">+</div>
+        <div class="fi">🚛 Current Stock Levels</div><div class="fa">+</div>
+        <div class="fi">⚔️ Combat Intensity Data</div><div class="fa">+</div>
+        <div class="fi">🗺️ Route Safety (from map)</div>
+        <div class="fa">→</div>
+        <div class="fi-result">⏰ Resupply Before It's Needed</div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>What It Predicts</h5>
+          <ul>
+            <li>Time-to-zero for every consumable at every unit</li>
+            <li>Adjusts prediction based on current combat intensity</li>
+            <li>Accounts for resupply travel time — orders early enough for the truck to arrive</li>
+            <li>Prioritises: critical ammo types vs. nice-to-have</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>What It Automates</h5>
+          <ul>
+            <li>Generates resupply request automatically — commander approves or overrides</li>
+            <li>Optimises delivery routing — groups nearby units into one truck run</li>
+            <li>Flags when strategic reserves are being drawn down too fast</li>
+            <li>Gives national-level commanders a true picture of overall readiness</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Medical Supply Module</h5>
+          <ul>
+            <li>Tracks blood type stocks at every field hospital</li>
+            <li>Predicts casualty rates from combat intensity — pre-positions supplies</li>
+            <li>MEDEVAC routing: nearest facility with correct blood type and capacity</li>
+            <li>Surgical team scheduling against predicted casualty load</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="mv">$2M–$5M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">3–4 weeks</div><div class="ml">To Deploy</div></div>
+        <div class="metric"><div class="mv">Fastest ROI</div><div class="ml">of all 6 tools</div></div>
+        <div class="metric"><div class="mv">All supplies</div><div class="ml">Ammo · Fuel · Medical</div></div>
+      </div>
+      <div class="note-green"><strong>Quickest win:</strong> This is the fastest to build, easiest to demonstrate value, and most universally applicable. Every military unit in the world has this problem. A working demo on Ukrainian logistics data takes 2–3 weeks and immediately shows lives saved.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PRODUCT 4 — ATTACK PREDICTION -->
+<section id="predict">
+  <div class="section-label">Priority 4 — Strategic Edge</div>
+  <h2>🔮 Russian Attack Prediction Model</h2>
+  <p class="sub">Russia follows observable patterns before every major attack. They've been doing it for 3 years. That data exists. Nobody has trained an AI on it yet.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>24–72 Hour Warning Before Every Russian Assault</h3>
+        <p>Before every Russian attack: artillery surges on specific patterns, electronic warfare activates at certain nodes, supply convoys move to forward depots, communications traffic increases, drone reconnaissance intensifies. Each signal alone means little. Together they predict an attack with 70–85% accuracy — days before it happens.</p>
+      </div>
+      <div class="tag tag-purple">3 years of conflict data — unique dataset</div>
+    </div>
+    <div class="product-body">
+
+      <div class="flow">
+        <div class="fi">💥 Artillery Fire Patterns</div><div class="fa">+</div>
+        <div class="fi">📡 EW Activation Events</div><div class="fa">+</div>
+        <div class="fi">🚛 Supply Convoy Movements</div><div class="fa">+</div>
+        <div class="fi">📻 Radio Traffic Volume</div><div class="fa">+</div>
+        <div class="fi">🚁 Russian Drone Activity</div>
+        <div class="fa">→</div>
+        <div class="fi-result">🔮 Attack Probability Map — 72hr ahead</div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>Pre-Attack Signals Identified</h5>
+          <ul>
+            <li>Artillery: shift from harassing fire to systematic suppression 36–72hr before assault</li>
+            <li>EW: GPS jamming intensifies in the specific attack corridor 12–24hr before</li>
+            <li>Logistics: fuel and ammo convoys to specific nodes 48–96hr before</li>
+            <li>Drone recon: intensive ISR over target area 24–48hr before</li>
+            <li>Radio: command net traffic spike indicating orders being issued</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Model Output</h5>
+          <ul>
+            <li>Heatmap overlay on the Unified Frontline Map</li>
+            <li>Per-grid probability: "74% chance of assault in this 5km grid in next 48 hours"</li>
+            <li>Confidence interval and which signals are driving the prediction</li>
+            <li>Commander can request explanation: "Why is this sector flagged?"</li>
+            <li>Track record shown: model's hit rate and false positive rate</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Why Ukraine's Data Is Unique</h5>
+          <ul>
+            <li>3+ years of documented Russian attack patterns — no other dataset exists</li>
+            <li>Thousands of events: assaults, feints, diversionary attacks — all labelled</li>
+            <li>Includes failed attacks — what patterns didn't lead to assault</li>
+            <li>Continuous learning: every new event refines the model in real time</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="mv">$3M–$8M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">6–10 weeks</div><div class="ml">To First Model</div></div>
+        <div class="metric"><div class="mv">72 hours</div><div class="ml">Warning Window</div></div>
+        <div class="metric"><div class="mv">70–85%</div><div class="ml">Target Accuracy</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PRODUCT 5 — EW DETECTION -->
+<section id="ew">
+  <div class="section-label">Priority 5 — Force Multiplier</div>
+  <h2>📡 Electronic Warfare & GPS Jam Detection AI</h2>
+  <p class="sub">Russia's EW is Ukraine's #1 drone killer. Not bullets — jamming. An AI that maps, tracks, and routes around jamming zones in real time turns Russia's biggest advantage into a manageable problem.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>See the Invisible — Map Every Jamming Zone Live</h3>
+        <p>Russian EW systems emit characteristic radio frequency signatures. Ground sensors detect these passively. AI correlates sensor readings across the network to locate the jammer, predict its coverage zone, and automatically route drones and GPS-guided munitions around it — before they fly into the dead zone.</p>
+      </div>
+      <div class="tag tag-gold">RF sensor network — no satellites</div>
+    </div>
+    <div class="product-body">
+
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>Detection Network</h5>
+          <ul>
+            <li>Passive RF receivers — cheap SDR (Software Defined Radio) devices, $200 each</li>
+            <li>Deployed at multiple points along the front — 10–20 sensors covers a 100km sector</li>
+            <li>TDOA (Time Difference of Arrival) geolocation — triangulates jammer position</li>
+            <li>Identifies jammer type from RF fingerprint — known Russian EW systems catalogued</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>AI Analysis Layer</h5>
+          <ul>
+            <li>Continuously maps active jamming zones as they switch on/off/move</li>
+            <li>Predicts effective jamming radius based on system type and terrain</li>
+            <li>Overlays on Unified Frontline Map — pilots see the no-go zones</li>
+            <li>Alerts when a new EW system activates — often pre-attack indicator</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Automatic Rerouting</h5>
+          <ul>
+            <li>Drone flight planning: calculates GPS-safe corridors automatically</li>
+            <li>Artillery GPS fuze: switches to inertial guidance before entering jammed zone</li>
+            <li>Comms: automatically shifts radio frequencies away from jammed bands</li>
+            <li>Alerts operator before drone enters jamming zone — not after it crashes</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="mv">$4M–$10M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">8–12 weeks</div><div class="ml">To Deploy</div></div>
+        <div class="metric"><div class="mv">~$200</div><div class="ml">Cost per RF sensor</div></div>
+        <div class="metric"><div class="mv">Real-time</div><div class="ml">Jam zone updates</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PRODUCT 6 — CAPTURED INTEL -->
+<section id="intel">
+  <div class="section-label">Priority 6 — Intelligence Edge</div>
+  <h2>🔎 Captured Intelligence Fusion AI</h2>
+  <p class="sub">Every captured Russian soldier, seized phone, and captured document contains intelligence. Currently processed slowly by hand. AI that processes, cross-references, and acts on it in hours instead of weeks.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>Turn Every Capture Into an Intelligence Cascade</h3>
+        <p>A captured soldier knows his unit, his commanders, his positions, his orders. A seized phone contains contacts, messages, locations. A captured document reveals logistics, plans, call signs. AI that instantly cross-references all of this against every other piece of known intelligence — and finds what was previously invisible.</p>
+      </div>
+      <div class="tag tag-blue">Pure data fusion — Palantir's core capability</div>
+    </div>
+    <div class="product-body">
+
+      <div class="flow">
+        <div class="fi">📱 Seized Phone Data</div><div class="fa">+</div>
+        <div class="fi">📋 Documents / Orders</div><div class="fa">+</div>
+        <div class="fi">👤 POW Interview Notes</div><div class="fa">+</div>
+        <div class="fi">📡 Known SIGINT Database</div><div class="fa">+</div>
+        <div class="fi">🗺️ Known Unit Positions</div>
+        <div class="fa">→</div>
+        <div class="fi-result">🔗 Full Unit Intelligence Picture</div>
+      </div>
+
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>Phone Data Extraction</h5>
+          <ul>
+            <li>Extracts contacts, messages, photos, location history automatically</li>
+            <li>Cross-references phone numbers against known Russian military numbers database</li>
+            <li>Location history shows where the soldier's unit has been operating</li>
+            <li>Photos often contain unit insignia, equipment, other soldiers — all extracted</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Entity Resolution</h5>
+          <ul>
+            <li>Links the captured soldier's name to radio intercepts where their name appeared</li>
+            <li>Connects their unit to known positions on the frontline map</li>
+            <li>Identifies their commanders — who else is in that chain of command</li>
+            <li>Builds a picture of the entire unit from a single capture event</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Actionable Output</h5>
+          <ul>
+            <li>"This soldier is from 64th Motor Rifle Brigade, currently in this grid"</li>
+            <li>"His phone contacted this number — which matches a known FSB handler"</li>
+            <li>"3 other members of his unit were captured last month — here's what they said"</li>
+            <li>All findings automatically pushed to relevant commander screens</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="mv">$2M–$8M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">4–5 weeks</div><div class="ml">To Deploy</div></div>
+        <div class="metric"><div class="mv">Hours</div><div class="ml">Processing vs weeks today</div></div>
+        <div class="metric"><div class="mv">100%</div><div class="ml">Cross-referenced automatically</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- BUILD PLAN -->
+<section id="build">
+  <div class="section-label">Section 08</div>
+  <h2>Build Plan — All Six in Parallel</h2>
+  <p class="sub">With AI-assisted development and a focused team, all six tools can be built simultaneously. Ship the Unified Picture first — everything else plugs into it.</p>
+
+  <div class="tbl-wrap" style="overflow-x:auto; border-radius:10px; border:1px solid var(--border); margin-bottom:28px;">
+    <table style="width:100%; border-collapse:collapse; min-width:560px;">
+      <thead>
+        <tr>
+          <th style="background:var(--bg3); color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:12px 16px; text-align:left; border-bottom:1px solid var(--border);">Tool</th>
+          <th style="background:var(--bg3); color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:12px 16px; text-align:left; border-bottom:1px solid var(--border);">Week 1–2</th>
+          <th style="background:var(--bg3); color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:12px 16px; text-align:left; border-bottom:1px solid var(--border);">Week 3–6</th>
+          <th style="background:var(--bg3); color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:12px 16px; text-align:left; border-bottom:1px solid var(--border);">Week 7–12</th>
+          <th style="background:var(--bg3); color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:12px 16px; text-align:left; border-bottom:1px solid var(--border);">Cost</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:13px 16px; font-weight:700; border-bottom:1px solid var(--border);">🗺️ Unified Picture</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Map backend + GPS ingestion</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Mobile app + unit reporting</td>
+          <td style="padding:13px 16px; font-size:13px; color:#16a34a; font-weight:600; border-bottom:1px solid var(--border);">✓ Live — AI deconfliction added</td>
+          <td style="padding:13px 16px; color:var(--accent2); font-weight:700; border-bottom:1px solid var(--border);">$3M–$8M</td>
+        </tr>
+        <tr>
+          <td style="padding:13px 16px; font-weight:700; border-bottom:1px solid var(--border);">📦 Ammo AI</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Data model + consumption API</td>
+          <td style="padding:13px 16px; font-size:13px; color:#16a34a; font-weight:600; border-bottom:1px solid var(--border);">✓ Live — prediction model running</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Medical module added</td>
+          <td style="padding:13px 16px; color:var(--accent2); font-weight:700; border-bottom:1px solid var(--border);">$2M–$5M</td>
+        </tr>
+        <tr>
+          <td style="padding:13px 16px; font-weight:700; border-bottom:1px solid var(--border);">🚁 Drone AI</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Dataset prep + model training</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Edge deployment + UI</td>
+          <td style="padding:13px 16px; font-size:13px; color:#16a34a; font-weight:600; border-bottom:1px solid var(--border);">✓ Live — feeding into Unified Map</td>
+          <td style="padding:13px 16px; color:var(--accent2); font-weight:700; border-bottom:1px solid var(--border);">$5M–$12M</td>
+        </tr>
+        <tr>
+          <td style="padding:13px 16px; font-weight:700; border-bottom:1px solid var(--border);">🔮 Attack Prediction</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Historical data ingestion</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Model v1 + backtesting</td>
+          <td style="padding:13px 16px; font-size:13px; color:#16a34a; font-weight:600; border-bottom:1px solid var(--border);">✓ Live — overlay on Unified Map</td>
+          <td style="padding:13px 16px; color:var(--accent2); font-weight:700; border-bottom:1px solid var(--border);">$3M–$8M</td>
+        </tr>
+        <tr>
+          <td style="padding:13px 16px; font-weight:700; border-bottom:1px solid var(--border);">📡 EW Detection</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">SDR sensor network design</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Deploy sensors + triangulation</td>
+          <td style="padding:13px 16px; font-size:13px; color:#16a34a; font-weight:600; border-bottom:1px solid var(--border);">✓ Live — jam zones on Unified Map</td>
+          <td style="padding:13px 16px; color:var(--accent2); font-weight:700; border-bottom:1px solid var(--border);">$4M–$10M</td>
+        </tr>
+        <tr>
+          <td style="padding:13px 16px; font-weight:700; border-bottom:1px solid var(--border);">🔎 Captured Intel</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Entity graph + intake app</td>
+          <td style="padding:13px 16px; font-size:13px; color:#16a34a; font-weight:600; border-bottom:1px solid var(--border);">✓ Live — cross-reference engine</td>
+          <td style="padding:13px 16px; font-size:13px; color:var(--muted); border-bottom:1px solid var(--border);">Phone extraction module</td>
+          <td style="padding:13px 16px; color:var(--accent2); font-weight:700; border-bottom:1px solid var(--border);">$2M–$8M</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight">
+    <strong>Team needed:</strong> 25–35 engineers total — 8 backend, 5 mobile/frontend, 6 ML engineers, 4 DevOps/security, 4 domain experts (ex-military), 2–3 on-the-ground Ukraine liaisons. With AI coding tools (Cursor, Copilot), this team outputs 3–5x a pre-AI team of the same size. All six tools in 10–12 weeks is realistic.
+  </div>
+
+  <div class="final-box">
+    <div class="final-box-inner">
+      <h3>🇺🇦 The Ukraine Proposition</h3>
+      <p>Ukraine is fighting the most AI-documented conventional war in history. They have the data, the urgent need, and the moral clarity. What they don't have is the software layer to turn that data into battlefield advantage. These six tools, built in 10 weeks, would make Ukraine's military the most AI-capable non-superpower force on Earth — and create the most powerful live demonstration of sovereign defence AI the world has ever seen.</p>
+      <div class="fb-stats">
+        <div class="fb-stat"><div class="fv">$19M–$51M</div><div class="fl">Total package</div></div>
+        <div class="fb-stat"><div class="fv">10–12 weeks</div><div class="fl">All six tools live</div></div>
+        <div class="fb-stat"><div class="fv">0 satellites</div><div class="fl">Required</div></div>
+        <div class="fb-stat"><div class="fv">30+ contracts</div><div class="fl">Follow-on from other govts</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BURGER -->
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html"><span>📡</span> Satellite Brief</a>
+  <a href="REALTIME_SATELLITE.html"><span>🔭</span> Real-Time Satellite Vision</a>
+  <a href="PALANTIR_ACCESS_MAP.html"><span>🌍</span> Palantir Access Map</a>
+  <a href="NO_SATELLITE_STACK.html"><span>🟢</span> No Satellite Stack</a>
+  <a href="UKRAINE_DEFENCE_AI.html" class="active-report"><span>🇺🇦</span> Ukraine Defence AI</a>
+</div>
+
+</body>
+</html>
