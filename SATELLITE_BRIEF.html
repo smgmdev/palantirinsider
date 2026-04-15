@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Satellite Brief — Starlink & Video Broadcast</title>
+<style>
+  :root {
+    --accent: #0ea5e9;
+    --accent2: #0284c7;
+    --bg: #ffffff;
+    --bg2: #f0f9ff;
+    --bg3: #e0f2fe;
+    --border: #bae6fd;
+    --text: #0c1a2e;
+    --muted: #4b6a8a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.65; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.97); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; height: 52px;
+    backdrop-filter: blur(10px);
+  }
+  .nav-brand { font-size: 13px; font-weight: 800; color: var(--accent2); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .hero {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 64px 24px 48px; text-align: center;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(14,165,233,0.1); border: 1px solid var(--accent);
+    color: var(--accent2); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 5px 16px; border-radius: 20px; margin-bottom: 20px;
+  }
+  .hero h1 { font-size: clamp(24px, 4vw, 44px); font-weight: 900; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 15px; max-width: 560px; margin: 0 auto; }
+
+  section { max-width: 900px; margin: 0 auto; padding: 52px 24px; }
+  hr.divider { border: none; border-top: 1px solid var(--border); }
+
+  .section-label {
+    display: inline-block;
+    background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.3);
+    color: var(--accent2); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 4px; margin-bottom: 14px;
+  }
+  section h2 { font-size: clamp(18px, 2.5vw, 28px); font-weight: 800; margin-bottom: 6px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+  /* CARDS */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-bottom: 32px; }
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 22px;
+  }
+  .card h4 { font-size: 14px; font-weight: 800; color: var(--accent2); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .card p, .card li { font-size: 14px; color: var(--muted); }
+  .card ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .card ul li { display: flex; gap: 8px; }
+  .card ul li::before { content: '›'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+  /* STAT ROW */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 32px; }
+  .stat {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 16px; text-align: center;
+  }
+  .stat .val { font-size: clamp(18px, 2.5vw, 26px); font-weight: 900; color: var(--accent2); }
+  .stat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; }
+
+  /* HOW IT WORKS STEPS */
+  .steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+  .step { display: flex; gap: 14px; align-items: flex-start; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+  .step-n { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step h5 { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .step p { font-size: 13px; color: var(--muted); }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 28px; }
+  table { width: 100%; border-collapse: collapse; min-width: 420px; }
+  th { background: var(--bg3); color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 13px 14px; font-size: 14px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(14,165,233,0.03); }
+  .td-bold { font-weight: 700; }
+  .td-blue { color: var(--accent2); font-weight: 600; }
+  .td-muted { color: var(--muted); }
+
+  /* HIGHLIGHT BOX */
+  .highlight {
+    background: var(--bg2); border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0; padding: 18px 20px; margin-bottom: 28px;
+    font-size: 14px; color: var(--muted);
+  }
+  .highlight strong { color: var(--text); }
+
+  /* VIDEO SAT SECTION */
+  .vs-card {
+    background: #fefce8; border: 1px solid #fde68a;
+    border-radius: 12px; padding: 22px; margin-bottom: 16px;
+  }
+  .vs-card h4 { font-size: 15px; font-weight: 800; color: #92400e; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .vs-card p { font-size: 14px; color: #78350f; margin-bottom: 10px; }
+  .vs-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .vs-card ul li { font-size: 13px; color: #92400e; display: flex; gap: 8px; }
+  .vs-card ul li::before { content: '›'; font-weight: 700; flex-shrink: 0; }
+  .vs-card.leo { background: #f0fdf4; border-color: #86efac; }
+  .vs-card.leo h4 { color: #14532d; }
+  .vs-card.leo p { color: #166534; }
+  .vs-card.leo ul li { color: #15803d; }
+
+  /* BURGER */
+  .bm-btn {
+    position: fixed; bottom: 24px; right: 24px; z-index: 999;
+    width: 50px; height: 50px; border-radius: 50%;
+    background: var(--accent); border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 5px;
+    box-shadow: 0 4px 16px rgba(14,165,233,0.45);
+    transition: transform 0.2s;
+  }
+  .bm-btn:hover { transform: scale(1.08); }
+  .bm-btn span { display: block; width: 18px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.3s; }
+  .bm-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .bm-btn.open span:nth-child(2) { opacity: 0; }
+  .bm-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .burger-menu {
+    position: fixed; bottom: 82px; right: 24px; z-index: 998;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; width: 240px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    display: none; flex-direction: column; gap: 4px;
+  }
+  .burger-menu.open { display: flex; }
+  .burger-menu a { color: var(--text); text-decoration: none; font-size: 13px; font-weight: 500; padding: 9px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px; transition: all 0.15s; }
+  .burger-menu a:hover { background: rgba(14,165,233,0.08); color: var(--accent2); }
+  .burger-menu a.active-report { background: rgba(14,165,233,0.08); color: var(--accent2); }
+  .bml { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; padding: 4px 12px 2px; }
+
+  @media (max-width: 600px) {
+    .hero { padding: 48px 16px 36px; }
+    section { padding: 40px 16px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">🛰️ Satellite Brief</div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">Intelligence Brief</div>
+  <h1>Starlink &amp; <span>Satellite</span> Technology</h1>
+  <p>How Elon Musk's Starlink works, what it costs, and what satellites power global video broadcasting.</p>
+</div>
+
+<hr class="divider">
+
+<!-- SECTION 01: WHAT IS STARLINK -->
+<section>
+  <div class="section-label">Section 01</div>
+  <h2>What Is Starlink?</h2>
+  <p class="sub">SpaceX's global internet network built from thousands of small satellites in low Earth orbit.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="val">7,000+</div><div class="lbl">Satellites in orbit</div></div>
+    <div class="stat"><div class="val">550 km</div><div class="lbl">Orbital altitude</div></div>
+    <div class="stat"><div class="val">~25ms</div><div class="lbl">Latency</div></div>
+    <div class="stat"><div class="val">100–300 Mbps</div><div class="lbl">Typical speed</div></div>
+    <div class="stat"><div class="val">100+ countries</div><div class="lbl">Coverage</div></div>
+  </div>
+
+  <div class="highlight">
+    <strong>The core idea:</strong> Traditional internet satellites sit 35,000 km away — so far that signals take 600ms to travel. Starlink satellites orbit at just 550 km. That proximity slashes latency to ~25ms, making it fast enough for video calls, gaming, and real-time applications — from anywhere on Earth.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>🛰️ Satellite Type</h4>
+      <ul>
+        <li>LEO (Low Earth Orbit) — 550 km altitude</li>
+        <li>Each satellite weighs ~300 kg (v1.5) or ~800 kg (v2 Mini)</li>
+        <li>Flat-panel design with deployable solar array</li>
+        <li>Ka/Ku-band radio + laser inter-satellite links</li>
+        <li>Autonomous collision-avoidance (AI-driven)</li>
+        <li>Designed to de-orbit and burn up after ~5 years</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>📡 Ground Equipment</h4>
+      <ul>
+        <li>Flat phased-array dish ("Dishy") — no manual pointing needed</li>
+        <li>Electronically steers beam to track satellites as they pass</li>
+        <li>Connects to nearest satellite overhead every ~90 seconds</li>
+        <li>Built-in WiFi router included</li>
+        <li>Power: ~50–75W during operation</li>
+        <li>Works in rain, snow, moderate wind</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>🔗 Laser Links (Space Lasers)</h4>
+      <ul>
+        <li>v2 satellites have inter-satellite laser links</li>
+        <li>Data travels between satellites in space — not via ground</li>
+        <li>Faster than fibre for long-distance routes (light travels faster in vacuum)</li>
+        <li>Enables coverage over oceans and polar regions</li>
+        <li>Key for military / remote use cases</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 02: HOW IT WORKS -->
+<section>
+  <div class="section-label">Section 02</div>
+  <h2>How Starlink Works — Step by Step</h2>
+  <p class="sub">From your dish to the internet in under 25 milliseconds.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">1</div>
+      <div>
+        <h5>Your dish sends a signal up</h5>
+        <p>The flat phased-array antenna on your roof electronically locks onto the nearest Starlink satellite passing overhead. No mechanical pointing — the beam steers itself using thousands of tiny antenna elements.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div>
+        <h5>Satellite receives and routes</h5>
+        <p>The satellite receives your request on Ku-band radio. It either relays it down to the nearest SpaceX ground station, or — on laser-linked satellites — passes it across the constellation via space lasers to reach a ground station closer to your destination.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div>
+        <h5>Ground station connects to internet</h5>
+        <p>SpaceX ground stations (called "gateways") connect the satellite network to the terrestrial internet backbone. There are hundreds of gateways globally to minimise the final hop distance.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">4</div>
+      <div>
+        <h5>Response travels back</h5>
+        <p>The return path is the same in reverse — internet → gateway → satellite → your dish. The whole round trip takes ~25ms. Compare that to 600ms for a traditional geostationary satellite.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">5</div>
+      <div>
+        <h5>Seamless handoff between satellites</h5>
+        <p>Because Starlink satellites move fast across the sky, your dish hands off between satellites every ~90 seconds automatically — similar to how your phone switches cell towers. You never notice it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 03: COSTS -->
+<section>
+  <div class="section-label">Section 03</div>
+  <h2>How Much Does Starlink Cost?</h2>
+  <p class="sub">Hardware once, subscription monthly. Pricing varies by tier and region.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Plan</th><th>Hardware Cost</th><th>Monthly Fee</th><th>Speed</th><th>Who It's For</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-bold">Residential</td>
+          <td class="td-blue">$349 dish</td>
+          <td class="td-blue">$120/mo</td>
+          <td>50–250 Mbps</td>
+          <td class="td-muted">Home users, rural areas</td>
+        </tr>
+        <tr>
+          <td class="td-bold">Roam (Mobile)</td>
+          <td class="td-blue">$349–$599 dish</td>
+          <td class="td-blue">$150/mo</td>
+          <td>50–200 Mbps</td>
+          <td class="td-muted">RVs, boats, travel</td>
+        </tr>
+        <tr>
+          <td class="td-bold">Business</td>
+          <td class="td-blue">$2,500 dish</td>
+          <td class="td-blue">$500/mo</td>
+          <td>200–1,000 Mbps</td>
+          <td class="td-muted">Enterprises, remote sites</td>
+        </tr>
+        <tr>
+          <td class="td-bold">Maritime</td>
+          <td class="td-blue">$10,000 dish</td>
+          <td class="td-blue">$1,000–$5,000/mo</td>
+          <td>350+ Mbps</td>
+          <td class="td-muted">Ships, yachts, offshore</td>
+        </tr>
+        <tr>
+          <td class="td-bold">Aviation</td>
+          <td class="td-blue">$150,000 install</td>
+          <td class="td-blue">$12,500–$25,000/mo</td>
+          <td>100–350 Mbps</td>
+          <td class="td-muted">Private jets, airlines</td>
+        </tr>
+        <tr>
+          <td class="td-bold">Starlink Direct to Cell</td>
+          <td class="td-muted">No dish needed</td>
+          <td class="td-muted">Carrier licensing</td>
+          <td>~1–10 Mbps</td>
+          <td class="td-muted">Standard smartphones (2024+)</td>
+        </tr>
+        <tr>
+          <td class="td-bold">Government / Military</td>
+          <td class="td-muted">Custom</td>
+          <td class="td-muted">$2,500+/mo per terminal</td>
+          <td>Up to 1 Gbps</td>
+          <td class="td-muted">Military, defence, emergency</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight">
+    <strong>Cost to build each satellite:</strong> SpaceX manufactures Starlink satellites in-house at approximately <strong>$250,000–$500,000 each</strong> — orders of magnitude cheaper than traditional satellites which cost $150M–$400M. They launch ~20 satellites per Falcon 9 rocket, with launch costs around $67M — roughly $3M per satellite to orbit.
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 04: VIDEO BROADCAST SATELLITES -->
+<section>
+  <div class="section-label">Section 04</div>
+  <h2>What Type of Satellite Powers Video Broadcasting?</h2>
+  <p class="sub">TV and video broadcasting uses a completely different type of satellite to Starlink — here's why.</p>
+
+  <div class="vs-card">
+    <h4>📺 GEO Satellites — The TV Broadcasting Standard</h4>
+    <p>Geostationary Earth Orbit (GEO) satellites sit at <strong>35,786 km</strong> altitude directly above the equator. At this height they orbit at exactly the same speed as Earth's rotation — so they appear completely stationary in the sky. One satellite covers 1/3 of the Earth's surface continuously.</p>
+    <ul>
+      <li>Used by: Sky, DirecTV, Eutelsat, SES, Intelsat, Arabsat, Nilesat</li>
+      <li>One satellite covers entire continents — a single dish can receive it forever without moving</li>
+      <li>Broadcasts the same signal to millions of dishes simultaneously (one-to-many)</li>
+      <li>Ku-band (12–18 GHz) and Ka-band (26–40 GHz) for TV; C-band for older systems</li>
+      <li>High-definition and 4K video require ~20–100 Mbps per channel — GEO handles this easily</li>
+      <li>Latency is 600ms+ — fine for broadcast TV, not good for internet or real-time use</li>
+      <li>Cost per satellite: $150M–$400M · Lifespan: 15–20 years</li>
+    </ul>
+  </div>
+
+  <div class="vs-card leo">
+    <h4>🛰️ LEO Satellites — Emerging Video Delivery (OTT / Streaming)</h4>
+    <p>Newer video delivery over the internet (Netflix, YouTube, live sports streaming) increasingly uses LEO constellations like Starlink. Not traditional broadcast — instead streaming unicast to individual users.</p>
+    <ul>
+      <li>One connection per dish — personalised streams, not broadcast</li>
+      <li>Low latency enables live sports streaming without delay</li>
+      <li>Used in locations with no fibre: remote resorts, ships, aircraft in-flight entertainment</li>
+      <li>Growing use: airlines (JSX, Hawaiian Airlines), cruise ships, superyachts</li>
+    </ul>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Use Case</th><th>Satellite Type</th><th>Altitude</th><th>Why?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-bold">TV Broadcasting (Sky, DirecTV)</td><td class="td-blue">GEO</td><td>35,786 km</td><td class="td-muted">Stationary — one dish, no tracking needed. One signal to millions.</td></tr>
+        <tr><td class="td-bold">Internet (Starlink)</td><td class="td-blue">LEO</td><td>550 km</td><td class="td-muted">Low latency — fast enough for interactive use.</td></tr>
+        <tr><td class="td-bold">Live Sports (broadcast)</td><td class="td-blue">GEO</td><td>35,786 km</td><td class="td-muted">High bandwidth, wide coverage, simultaneous delivery.</td></tr>
+        <tr><td class="td-bold">In-flight Streaming</td><td class="td-blue">LEO (Starlink)</td><td>550 km</td><td class="td-muted">Speed and latency needed for on-demand video per passenger.</td></tr>
+        <tr><td class="td-bold">News Uplinks (field reporting)</td><td class="td-blue">GEO</td><td>35,786 km</td><td class="td-muted">Reliable uplink from remote locations to broadcast centres.</td></tr>
+        <tr><td class="td-bold">Military Video / ISR</td><td class="td-blue">GEO + LEO</td><td>Both</td><td class="td-muted">GEO for persistent surveillance, LEO for low-latency tactical feeds.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>📡 Key GEO Operators</h4>
+      <ul>
+        <li><strong>SES</strong> — 70+ GEO satellites, global TV + data</li>
+        <li><strong>Eutelsat</strong> — Europe, Middle East, Africa TV</li>
+        <li><strong>Intelsat</strong> — global backbone, news networks</li>
+        <li><strong>Arabsat</strong> — Arab world TV broadcasting</li>
+        <li><strong>Nilesat</strong> — North Africa, Middle East</li>
+        <li><strong>DirecTV / Sky</strong> — consumer TV delivery</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>🔑 Quick Rule of Thumb</h4>
+      <ul>
+        <li><strong>Broadcasting to millions at once?</strong> → GEO satellite</li>
+        <li><strong>Interactive internet / two-way data?</strong> → LEO (Starlink)</li>
+        <li><strong>Remote location with no fibre?</strong> → LEO for speed, GEO for backup</li>
+        <li><strong>Watching live TV on a dish?</strong> → GEO, always</li>
+        <li><strong>Streaming Netflix on a ship?</strong> → LEO (Starlink Maritime)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- BURGER -->
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html" class="active-report"><span>📡</span> Satellite Brief</a>
+</div>
+
+</body>
+</html>
