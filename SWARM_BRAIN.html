@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swarm Brain — Ukraine's Missing AI Layer</title>
+<style>
+:root {
+  --accent: #22c55e;
+  --accent2: #4ade80;
+  --accent3: #86efac;
+  --danger: #ef4444;
+  --warn: #f59e0b;
+  --bg: #030a04;
+  --bg2: #071009;
+  --bg3: #0d1f10;
+  --border: rgba(34,197,94,0.18);
+  --text: #f0fdf4;
+  --muted: #6b9e79;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Courier New', 'Segoe UI', monospace, sans-serif; line-height: 1.6; }
+
+/* SCANLINE OVERLAY */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+}
+
+nav {
+  position: fixed; top: 0; width: 100%; z-index: 100;
+  background: rgba(3,10,4,0.97); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em; color: var(--accent); text-transform: uppercase; }
+.nav-tag { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; font-family: 'Courier New', monospace; }
+.nav-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.68rem; color: var(--accent); letter-spacing: 0.1em; }
+.nav-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  background: radial-gradient(ellipse 100% 80% at 50% 0%, rgba(34,197,94,0.07) 0%, transparent 60%),
+              linear-gradient(180deg, #030a04 0%, #041208 50%, #030a04 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 7rem 2rem 5rem; position: relative; overflow: hidden;
+}
+
+/* RADAR RINGS */
+.radar-wrap {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 800px; height: 800px; pointer-events: none;
+}
+.radar-ring {
+  position: absolute; border-radius: 50%; border: 1px solid rgba(34,197,94,0.05);
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+}
+.rr1 { width: 200px; height: 200px; }
+.rr2 { width: 350px; height: 350px; }
+.rr3 { width: 500px; height: 500px; border-color: rgba(34,197,94,0.04); }
+.rr4 { width: 700px; height: 700px; border-color: rgba(34,197,94,0.02); }
+.radar-sweep {
+  position: absolute; top: 50%; left: 50%; width: 250px; height: 1px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(34,197,94,0.6), transparent);
+  animation: sweep 4s linear infinite;
+}
+@keyframes sweep { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.radar-cross-h, .radar-cross-v {
+  position: absolute; top: 50%; left: 50%; background: rgba(34,197,94,0.06);
+}
+.radar-cross-h { width: 700px; height: 1px; transform: translate(-50%,-50%); }
+.radar-cross-v { width: 1px; height: 700px; transform: translate(-50%,-50%); }
+
+/* BLIPS */
+.blip {
+  position: absolute; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 8px var(--accent);
+  animation: blip-fade 4s infinite;
+}
+.blip-r { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+@keyframes blip-fade { 0%{opacity:0} 20%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.35rem 1rem;
+  background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
+  border-radius: 4px; font-size: 0.7rem; letter-spacing: 0.15em; color: var(--accent);
+  text-transform: uppercase; margin-bottom: 2rem; position: relative; z-index: 1;
+  font-family: 'Courier New', monospace;
+}
+
+.hero h1 {
+  font-size: clamp(3rem, 8vw, 7rem); font-weight: 900; letter-spacing: -0.02em;
+  line-height: 0.95; margin-bottom: 0.5rem; position: relative; z-index: 1;
+  color: var(--accent);
+  text-shadow: 0 0 40px rgba(34,197,94,0.4), 0 0 80px rgba(34,197,94,0.15);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+.hero-sub-title {
+  font-size: clamp(1rem, 2.5vw, 1.5rem); color: var(--muted);
+  margin-bottom: 2.5rem; position: relative; z-index: 1;
+  font-family: 'Courier New', monospace; letter-spacing: 0.06em;
+}
+.hero-sub-title span { color: var(--text); }
+
+.hero-alert {
+  position: relative; z-index: 1; margin-bottom: 2.5rem;
+  max-width: 680px;
+  background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2);
+  border-radius: 8px; padding: 1.2rem 1.6rem;
+  font-size: 0.88rem; color: #fca5a5; line-height: 1.7; text-align: left;
+  font-family: 'Courier New', monospace;
+}
+.alert-head { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--danger); font-weight: 700; margin-bottom: 0.5rem; }
+
+.hero-stats { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+.hstat {
+  text-align: center; padding: 1.2rem 1.6rem;
+  background: rgba(34,197,94,0.05); border: 1px solid rgba(34,197,94,0.15);
+  border-radius: 6px;
+}
+.hstat-val { font-size: 1.8rem; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 0.3rem; font-family: 'Segoe UI', system-ui; }
+.hstat-label { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-family: 'Courier New', monospace; }
+
+/* SECTIONS */
+.section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+.section-label { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); font-family: 'Courier New', monospace; margin-bottom: 0.6rem; }
+.section-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text); font-family: 'Segoe UI', system-ui; }
+.section-sub { color: var(--muted); margin-bottom: 3rem; font-size: 0.9rem; }
+
+/* PROBLEM */
+.telegram-mock {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;
+  font-family: 'Courier New', monospace;
+}
+.tg-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+.tg-icon { width: 36px; height: 36px; border-radius: 50%; background: #2AABEE; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+.tg-name { font-size: 0.88rem; font-weight: 700; color: var(--text); }
+.tg-members { font-size: 0.72rem; color: var(--muted); }
+.tg-msg { margin-bottom: 0.8rem; }
+.tg-sender { font-size: 0.72rem; color: var(--accent); margin-bottom: 0.2rem; }
+.tg-text { font-size: 0.82rem; color: var(--text); background: var(--bg3); padding: 0.6rem 0.8rem; border-radius: 8px; display: inline-block; max-width: 90%; line-height: 1.5; }
+.tg-time { font-size: 0.65rem; color: var(--muted); margin-top: 0.2rem; }
+.tg-warning { margin-top: 1rem; padding: 0.7rem 1rem; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 6px; font-size: 0.75rem; color: #fca5a5; }
+
+.problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.2rem; }
+.prob-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem;
+}
+.prob-icon { font-size: 1.6rem; margin-bottom: 0.8rem; }
+.prob-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; }
+.prob-text { font-size: 0.82rem; color: var(--muted); line-height: 1.7; }
+.prob-cost { margin-top: 0.8rem; font-size: 0.8rem; color: var(--danger); font-family: 'Courier New', monospace; }
+
+/* LAYER CARDS */
+.layer-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 2.5rem;
+}
+.layer-header {
+  padding: 2rem 2.5rem 1.5rem; border-bottom: 1px solid var(--border);
+  display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: start;
+}
+.layer-num {
+  font-size: 3rem; font-weight: 900; color: rgba(34,197,94,0.15); line-height: 1;
+  font-family: 'Courier New', monospace; letter-spacing: -0.05em;
+}
+.layer-name { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.3rem; color: var(--accent2); font-family: 'Segoe UI', system-ui; }
+.layer-tagline { font-size: 0.88rem; color: var(--muted); }
+.layer-badge {
+  display: inline-block; padding: 0.2rem 0.7rem; border-radius: 4px; font-size: 0.68rem;
+  font-family: 'Courier New', monospace; letter-spacing: 0.08em; margin-top: 0.5rem;
+}
+.lb-new { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: var(--accent); }
+.lb-crit { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+
+.layer-body { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 2rem 2.5rem; }
+@media(max-width:700px) { .layer-body { grid-template-columns: 1fr; } }
+
+.lb-title { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-family: 'Courier New', monospace; font-weight: 700; margin-bottom: 0.9rem; }
+.lb-list { list-style: none; }
+.lb-list li { font-size: 0.87rem; color: var(--text); padding: 0.55rem 0; padding-left: 1.4rem; position: relative; border-bottom: 1px solid rgba(34,197,94,0.06); line-height: 1.5; }
+.lb-list li:last-child { border-bottom: none; }
+.lb-list li::before { content: '›'; position: absolute; left: 0; color: var(--accent); font-weight: 900; font-size: 1rem; line-height: 1.4; }
+
+.tech-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.3rem; }
+.ttag { padding: 0.25rem 0.7rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600; font-family: 'Courier New', monospace; }
+.ttag-main { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); color: var(--accent3); }
+.ttag-sec { background: var(--bg3); border: 1px solid var(--border); color: var(--muted); }
+
+.layer-metrics {
+  margin: 0 2.5rem 2rem;
+  padding: 1.2rem 1.5rem;
+  background: rgba(34,197,94,0.04); border: 1px solid rgba(34,197,94,0.12);
+  border-radius: 8px; display: flex; gap: 2.5rem; flex-wrap: wrap; align-items: center;
+}
+.lm-item { }
+.lm-val { font-size: 1.4rem; font-weight: 900; color: var(--accent); line-height: 1; font-family: 'Segoe UI', system-ui; }
+.lm-label { font-size: 0.68rem; color: var(--muted); font-family: 'Courier New', monospace; letter-spacing: 0.06em; }
+
+/* MOAT */
+.divider { border: none; border-top: 1px solid var(--border); }
+.moat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; }
+.moat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
+.moat-icon { font-size: 1.5rem; margin-bottom: 0.7rem; }
+.moat-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; }
+.moat-text { font-size: 0.83rem; color: var(--muted); line-height: 1.7; }
+
+/* COMPETITOR TABLE */
+.comp-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); margin-top: 2rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+th { background: var(--bg3); padding: 0.9rem 1.2rem; text-align: left; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 700; border-bottom: 1px solid var(--border); font-family: 'Courier New', monospace; }
+td { padding: 0.85rem 1.2rem; border-bottom: 1px solid rgba(34,197,94,0.06); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(34,197,94,0.02); }
+.td-yes { color: var(--accent2); font-weight: 700; }
+.td-no { color: var(--danger); font-weight: 700; }
+.td-part { color: var(--warn); font-weight: 700; }
+.td-you { color: var(--accent); font-weight: 800; background: rgba(34,197,94,0.05) !important; }
+.you-row td { background: rgba(34,197,94,0.04); }
+
+/* BUILD TIMELINE */
+.build-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-top: 2rem; }
+.build-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; position: relative; }
+.build-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); border-radius: 2px 2px 0 0; }
+.build-week { font-size: 0.68rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Courier New', monospace; font-weight: 700; margin-bottom: 0.5rem; }
+.build-title { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.6rem; font-family: 'Segoe UI', system-ui; }
+.build-list { list-style: none; }
+.build-list li { font-size: 0.78rem; color: var(--muted); padding: 0.3rem 0; padding-left: 1rem; position: relative; }
+.build-list li::before { content: '–'; position: absolute; left: 0; color: var(--accent); }
+
+/* DATA FLYWHEEL */
+.flywheel {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem;
+  text-align: center; margin-top: 3rem;
+}
+.fw-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; font-family: 'Segoe UI', system-ui; }
+.fw-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 2rem; }
+.fw-steps { display: flex; align-items: center; justify-content: center; gap: 0; flex-wrap: wrap; }
+.fw-step { text-align: center; padding: 1rem 1.2rem; }
+.fw-step-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.fw-step-label { font-size: 0.75rem; color: var(--text); font-weight: 700; margin-bottom: 0.2rem; }
+.fw-step-sub { font-size: 0.68rem; color: var(--muted); }
+.fw-arrow { font-size: 1.2rem; color: var(--accent); padding: 0 0.5rem; }
+
+/* PRICING */
+.price-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-top: 2rem; }
+.price-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
+.price-phase { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Courier New', monospace; margin-bottom: 0.5rem; }
+.price-val { font-size: 1.6rem; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 0.3rem; font-family: 'Segoe UI', system-ui; }
+.price-label { font-size: 0.78rem; color: var(--muted); }
+
+/* VERDICT */
+.verdict {
+  margin-top: 4rem; padding: 3rem 2.5rem;
+  background: linear-gradient(135deg, rgba(34,197,94,0.07) 0%, rgba(34,197,94,0.03) 100%);
+  border: 1px solid rgba(34,197,94,0.2); border-radius: 16px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.verdict::before {
+  content: 'SWARM BRAIN'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  font-size: 8rem; font-weight: 900; color: rgba(34,197,94,0.03); white-space: nowrap;
+  font-family: 'Segoe UI', system-ui; letter-spacing: -0.05em; pointer-events: none;
+}
+.verdict-label { font-size: 0.7rem; color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase; font-family: 'Courier New', monospace; font-weight: 700; margin-bottom: 1rem; position: relative; }
+.verdict-text { font-size: clamp(1.1rem, 2.5vw, 1.6rem); font-weight: 800; line-height: 1.4; color: var(--text); max-width: 800px; margin: 0 auto 1.5rem; position: relative; font-family: 'Segoe UI', system-ui; }
+.verdict-text em { font-style: normal; color: var(--accent); }
+.verdict-sub { font-size: 0.88rem; color: var(--muted); max-width: 640px; margin: 0 auto; position: relative; line-height: 1.7; }
+
+footer { padding: 3rem 2rem; text-align: center; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.75rem; font-family: 'Courier New', monospace; }
+
+/* BURGER */
+.bm-btn {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  box-shadow: 0 4px 20px rgba(34,197,94,0.4); transition: all 0.2s;
+}
+.bm-btn span { display: block; width: 20px; height: 2px; background: #000; border-radius: 2px; transition: all 0.3s; }
+.bm-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.bm-btn.open span:nth-child(2) { opacity: 0; }
+.bm-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.burger-menu {
+  position: fixed; bottom: 6rem; right: 2rem; z-index: 998;
+  background: #030a04; border: 1px solid var(--border); border-radius: 16px;
+  padding: 1rem; width: 290px; box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+  display: none; flex-direction: column; gap: 0.3rem;
+}
+.burger-menu.open { display: flex; }
+.bml { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 0.3rem 0.8rem 0.6rem; font-family: 'Courier New', monospace; }
+.burger-menu a { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.8rem; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.84rem; transition: background 0.15s; }
+.burger-menu a:hover { background: var(--bg3); }
+.burger-menu a.active-report { background: rgba(34,197,94,0.1); color: var(--accent2); }
+.burger-menu a span { font-size: 1rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">Palantir Insider</span>
+  <span class="nav-tag">SWARM BRAIN — Ukraine AI Warfare Layer</span>
+  <span class="nav-status"><span class="nav-dot"></span>CLASSIFIED BUILD</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="radar-wrap">
+    <div class="radar-ring rr1"></div>
+    <div class="radar-ring rr2"></div>
+    <div class="radar-ring rr3"></div>
+    <div class="radar-ring rr4"></div>
+    <div class="radar-cross-h"></div>
+    <div class="radar-cross-v"></div>
+    <div class="radar-sweep"></div>
+    <div class="blip blip-r" style="top:38%;left:52%;animation-delay:0.8s"></div>
+    <div class="blip blip-r" style="top:44%;left:58%;animation-delay:1.6s"></div>
+    <div class="blip blip-r" style="top:35%;left:47%;animation-delay:2.4s"></div>
+    <div class="blip" style="top:55%;left:42%;animation-delay:1s"></div>
+    <div class="blip" style="top:60%;left:55%;animation-delay:2s"></div>
+    <div class="blip" style="top:48%;left:38%;animation-delay:0.3s"></div>
+  </div>
+
+  <div class="hero-badge"><span class="nav-dot"></span> SYSTEM ACTIVE — UKRAINE THEATRE</div>
+  <h1>SWARM<br>BRAIN</h1>
+  <p class="hero-sub-title"><span>Ukraine's missing AI layer.</span> Built in 8 weeks. Impossible to copy.</p>
+
+  <div class="hero-alert">
+    <div class="alert-head">⚠ Current Situation — April 2026</div>
+    Ukraine has ~50,000 active drone operators launching thousands of FPV drones daily. Two teams are hitting the same target. Operators fly blind into Russian jamming zones. Captured Russian intel sits untranslated. The entire coordination layer runs on <strong>Telegram group chats</strong>. No competitor has solved this. The data required to solve it only exists inside Ukraine's operational network.
+  </div>
+
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="hstat-val">50K+</div>
+      <div class="hstat-label">Active drone operators</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">~1000</div>
+      <div class="hstat-label">FPV drones / day launched</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">Telegram</div>
+      <div class="hstat-label">Current C2 system</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">0</div>
+      <div class="hstat-label">Competitors who solved this</div>
+    </div>
+  </div>
+</section>
+
+<!-- THE PROBLEM -->
+<div class="section">
+  <div class="section-label">// PROBLEM STATEMENT</div>
+  <div class="section-title">This Is How Ukraine Coordinates Its Drones Right Now</div>
+  <p class="section-sub">The world's most advanced drone army is being coordinated by a chat app.</p>
+
+  <div class="telegram-mock">
+    <div class="tg-header">
+      <div class="tg-icon">✈</div>
+      <div>
+        <div class="tg-name">3rd FPV Battalion — Ops Channel</div>
+        <div class="tg-members">847 members</div>
+      </div>
+    </div>
+    <div class="tg-msg">
+      <div class="tg-sender">Operator Falcon-7</div>
+      <div class="tg-text">Grid 1847-2293. BMP spotted. Taking it.</div>
+      <div class="tg-time">04:12</div>
+    </div>
+    <div class="tg-msg">
+      <div class="tg-sender">Operator Wolf-3</div>
+      <div class="tg-text">Already on it. Same grid. Abort abort</div>
+      <div class="tg-time">04:13</div>
+    </div>
+    <div class="tg-msg">
+      <div class="tg-sender">Operator Falcon-7</div>
+      <div class="tg-text">Too late. Drone gone. Jammer hit me at 1800m. Dead zone again near that tree line</div>
+      <div class="tg-time">04:14</div>
+    </div>
+    <div class="tg-msg">
+      <div class="tg-sender">Commander Taras</div>
+      <div class="tg-text">Does anyone know if that BMP was already destroyed? Checking with 2nd battalion now</div>
+      <div class="tg-time">04:18</div>
+    </div>
+    <div class="tg-warning">This conversation represents: 2 wasted drones, 1 unknown jammer zone, 1 unconfirmed BDA, zero structured intelligence extracted. Multiply by 1,000 missions per day.</div>
+  </div>
+
+  <div class="problem-grid">
+    <div class="prob-card">
+      <div class="prob-icon">🎯</div>
+      <div class="prob-title">Duplicate Targeting</div>
+      <div class="prob-text">Two operators from different battalions fly to the same target simultaneously. No coordination layer. Both drones wasted on one vehicle that needed one.</div>
+      <div class="prob-cost">→ Est. 15–25% mission duplication rate</div>
+    </div>
+    <div class="prob-card">
+      <div class="prob-icon">📡</div>
+      <div class="prob-title">Invisible Jamming Zones</div>
+      <div class="prob-text">Russian EW jammers move daily. When a drone dies, the operator reports it in Telegram. That report is seen by 50 people and forgotten within an hour. No map. No pattern. No routing intelligence.</div>
+      <div class="prob-cost">→ Est. 30–40% of losses are EW-preventable</div>
+    </div>
+    <div class="prob-card">
+      <div class="prob-icon">🗂️</div>
+      <div class="prob-title">BDA Never Closes</div>
+      <div class="prob-text">Battle Damage Assessment is an operator typing "got it" or going silent. Commanders don't know if targets are destroyed. Same positions get re-tasked. Resources are wasted restrike targets already eliminated.</div>
+      <div class="prob-cost">→ No closed-loop BDA exists at operator level</div>
+    </div>
+    <div class="prob-card">
+      <div class="prob-icon">📄</div>
+      <div class="prob-title">SIGINT Backlog</div>
+      <div class="prob-text">Ukraine intercepts Russian radio comms constantly. Manual translation team is overwhelmed. Most intercepts are never fully analyzed. Patterns — unit movements, supply complaints, officer names — go unmined.</div>
+      <div class="prob-cost">→ Estimated &lt;20% of intercepts fully processed</div>
+    </div>
+    <div class="prob-card">
+      <div class="prob-icon">🔋</div>
+      <div class="prob-title">No Ammo Intelligence</div>
+      <div class="prob-text">Ammunition allocation across fronts is based on commander requests, not data. No AI models consumption rates vs. battle intensity vs. incoming supply. Critical shortages arrive as surprises.</div>
+      <div class="prob-cost">→ Supply failures are the #1 tactical constraint</div>
+    </div>
+    <div class="prob-card">
+      <div class="prob-icon">🌐</div>
+      <div class="prob-title">Coalition Language Gap</div>
+      <div class="prob-text">Ukraine works with advisors, equipment operators, and volunteers from 30+ countries. Every cross-national coordination requires translators. Real-time joint ops suffer constant information latency.</div>
+      <div class="prob-cost">→ Multilingual ops running at 60% efficiency</div>
+    </div>
+  </div>
+</div>
+
+<!-- THE THREE LAYERS -->
+<div style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:5rem 2rem;">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="section-label">// PRODUCT ARCHITECTURE</div>
+    <div class="section-title" style="margin-bottom:0.5rem;">Three Layers. One System.</div>
+    <p class="section-sub" style="margin-bottom:3rem;">Each layer is independently valuable. Together they form a compound intelligence system that gets smarter every day Ukraine uses it.</p>
+
+    <!-- LAYER 1 -->
+    <div class="layer-card">
+      <div class="layer-header">
+        <div class="layer-num">01</div>
+        <div>
+          <div class="layer-name">EW Dead Zone Mapper</div>
+          <div class="layer-tagline">Real-time probabilistic map of Russian jamming zones — built from operator reports, updated continuously</div>
+          <span class="layer-badge lb-crit">CRITICAL PRIORITY</span>
+          <span class="layer-badge lb-new" style="margin-left:0.5rem">NOT BUILT ANYWHERE</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div>
+          <div class="lb-title">How It Works</div>
+          <ul class="lb-list">
+            <li>Operator submits drone loss report: grid, time, altitude, direction, drone type — via simple form or voice message</li>
+            <li>Claude API extracts structured data, calculates likely jammer position from approach vector + loss point</li>
+            <li>Each report updates a Bayesian probability map — jamming zones grow or shrink with new data</li>
+            <li>Before any mission: operator sees colour-coded jam probability overlay on their map</li>
+            <li>System suggests alternative approach routes that avoid high-probability zones</li>
+            <li>Pattern engine tracks how Russian EW units move with infantry — predicts jammer location 6–12 hours ahead</li>
+          </ul>
+        </div>
+        <div>
+          <div class="lb-title">Build Stack</div>
+          <div class="tech-row">
+            <span class="ttag ttag-main">Claude API</span>
+            <span class="ttag ttag-main">Leaflet.js heatmap</span>
+            <span class="ttag ttag-main">Bayesian probability engine</span>
+            <span class="ttag ttag-sec">PostgreSQL + PostGIS</span>
+            <span class="ttag ttag-sec">Voice input (Whisper)</span>
+            <span class="ttag ttag-sec">Routing optimizer</span>
+            <span class="ttag ttag-sec">Starlink-optimised (low bandwidth)</span>
+            <span class="ttag ttag-sec">Offline-capable PWA</span>
+          </div>
+          <div style="margin-top:1.5rem;">
+            <div class="lb-title">Why No One Else Has This</div>
+            <ul class="lb-list">
+              <li>Requires granular drone loss data — only exists inside Ukraine's operator network</li>
+              <li>Must work at 3am on a tablet over Starlink with one hand free</li>
+              <li>Needs Ukrainian military trust to share loss data — foreign contractors can't get this</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="layer-metrics">
+        <div class="lm-item"><div class="lm-val">30–40%</div><div class="lm-label">EW losses preventable with routing</div></div>
+        <div class="lm-item"><div class="lm-val">&lt;5 sec</div><div class="lm-label">Report submission time</div></div>
+        <div class="lm-item"><div class="lm-val">Smarter daily</div><div class="lm-label">More data = better map accuracy</div></div>
+        <div class="lm-item"><div class="lm-val">0 bandwidth</div><div class="lm-label">Map works offline, syncs on reconnect</div></div>
+      </div>
+    </div>
+
+    <!-- LAYER 2 -->
+    <div class="layer-card">
+      <div class="layer-header">
+        <div class="layer-num">02</div>
+        <div>
+          <div class="layer-name">Mission Deconfliction Engine</div>
+          <div class="layer-tagline">AI assigns targets, prevents duplicates, closes the BDA loop — replaces the Telegram group chat as the coordination layer</div>
+          <span class="layer-badge lb-new">NOT BUILT ANYWHERE</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div>
+          <div class="lb-title">How It Works</div>
+          <ul class="lb-list">
+            <li>Operator logs target before launch: grid, target type, approach direction — 10-second input</li>
+            <li>System instantly checks: is another operator already tasked to this grid? If yes — auto-reassign to next priority target from shared queue</li>
+            <li>Vertical deconfliction: if two operators run same corridor, system staggers altitude assignments</li>
+            <li>Post-mission: operator logs outcome (hit/miss/jammer). BDA updates target status in shared queue</li>
+            <li>Destroyed targets are removed from queue automatically — no resrike on eliminated positions</li>
+            <li>Commander view: real-time dashboard showing active missions, queue depth, BDA confirmed kills</li>
+          </ul>
+        </div>
+        <div>
+          <div class="lb-title">Build Stack</div>
+          <div class="tech-row">
+            <span class="ttag ttag-main">Claude API (conflict reasoning)</span>
+            <span class="ttag ttag-main">Real-time target queue (Redis)</span>
+            <span class="ttag ttag-main">WebSocket live sync</span>
+            <span class="ttag ttag-sec">Leaflet.js mission map</span>
+            <span class="ttag ttag-sec">Role-based access (operator / commander)</span>
+            <span class="ttag ttag-sec">Ukrainian language UI</span>
+            <span class="ttag ttag-sec">Telegram bot integration (fallback)</span>
+          </div>
+          <div style="margin-top:1.5rem;">
+            <div class="lb-title">The Closed BDA Loop</div>
+            <ul class="lb-list">
+              <li>Every mission outcome feeds back into targeting priority</li>
+              <li>Confirmed kills update shared battlespace picture</li>
+              <li>Miss data improves target hardening estimates</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="layer-metrics">
+        <div class="lm-item"><div class="lm-val">~20%</div><div class="lm-label">Duplicate missions eliminated</div></div>
+        <div class="lm-item"><div class="lm-val">10 sec</div><div class="lm-label">Pre-launch deconfliction check</div></div>
+        <div class="lm-item"><div class="lm-val">Real-time</div><div class="lm-label">BDA closing the loop</div></div>
+        <div class="lm-item"><div class="lm-val">Battalion</div><div class="lm-label">to Army-level coordination</div></div>
+      </div>
+    </div>
+
+    <!-- LAYER 3 -->
+    <div class="layer-card">
+      <div class="layer-header">
+        <div class="layer-num">03</div>
+        <div>
+          <div class="layer-name">SIGINT Accelerator</div>
+          <div class="layer-tagline">Processes intercepted Russian communications at 100x human speed — extracts structured intelligence, identifies patterns, flags threats</div>
+          <span class="layer-badge lb-new">NOT BUILT FOR UKRAINE</span>
+        </div>
+      </div>
+      <div class="layer-body">
+        <div>
+          <div class="lb-title">How It Works</div>
+          <ul class="lb-list">
+            <li>Audio intercept → Whisper transcription → Claude extraction pipeline</li>
+            <li>Claude reads Russian military slang, abbreviations, code words — trained on provided glossary</li>
+            <li>Extracts: unit designation, officer names, location references, equipment types, movement orders, supply complaints, morale signals</li>
+            <li>Every entity cross-referenced against historical intercept database — "This voice ID matches 3rd Combined Arms Army signals from 2 weeks ago"</li>
+            <li>Automatically flags: mention of timing ("we attack at dawn"), supply failures, complaints about specific positions</li>
+            <li>Analyst gets a 1-page structured brief per intercept in under 60 seconds vs. 4 hours manual</li>
+          </ul>
+        </div>
+        <div>
+          <div class="lb-title">Build Stack</div>
+          <div class="tech-row">
+            <span class="ttag ttag-main">Claude API (claude-opus-4)</span>
+            <span class="ttag ttag-main">Whisper (audio transcription)</span>
+            <span class="ttag ttag-main">Entity extraction (structured output)</span>
+            <span class="ttag ttag-sec">PostgreSQL knowledge graph</span>
+            <span class="ttag ttag-sec">Russian military corpus</span>
+            <span class="ttag ttag-sec">Pattern timeline engine</span>
+            <span class="ttag ttag-sec">Analyst review interface</span>
+          </div>
+          <div style="margin-top:1.5rem;">
+            <div class="lb-title">What Claude Does Specifically</div>
+            <ul class="lb-list">
+              <li>Reads Russian natively — no translation layer needed</li>
+              <li>Understands military abbreviations and field slang</li>
+              <li>Outputs structured JSON: entities, sentiment, threat level, confidence</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="layer-metrics">
+        <div class="lm-item"><div class="lm-val">100×</div><div class="lm-label">Faster than manual analysis</div></div>
+        <div class="lm-item"><div class="lm-val">&lt;60 sec</div><div class="lm-label">From audio to structured brief</div></div>
+        <div class="lm-item"><div class="lm-val">Russian</div><div class="lm-label">Native language processing</div></div>
+        <div class="lm-item"><div class="lm-val">Zero</div><div class="lm-label">Analyst backlog at any volume</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- COMPETITOR GAP -->
+<div class="section">
+  <div class="section-label">// COMPETITIVE ANALYSIS</div>
+  <div class="section-title">Why No Competitor Has This</div>
+  <p class="section-sub">Four existing systems. None solve the operator-level coordination problem.</p>
+
+  <div class="comp-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>System</th>
+          <th>EW Zone Map</th>
+          <th>Mission Deconfliction</th>
+          <th>Operator-Level BDA Loop</th>
+          <th>SIGINT at Scale</th>
+          <th>Works on Starlink Tablet</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Delta (Ukraine COP)</strong></td>
+          <td class="td-no">No</td>
+          <td class="td-no">No</td>
+          <td class="td-no">No</td>
+          <td class="td-no">No</td>
+          <td class="td-part">Partial</td>
+        </tr>
+        <tr>
+          <td><strong>Kropyva (Artillery)</strong></td>
+          <td class="td-no">No</td>
+          <td class="td-no">Artillery only</td>
+          <td class="td-part">Artillery only</td>
+          <td class="td-no">No</td>
+          <td class="td-yes">Yes</td>
+        </tr>
+        <tr>
+          <td><strong>Palantir Maven MSS</strong></td>
+          <td class="td-no">No</td>
+          <td class="td-no">No</td>
+          <td class="td-part">Strategic level</td>
+          <td class="td-yes">US-only feeds</td>
+          <td class="td-no">No</td>
+        </tr>
+        <tr>
+          <td><strong>US/NATO C2 Systems</strong></td>
+          <td class="td-no">No</td>
+          <td class="td-part">HQ level only</td>
+          <td class="td-no">No</td>
+          <td class="td-part">High-level only</td>
+          <td class="td-no">No</td>
+        </tr>
+        <tr class="you-row">
+          <td class="td-you"><strong>SWARM BRAIN</strong></td>
+          <td class="td-you">Yes — real-time</td>
+          <td class="td-you">Yes — automated</td>
+          <td class="td-you">Yes — closed loop</td>
+          <td class="td-you">Yes — Claude API</td>
+          <td class="td-you">Yes — designed for it</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- THE MOAT -->
+<div class="section">
+  <div class="section-label">// COMPETITIVE MOAT</div>
+  <div class="section-title">Why This Is Impossible To Copy</div>
+  <p class="section-sub">The product's value is in the data. And the data only exists because Ukraine trusts you with it.</p>
+
+  <div class="moat-grid">
+    <div class="moat-card">
+      <div class="moat-icon">🔐</div>
+      <div class="moat-title">Data Access Is the Moat</div>
+      <div class="moat-text">The EW zone map only exists because 50,000 operators are submitting loss reports. The SIGINT database only grows because Ukraine is feeding intercepts into it. A competitor can build the same software — they cannot build the same dataset.</div>
+    </div>
+    <div class="moat-card">
+      <div class="moat-icon">📈</div>
+      <div class="moat-title">Gets Smarter Every Day</div>
+      <div class="moat-text">Day 1: rough EW zone estimates from 100 reports. Month 3: highly accurate predictive model from 90,000 reports. The gap between you and any future competitor grows with every mission logged. Network effects compound.</div>
+    </div>
+    <div class="moat-card">
+      <div class="moat-icon">🧠</div>
+      <div class="moat-title">Doctrine-Specific Training</div>
+      <div class="moat-text">Ukraine's FPV drone doctrine, Russian EW patterns, Ukrainian military slang — all embedded in the system's logic and Claude prompts over time. A generic AI system can't replicate this specificity without years of access to the same operational data.</div>
+    </div>
+    <div class="moat-card">
+      <div class="moat-icon">🤝</div>
+      <div class="moat-title">Trust Is Not Transferable</div>
+      <div class="moat-text">Ukrainian operators will share drone loss data and mission logs with a system that has earned operational trust. A foreign defence contractor showing up in Year 2 starts from zero trust. The relationship is the barrier to entry.</div>
+    </div>
+    <div class="moat-card">
+      <div class="moat-icon">⚡</div>
+      <div class="moat-title">Designed for Their Constraints</div>
+      <div class="moat-text">Works on a tablet. Works offline. Works on limited Starlink bandwidth. Works with one hand, in the dark, under stress. US enterprise software is built for offices. This is built for a trench. That design knowledge can't be copied without being there.</div>
+    </div>
+    <div class="moat-card">
+      <div class="moat-icon">🔄</div>
+      <div class="moat-title">Switching Cost = Lives</div>
+      <div class="moat-text">Once operators rely on the EW map to route missions, switching off the system means flying blind again. Once the SIGINT database is built, losing it means starting the pattern recognition from scratch. Churn is near-zero once embedded.</div>
+    </div>
+  </div>
+
+  <div class="flywheel">
+    <div class="fw-title">The Data Flywheel</div>
+    <div class="fw-sub">More operators → better EW map → fewer losses → more operator trust → more operators</div>
+    <div class="fw-steps">
+      <div class="fw-step">
+        <div class="fw-step-icon">👤</div>
+        <div class="fw-step-label">Operator uses system</div>
+        <div class="fw-step-sub">Logs mission + outcome</div>
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-step">
+        <div class="fw-step-icon">🗺️</div>
+        <div class="fw-step-label">EW map improves</div>
+        <div class="fw-step-sub">More data = better routing</div>
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-step">
+        <div class="fw-step-icon">✅</div>
+        <div class="fw-step-label">Fewer drone losses</div>
+        <div class="fw-step-sub">Operators see the value</div>
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-step">
+        <div class="fw-step-icon">📢</div>
+        <div class="fw-step-label">Word spreads</div>
+        <div class="fw-step-sub">More battalions onboard</div>
+      </div>
+      <div class="fw-arrow">→</div>
+      <div class="fw-step">
+        <div class="fw-step-icon">💪</div>
+        <div class="fw-step-label">System gets smarter</div>
+        <div class="fw-step-sub">Gap to competitors widens</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- BUILD PLAN -->
+<div class="section">
+  <div class="section-label">// BUILD PLAN</div>
+  <div class="section-title">8 Weeks With Claude. One Developer.</div>
+  <p class="section-sub">Aggressive but realistic. Claude writes the boilerplate. You write the product logic.</p>
+
+  <div class="build-grid">
+    <div class="build-card">
+      <div class="build-week">Week 1–2</div>
+      <div class="build-title">EW Mapper MVP</div>
+      <ul class="build-list">
+        <li>Loss report form (mobile-first)</li>
+        <li>Claude extracts grid + jammer est.</li>
+        <li>Leaflet.js heatmap overlay</li>
+        <li>Basic probability calculation</li>
+        <li>Offline PWA mode</li>
+      </ul>
+    </div>
+    <div class="build-card">
+      <div class="build-week">Week 3–4</div>
+      <div class="build-title">Deconfliction Engine</div>
+      <ul class="build-list">
+        <li>Target queue database (Redis)</li>
+        <li>Pre-launch conflict check</li>
+        <li>Auto-reassignment logic</li>
+        <li>BDA outcome logging</li>
+        <li>WebSocket live updates</li>
+      </ul>
+    </div>
+    <div class="build-card">
+      <div class="build-week">Week 5–6</div>
+      <div class="build-title">SIGINT Pipeline</div>
+      <ul class="build-list">
+        <li>Whisper audio transcription</li>
+        <li>Claude Russian extraction</li>
+        <li>Structured JSON output</li>
+        <li>Entity cross-reference DB</li>
+        <li>Analyst review interface</li>
+      </ul>
+    </div>
+    <div class="build-card">
+      <div class="build-week">Week 7–8</div>
+      <div class="build-title">Integration + Hardening</div>
+      <ul class="build-list">
+        <li>All 3 layers on single dashboard</li>
+        <li>Commander overview screen</li>
+        <li>Ukrainian language throughout</li>
+        <li>Low-bandwidth optimisation</li>
+        <li>Starlink deployment test</li>
+      </ul>
+    </div>
+    <div class="build-card">
+      <div class="build-week">Month 3–6</div>
+      <div class="build-title">Field Deployment</div>
+      <ul class="build-list">
+        <li>Pilot with 1–2 battalions</li>
+        <li>Operator feedback loop</li>
+        <li>EW pattern model training</li>
+        <li>SIGINT glossary expansion</li>
+        <li>Scale to brigade level</li>
+      </ul>
+    </div>
+    <div class="build-card">
+      <div class="build-week">Month 6+</div>
+      <div class="build-title">Scale + Moat</div>
+      <ul class="build-list">
+        <li>Army-wide rollout</li>
+        <li>Predictive EW model live</li>
+        <li>Pattern database deep</li>
+        <li>NATO partner integration</li>
+        <li>Export to allied nations</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- PRICING -->
+<div class="section">
+  <div class="section-label">// REVENUE MODEL</div>
+  <div class="section-title">Pricing Ukraine Can Actually Pay</div>
+  <p class="section-sub">Ukraine has limited budget but unlimited international donor backing for battlefield AI. Frame it as donor-fundable.</p>
+
+  <div class="price-grid">
+    <div class="price-card">
+      <div class="price-phase">Phase 0 — Pilot</div>
+      <div class="price-val">Free</div>
+      <div class="price-label">Deploy with 1–2 battalions. Let the EW map prove itself. Cost: your time + ~$500/mo Claude API.</div>
+    </div>
+    <div class="price-card">
+      <div class="price-phase">Phase 1 — Brigade Contract</div>
+      <div class="price-val">$500K</div>
+      <div class="price-label">Full 3-layer deployment for 1 brigade (~3 battalions). 12-month contract. Donor-fundable (UK DSTL, US USAID, EU defence fund).</div>
+    </div>
+    <div class="price-card">
+      <div class="price-phase">Phase 2 — Army-Wide</div>
+      <div class="price-val">$3M–$8M</div>
+      <div class="price-label">Full Ukrainian Ground Forces deployment. Annual SaaS. SIGINT pipeline included. International donor consortium.</div>
+    </div>
+    <div class="price-card">
+      <div class="price-phase">Phase 3 — Export</div>
+      <div class="price-val">$5M–$15M</div>
+      <div class="price-label">Same system adapted for Taiwan, Baltic states, any nation facing peer adversary drone threat. Ukraine is the proof of concept.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem;padding:1.6rem 2rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">
+    <div class="lb-title">Why Donors Will Fund This</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;margin-top:0.8rem;">
+      <div style="font-size:0.85rem;color:var(--text);line-height:1.6;">UK DSTL, US USAID, Estonian defence funds, and EU innovation funds all have active programmes for Ukraine battlefield AI. A working EW mapper with drone-loss reduction data is exactly what they need to justify funding to their governments.</div>
+      <div style="font-size:0.85rem;color:var(--text);line-height:1.6;">"We reduced drone losses by 35% in Bakhmut region over 60 days" is a headline that unlocks serious budget. The pilot is the fundraising tool. Run it for free, collect the data, present the numbers.</div>
+      <div style="font-size:0.85rem;color:var(--text);line-height:1.6;">NATO is actively looking for lessons from Ukraine to apply to its own forces. A system that works at this scale, with this level of battlefield validation, has direct export value to the entire alliance.</div>
+    </div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="section" style="padding-top:2rem;">
+  <div class="verdict">
+    <div class="verdict-label">// THE ONE-LINE PITCH</div>
+    <div class="verdict-text">
+      Ukraine is flying <em>1,000 drones a day</em> coordinated by Telegram.<br>
+      You're building the AI brain they're missing —<br>
+      and only you can build it, because only you have the data.
+    </div>
+    <div class="verdict-sub">
+      Every competitor needs Ukraine's operational data to build what you're building. But they can't get that data without being trusted. And trust is earned by deploying something that works, for free, in a trench, when it matters. That's your first move. Everything else follows.
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.4rem;">PALANTIR INSIDER — INTELLIGENCE REPORTS</p>
+  <p>SWARM BRAIN — Ukraine Battlefield AI Blueprint — April 2026 // For strategic planning purposes</p>
+</footer>
+
+<!-- BURGER MENU -->
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">// Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html"><span>📡</span> Satellite Brief</a>
+  <a href="REALTIME_SATELLITE.html"><span>🔭</span> Real-Time Satellite Vision</a>
+  <a href="PALANTIR_ACCESS_MAP.html"><span>🌍</span> Palantir Access Map</a>
+  <a href="NO_SATELLITE_STACK.html"><span>🟢</span> No Satellite Stack</a>
+  <a href="UKRAINE_DEFENCE_AI.html"><span>🇺🇦</span> Ukraine Defence AI</a>
+  <a href="SINGAPORE_GULF_ANALYSIS.html"><span>🌏</span> Singapore &amp; Gulf Analysis</a>
+  <a href="SOVEREIGN_AI_PRODUCT.html"><span>🧠</span> The Product They Can't Refuse</a>
+  <a href="SWARM_BRAIN.html" class="active-report"><span>🎯</span> Swarm Brain — Ukraine</a>
+</div>
+
+</body>
+</html>
