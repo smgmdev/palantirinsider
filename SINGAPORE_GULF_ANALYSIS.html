@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Singapore & Gulf States — AI Defence Gap Analysis</title>
+<style>
+:root {
+  --accent: #f59e0b;
+  --accent2: #d97706;
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a24;
+  --border: rgba(245,158,11,0.2);
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; width: 100%; z-index: 100;
+  background: rgba(10,10,15,0.97); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; color: var(--accent); text-transform: uppercase; }
+.nav-tag { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0f 0%, #1a1200 40%, #2d1f00 60%, #0a0a0f 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 6rem 2rem 4rem; position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(245,158,11,0.08) 0%, transparent 70%);
+}
+.hero-badge {
+  display: inline-block; padding: 0.4rem 1.2rem;
+  background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 999px; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--accent);
+  text-transform: uppercase; margin-bottom: 2rem; position: relative;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.8rem); font-weight: 800;
+  line-height: 1.1; margin-bottom: 1.5rem; position: relative;
+  background: linear-gradient(135deg, #fef3c7, #f59e0b, #d97706);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-sub {
+  font-size: 1.1rem; color: var(--muted); max-width: 680px;
+  margin: 0 auto 2.5rem; position: relative;
+}
+.hero-flags {
+  display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+  position: relative; margin-bottom: 2rem;
+}
+.flag-chip {
+  padding: 0.5rem 1.2rem; border-radius: 8px;
+  font-size: 0.85rem; font-weight: 600; letter-spacing: 0.04em;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.flag-chip.has { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: #6ee7b7; }
+.flag-chip.partial { background: rgba(245,158,11,0.12); border-color: rgba(245,158,11,0.3); color: #fcd34d; }
+.flag-chip.no { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+.hero-legend {
+  display: flex; gap: 1.5rem; justify-content: center; font-size: 0.75rem; color: var(--muted);
+  position: relative;
+}
+.leg-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.leg-dot.has { background: #10b981; }
+.leg-dot.partial { background: #f59e0b; }
+.leg-dot.no { background: #ef4444; }
+
+/* SECTIONS */
+.section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+.section-title {
+  font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--text), var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.section-sub { color: var(--muted); margin-bottom: 3rem; font-size: 0.95rem; }
+
+/* COUNTRY CARDS */
+.country-grid { display: grid; grid-template-columns: 1fr; gap: 2.5rem; }
+
+.country-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.country-header {
+  padding: 1.8rem 2rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.country-name-block { display: flex; align-items: center; gap: 1rem; }
+.country-flag { font-size: 2.4rem; line-height: 1; }
+.country-name { font-size: 1.4rem; font-weight: 800; }
+.country-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+.palantir-badge {
+  padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.06em; white-space: nowrap;
+}
+.pb-yes { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #6ee7b7; }
+.pb-partial { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.4); color: #fcd34d; }
+.pb-no { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; }
+
+.country-body { padding: 1.8rem 2rem; }
+
+.cc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+
+.cc-block { }
+.cc-label {
+  font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--accent); font-weight: 700; margin-bottom: 0.6rem;
+}
+.cc-content { font-size: 0.88rem; color: var(--text); line-height: 1.6; }
+
+.tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+.tag {
+  padding: 0.25rem 0.7rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+  background: var(--bg3); border: 1px solid var(--border); color: var(--muted);
+}
+.tag.alt { background: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+.tag.gap { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+.tag.opp { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.25); color: #6ee7b7; }
+
+.offer-box {
+  background: var(--bg3); border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 12px; padding: 1.4rem 1.6rem; margin-top: 1.5rem;
+}
+.offer-title {
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); font-weight: 700; margin-bottom: 1rem;
+}
+.offer-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; }
+.offer-list li {
+  font-size: 0.85rem; color: var(--text); padding-left: 1.2rem; position: relative;
+}
+.offer-list li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+
+.value-bar {
+  margin-top: 1.5rem; padding: 1rem 1.4rem;
+  background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15);
+  border-radius: 10px; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.vb-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.vb-val { font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+.vb-range { font-size: 0.8rem; color: var(--muted); }
+
+/* COMPARISON TABLE */
+.comp-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); margin-top: 2rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th {
+  background: var(--bg3); padding: 1rem 1.2rem; text-align: left;
+  font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); font-weight: 700; border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 0.9rem 1.2rem; border-bottom: 1px solid rgba(245,158,11,0.07);
+  color: var(--text); vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(245,158,11,0.03); }
+.td-yes { color: #6ee7b7; font-weight: 600; }
+.td-partial { color: #fcd34d; font-weight: 600; }
+.td-no { color: #fca5a5; font-weight: 600; }
+.td-muted { color: var(--muted); font-size: 0.8rem; }
+
+/* OPPORTUNITY MATRIX */
+.opp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+.opp-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem;
+}
+.opp-card-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+.opp-card-sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
+.opp-metric { font-size: 1.5rem; font-weight: 800; color: var(--accent); margin-bottom: 0.2rem; }
+.opp-metric-sub { font-size: 0.75rem; color: var(--muted); }
+.priority-bar { height: 4px; border-radius: 2px; background: var(--bg3); margin-top: 1rem; }
+.priority-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+/* DIVIDER */
+.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+/* FOOTER */
+footer {
+  padding: 3rem 2rem; text-align: center;
+  border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem;
+}
+
+/* BURGER */
+.bm-btn {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent); border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  box-shadow: 0 4px 20px rgba(245,158,11,0.4); transition: all 0.2s;
+}
+.bm-btn span { display: block; width: 20px; height: 2px; background: #000; border-radius: 2px; transition: all 0.3s; }
+.bm-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.bm-btn.open span:nth-child(2) { opacity: 0; }
+.bm-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.burger-menu {
+  position: fixed; bottom: 6rem; right: 2rem; z-index: 998;
+  background: #0a0a0f; border: 1px solid var(--border); border-radius: 16px;
+  padding: 1rem; width: 280px; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  display: none; flex-direction: column; gap: 0.3rem;
+}
+.burger-menu.open { display: flex; }
+.bml { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0.3rem 0.8rem 0.6rem; }
+.burger-menu a {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.6rem 0.8rem; border-radius: 8px; color: var(--text);
+  text-decoration: none; font-size: 0.85rem; transition: background 0.15s;
+}
+.burger-menu a:hover { background: var(--bg3); }
+.burger-menu a span { font-size: 1rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">Palantir Insider</span>
+  <span class="nav-tag">Singapore & Gulf States — AI Defence Gap Analysis</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Intelligence Report — April 2026</div>
+  <h1>Singapore & Gulf States<br>AI Defence Gap Analysis</h1>
+  <p class="hero-sub">
+    Per-country breakdown of Palantir access, current tech stack, critical capability gaps, and what sovereign AI products to offer — across Singapore, UAE, Saudi Arabia, Qatar, Bahrain, and Kuwait.
+  </p>
+  <div class="hero-flags">
+    <span class="flag-chip no">🇸🇬 Singapore — No Confirmed</span>
+    <span class="flag-chip has">🇦🇪 UAE — Confirmed</span>
+    <span class="flag-chip has">🇸🇦 Saudi Arabia — Confirmed</span>
+    <span class="flag-chip partial">🇶🇦 Qatar — Limited</span>
+    <span class="flag-chip no">🇧🇭 Bahrain — Not Confirmed</span>
+    <span class="flag-chip no">🇰🇼 Kuwait — Not Confirmed</span>
+  </div>
+  <div class="hero-legend">
+    <span><span class="leg-dot has"></span>Palantir Active</span>
+    <span><span class="leg-dot partial"></span>Limited / US Forces Only</span>
+    <span><span class="leg-dot no"></span>No Confirmed Contract</span>
+  </div>
+</section>
+
+<!-- COUNTRY CARDS -->
+<div class="section">
+  <div class="section-title">Country-by-Country Analysis</div>
+  <p class="section-sub">Palantir status, current stack, capability gaps, and recommended offering for each market.</p>
+
+  <div class="country-grid">
+
+    <!-- SINGAPORE -->
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-block">
+          <span class="country-flag">🇸🇬</span>
+          <div>
+            <div class="country-name">Singapore</div>
+            <div class="country-sub">City-state · GDP $501B · Defence budget ~$14B/yr</div>
+          </div>
+        </div>
+        <span class="palantir-badge pb-no">No Confirmed Palantir</span>
+      </div>
+      <div class="country-body">
+        <div class="cc-grid">
+          <div class="cc-block">
+            <div class="cc-label">Current Stack</div>
+            <div class="tag-list">
+              <span class="tag alt">Oracle Cloud Sovereign (DSTA)</span>
+              <span class="tag alt">Mistral AI (MINDEF + DSO)</span>
+              <span class="tag alt">Thales AI Combat Systems</span>
+              <span class="tag alt">Anduril Autonomy Platform</span>
+              <span class="tag alt">Digital Intelligence Service (DIS)</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Known Gaps</div>
+            <div class="tag-list">
+              <span class="tag gap">Multi-source intel fusion</span>
+              <span class="tag gap">Joint ops AI layer</span>
+              <span class="tag gap">Cross-agency data ontology</span>
+              <span class="tag gap">Logistics & supply chain AI</span>
+              <span class="tag gap">Predictive threat modelling</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Strategic Context</div>
+            <div class="cc-content">
+              DIS established Oct 2022 — Singapore's dedicated military digital intelligence unit. DSTA drives sovereign cloud procurement. Strong preference for vendor-neutral, auditable sovereign platforms. Mistral AI partnership signals appetite for non-US AI.
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Why No Palantir</div>
+            <div class="cc-content">
+              Singapore's neutrality doctrine limits deep US intelligence platform dependency. Preference for European and hybrid vendor stack. Five Eyes non-member — data sovereignty is a hard constraint.
+            </div>
+          </div>
+        </div>
+        <div class="offer-box">
+          <div class="offer-title">What to Offer Singapore</div>
+          <ul class="offer-list">
+            <li>Sovereign Foundry-equivalent: multi-source data fusion for DSTA/DIS</li>
+            <li>Joint Operations AI — real-time common operating picture across SAF branches</li>
+            <li>Logistics Intelligence — supply chain predictive AI for SAF forward bases</li>
+            <li>Threat Prediction Engine — ML over SIGINT/OSINT/HUMINT feeds</li>
+            <li>Cross-Agency Ontology Layer — connect MHA, MINDEF, MAS financial data</li>
+            <li>Sovereign deployment on Oracle Cloud (already onboarded by DSTA)</li>
+          </ul>
+        </div>
+        <div class="value-bar">
+          <span class="vb-label">Opportunity Size</span>
+          <span class="vb-val">$18M – $45M</span>
+          <span class="vb-range">Initial defence + intelligence platform contract</span>
+          <span class="vb-label" style="margin-left:auto;">Priority</span>
+          <span class="vb-val" style="color:#6ee7b7;">HIGH</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- UAE -->
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-block">
+          <span class="country-flag">🇦🇪</span>
+          <div>
+            <div class="country-name">UAE</div>
+            <div class="country-sub">Federation · GDP $527B · Defence budget ~$23B/yr</div>
+          </div>
+        </div>
+        <span class="palantir-badge pb-yes">Palantir Active — Aither JV</span>
+      </div>
+      <div class="country-body">
+        <div class="cc-grid">
+          <div class="cc-block">
+            <div class="cc-label">Palantir Deployment</div>
+            <div class="cc-content">
+              Aither JV with Dubai Holding (Nov 2025). Foundry + AIP deployed. Focus on government data integration and financial intelligence. Palantir CEO Karp visited UAE as part of Gulf expansion.
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Current Stack</div>
+            <div class="tag-list">
+              <span class="tag alt">G42 / Presight AI (domestic)</span>
+              <span class="tag alt">Microsoft $1.5B G42 investment</span>
+              <span class="tag alt">EDGE Group AI Accelerator</span>
+              <span class="tag alt">Palantir Foundry + AIP</span>
+              <span class="tag alt">AWS GovCloud UAE</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Known Gaps</div>
+            <div class="tag-list">
+              <span class="tag gap">Classified military data fusion</span>
+              <span class="tag gap">Unified cross-agency defence layer</span>
+              <span class="tag gap">Palantir → G42 interoperability</span>
+              <span class="tag gap">Drone swarm coordination AI</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Competitive Threat</div>
+            <div class="cc-content">
+              G42/Presight is a well-funded domestic AI competitor backed by Abu Dhabi. Any offering must position as complementary to G42, not competitive, or differentiate on classified/defence-grade capability G42 lacks.
+            </div>
+          </div>
+        </div>
+        <div class="offer-box">
+          <div class="offer-title">What to Offer UAE (Expansion Layer)</div>
+          <ul class="offer-list">
+            <li>Military-grade Foundry extension: classified data fusion above Aither scope</li>
+            <li>Palantir-to-G42 interoperability bridge layer</li>
+            <li>Drone swarm coordination + autonomous operations AI</li>
+            <li>Cross-ministry data ontology: MOFA + ADNOC + military feeds unified</li>
+            <li>Maven-equivalent for UAEAF (UAE Air Force) targeting intelligence</li>
+            <li>AIP Bootcamp → local AI talent pipeline (EDGE Group engineers)</li>
+          </ul>
+        </div>
+        <div class="value-bar">
+          <span class="vb-label">Opportunity Size</span>
+          <span class="vb-val">$35M – $90M</span>
+          <span class="vb-range">Military extension above existing Aither JV</span>
+          <span class="vb-label" style="margin-left:auto;">Priority</span>
+          <span class="vb-val" style="color:#fcd34d;">MEDIUM-HIGH</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SAUDI ARABIA -->
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-block">
+          <span class="country-flag">🇸🇦</span>
+          <div>
+            <div class="country-name">Saudi Arabia</div>
+            <div class="country-sub">Kingdom · GDP $1.07T · Defence budget ~$75B/yr</div>
+          </div>
+        </div>
+        <span class="palantir-badge pb-yes">Palantir Active — $142B Trump Deal</span>
+      </div>
+      <div class="country-body">
+        <div class="cc-grid">
+          <div class="cc-block">
+            <div class="cc-label">Palantir Deployment</div>
+            <div class="cc-content">
+              Part of the $142B Trump-era US-Saudi tech deal (May 2025). Palantir CEO Alex Karp attended Riyadh summit. Alturki AI Challenge co-hosted by Palantir + Microsoft. Active in Vision 2030 digital infrastructure.
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Current Stack</div>
+            <div class="tag-list">
+              <span class="tag alt">HUMAIN (PIF-backed national AI)</span>
+              <span class="tag alt">Oracle Cloud Partner</span>
+              <span class="tag alt">Microsoft Azure KSA</span>
+              <span class="tag alt">Palantir (AIP + Foundry)</span>
+              <span class="tag alt">Lockheed F-35 (pending)</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Known Gaps</div>
+            <div class="tag-list">
+              <span class="tag gap">US ↔ domestic platform interoperability</span>
+              <span class="tag gap">HUMAIN ↔ Palantir data bridge</span>
+              <span class="tag gap">Sovereign military AI (non-US)</span>
+              <span class="tag gap">Battlefield logistics AI</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Strategic Context</div>
+            <div class="cc-content">
+              Saudi Arabia wants to be an AI superpower via HUMAIN. Massive budget but complex: US platforms (Palantir) must coexist with PIF-backed domestic tech. The interoperability gap is the real opportunity — bridging US and sovereign stacks.
+            </div>
+          </div>
+        </div>
+        <div class="offer-box">
+          <div class="offer-title">What to Offer Saudi Arabia</div>
+          <ul class="offer-list">
+            <li>Palantir ↔ HUMAIN interoperability middleware layer</li>
+            <li>Sovereign defence AI not subject to ITAR/US export controls</li>
+            <li>Battlefield logistics AI for RSAF + RSLF supply chains</li>
+            <li>AML + financial intelligence: PIF portfolio monitoring at sovereign scale</li>
+            <li>Border intelligence fusion: Red Sea + Yemeni border sensor integration</li>
+            <li>AI training curriculum: Saudi engineers building on Foundry/AIP stack</li>
+          </ul>
+        </div>
+        <div class="value-bar">
+          <span class="vb-label">Opportunity Size</span>
+          <span class="vb-val">$60M – $180M</span>
+          <span class="vb-range">Interoperability + sovereign AI layer</span>
+          <span class="vb-label" style="margin-left:auto;">Priority</span>
+          <span class="vb-val" style="color:#6ee7b7;">HIGH</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- QATAR -->
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-block">
+          <span class="country-flag">🇶🇦</span>
+          <div>
+            <div class="country-name">Qatar</div>
+            <div class="country-sub">Emirate · GDP $235B · Defence budget ~$6.5B/yr</div>
+          </div>
+        </div>
+        <span class="palantir-badge pb-partial">Palantir — Limited (US Forces)</span>
+      </div>
+      <div class="country-body">
+        <div class="cc-grid">
+          <div class="cc-block">
+            <div class="cc-label">Palantir Deployment</div>
+            <div class="cc-content">
+              USQBC member, Palantir office in Doha. US forces using Maven Smart System at Al Udeid Air Base. Palantir's presence is US military-facing, not confirmed for Qatari sovereign government contracts.
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Current Stack</div>
+            <div class="tag-list">
+              <span class="tag alt">Qai (national AI company, 2024)</span>
+              <span class="tag alt">Microsoft Azure Qatar DC</span>
+              <span class="tag alt">Google Cloud Qatar DC</span>
+              <span class="tag alt">Defence Digitalisation Compass (Dec 2024)</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Known Gaps</div>
+            <div class="tag-list">
+              <span class="tag gap">Sovereign government data platform</span>
+              <span class="tag gap">Qatari military AI (independent of US)</span>
+              <span class="tag gap">LNG infrastructure intelligence</span>
+              <span class="tag gap">Event security AI (post-World Cup)</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Strategic Context</div>
+            <div class="cc-content">
+              Qatar hosts US Central Command forward HQ (Al Udeid). Has both Microsoft and Google sovereign data centres — rare for Gulf. Defence Digitalisation Compass (Dec 2024) signals formal commitment to military digital transformation.
+            </div>
+          </div>
+        </div>
+        <div class="offer-box">
+          <div class="offer-title">What to Offer Qatar</div>
+          <ul class="offer-list">
+            <li>Sovereign Foundry equivalent: Qatar government data fusion on local Azure/GCP</li>
+            <li>QAF (Qatar Armed Forces) AI layer — independent of US Maven dependency</li>
+            <li>LNG infrastructure protection: predictive AI for North Field monitoring</li>
+            <li>Qai AI platform integration: build on top of Qai rather than compete</li>
+            <li>Crowd intelligence + large-event security AI (post-World Cup IP)</li>
+            <li>Cross-border threat fusion: Iran + maritime Strait of Hormuz monitoring</li>
+          </ul>
+        </div>
+        <div class="value-bar">
+          <span class="vb-label">Opportunity Size</span>
+          <span class="vb-val">$12M – $35M</span>
+          <span class="vb-range">Sovereign government + defence AI</span>
+          <span class="vb-label" style="margin-left:auto;">Priority</span>
+          <span class="vb-val" style="color:#fcd34d;">MEDIUM</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BAHRAIN -->
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-block">
+          <span class="country-flag">🇧🇭</span>
+          <div>
+            <div class="country-name">Bahrain</div>
+            <div class="country-sub">Kingdom · GDP $44B · Defence budget ~$1.4B/yr</div>
+          </div>
+        </div>
+        <span class="palantir-badge pb-no">No Confirmed Palantir</span>
+      </div>
+      <div class="country-body">
+        <div class="cc-grid">
+          <div class="cc-block">
+            <div class="cc-label">Current Stack</div>
+            <div class="tag-list">
+              <span class="tag alt">L3Harris C4I Systems</span>
+              <span class="tag alt">Lockheed F-16 Block 70</span>
+              <span class="tag alt">Patriot PAC-3 (US)</span>
+              <span class="tag alt">National AI Policy (May 2025)</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Known Gaps</div>
+            <div class="tag-list">
+              <span class="tag gap">Sovereign data integration platform</span>
+              <span class="tag gap">Indigenous defence AI (near-zero)</span>
+              <span class="tag gap">NAVCENT ↔ BDF data bridge</span>
+              <span class="tag gap">Port + maritime intelligence</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Strategic Context</div>
+            <div class="cc-content">
+              Hosts US NAVCENT and 5th Fleet — significant US military presence. Small market but strategic location. National AI Policy published May 2025. Nearly entirely US-hardware dependent for defence, with minimal domestic digital capability.
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Entry Angle</div>
+            <div class="cc-content">
+              Small defence budget limits large Foundry-scale deals. Best approach: lightweight maritime intelligence AI or government data platform — then expand. Use NAVCENT relationship as proof-of-concept leverage.
+            </div>
+          </div>
+        </div>
+        <div class="offer-box">
+          <div class="offer-title">What to Offer Bahrain</div>
+          <ul class="offer-list">
+            <li>Maritime Intelligence Platform: Gulf + Strait of Hormuz vessel tracking + threat fusion</li>
+            <li>Government Operations AI: lightweight Foundry-equivalent for Bahraini ministries</li>
+            <li>BDF ↔ NAVCENT data bridge: Bahraini forces accessing US intelligence feeds securely</li>
+            <li>Port security AI: Khalifa Bin Salman Port anomaly detection</li>
+            <li>National AI Policy implementation partner: training + platform</li>
+          </ul>
+        </div>
+        <div class="value-bar">
+          <span class="vb-label">Opportunity Size</span>
+          <span class="vb-val">$4M – $12M</span>
+          <span class="vb-range">Maritime + government ops AI (small market)</span>
+          <span class="vb-label" style="margin-left:auto;">Priority</span>
+          <span class="vb-val" style="color:#f87171;">LOW-MEDIUM</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KUWAIT -->
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-block">
+          <span class="country-flag">🇰🇼</span>
+          <div>
+            <div class="country-name">Kuwait</div>
+            <div class="country-sub">Emirate · GDP $166B · Defence budget ~$8.5B/yr</div>
+          </div>
+        </div>
+        <span class="palantir-badge pb-no">No Confirmed Palantir</span>
+      </div>
+      <div class="country-body">
+        <div class="cc-grid">
+          <div class="cc-block">
+            <div class="cc-label">Current Stack</div>
+            <div class="tag-list">
+              <span class="tag alt">Microsoft Azure National AI Infra</span>
+              <span class="tag alt">National AI Strategy 2025–2028 (Microsoft co-authored)</span>
+              <span class="tag alt">KIA joined $30B AI infra fund</span>
+              <span class="tag alt">KuwaitSat-1 (2023)</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Known Gaps</div>
+            <div class="tag-list">
+              <span class="tag gap">Foundational data platform (near-absent)</span>
+              <span class="tag gap">Indigenous defence AI (near-total gap)</span>
+              <span class="tag gap">Multi-agency data fusion</span>
+              <span class="tag gap">Border + northern threat monitoring</span>
+              <span class="tag gap">Oil infrastructure AI</span>
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Strategic Context</div>
+            <div class="cc-content">
+              Microsoft co-authored Kuwait's national AI strategy — deep Azure entrenchment. KuwaitSat-1 launched 2023 (Earth observation). Kuwait Investment Authority joined $30B global AI infrastructure fund. Large oil wealth but underdeveloped defence tech.
+            </div>
+          </div>
+          <div class="cc-block">
+            <div class="cc-label">Entry Angle</div>
+            <div class="cc-content">
+              Near-total absence of indigenous defence AI is both the gap and the opportunity. Any sovereign Foundry equivalent built on Azure (already national infrastructure) has a natural landing zone. Oil infrastructure protection AI is an immediate high-value pitch.
+            </div>
+          </div>
+        </div>
+        <div class="offer-box">
+          <div class="offer-title">What to Offer Kuwait</div>
+          <ul class="offer-list">
+            <li>Sovereign Foundry on Azure: national data fabric built on existing Microsoft infra</li>
+            <li>Oil infrastructure AI: KNPC / KPC predictive maintenance + threat detection</li>
+            <li>Border Intelligence: Iraqi border + northern threat monitoring with AI fusion</li>
+            <li>KuwaitSat-1 data integration: connect EO satellite data to ground intelligence layer</li>
+            <li>KAF (Kuwait Air Force) maintenance + logistics AI</li>
+            <li>National AI Strategy implementation: build on Microsoft partnership, not against it</li>
+          </ul>
+        </div>
+        <div class="value-bar">
+          <span class="vb-label">Opportunity Size</span>
+          <span class="vb-val">$15M – $40M</span>
+          <span class="vb-range">Greenfield: oil AI + sovereign data platform</span>
+          <span class="vb-label" style="margin-left:auto;">Priority</span>
+          <span class="vb-val" style="color:#fcd34d;">MEDIUM-HIGH</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- COMPARISON TABLE -->
+<div class="section">
+  <div class="section-title">Side-by-Side Comparison</div>
+  <p class="section-sub">Palantir status, gaps, and recommended entry product across all six markets.</p>
+
+  <div class="comp-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th>Palantir</th>
+          <th>Biggest Gap</th>
+          <th>Best Entry Product</th>
+          <th>Key Competitor</th>
+          <th>Market Size</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>🇸🇬 Singapore</strong></td>
+          <td class="td-no">None</td>
+          <td>Multi-source intel fusion across SAF branches</td>
+          <td>Sovereign joint ops AI on Oracle Cloud</td>
+          <td>Thales, Anduril, Mistral</td>
+          <td class="td-muted">$18M–$45M</td>
+          <td class="td-yes">High</td>
+        </tr>
+        <tr>
+          <td><strong>🇦🇪 UAE</strong></td>
+          <td class="td-yes">Active (Aither JV)</td>
+          <td>Classified military fusion above Aither scope</td>
+          <td>Military-grade AIP extension + G42 bridge</td>
+          <td>G42 / Presight (domestic)</td>
+          <td class="td-muted">$35M–$90M</td>
+          <td class="td-partial">Med-High</td>
+        </tr>
+        <tr>
+          <td><strong>🇸🇦 Saudi Arabia</strong></td>
+          <td class="td-yes">Active ($142B deal)</td>
+          <td>US ↔ HUMAIN platform interoperability</td>
+          <td>Interoperability middleware + sovereign AI</td>
+          <td>HUMAIN (PIF), Microsoft</td>
+          <td class="td-muted">$60M–$180M</td>
+          <td class="td-yes">High</td>
+        </tr>
+        <tr>
+          <td><strong>🇶🇦 Qatar</strong></td>
+          <td class="td-partial">US forces only</td>
+          <td>Sovereign Qatari government AI platform</td>
+          <td>Foundry-equivalent on Azure/GCP sovereign DC</td>
+          <td>Qai (national AI)</td>
+          <td class="td-muted">$12M–$35M</td>
+          <td class="td-partial">Medium</td>
+        </tr>
+        <tr>
+          <td><strong>🇧🇭 Bahrain</strong></td>
+          <td class="td-no">None</td>
+          <td>Sovereign data integration (small market)</td>
+          <td>Maritime intelligence AI</td>
+          <td>L3Harris C4I</td>
+          <td class="td-muted">$4M–$12M</td>
+          <td class="td-no">Low-Med</td>
+        </tr>
+        <tr>
+          <td><strong>🇰🇼 Kuwait</strong></td>
+          <td class="td-no">None</td>
+          <td>Foundational data platform (near-total gap)</td>
+          <td>Sovereign Foundry on Azure + oil AI</td>
+          <td>Microsoft (entrenched)</td>
+          <td class="td-muted">$15M–$40M</td>
+          <td class="td-partial">Med-High</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- OPPORTUNITY MATRIX -->
+<div class="section">
+  <div class="section-title">Opportunity Matrix</div>
+  <p class="section-sub">Combined addressable market and strategic entry ranking across all six countries.</p>
+
+  <div class="opp-grid">
+    <div class="opp-card">
+      <div class="opp-card-title">Saudi Arabia</div>
+      <div class="opp-card-sub">Largest market · Palantir already in · Interop gap</div>
+      <div class="opp-metric">$60M – $180M</div>
+      <div class="opp-metric-sub">Interoperability + sovereign AI layer</div>
+      <div class="priority-bar"><div class="priority-fill" style="width:95%"></div></div>
+    </div>
+    <div class="opp-card">
+      <div class="opp-card-title">UAE</div>
+      <div class="opp-card-sub">Active Palantir · Military extension gap · G42 dynamic</div>
+      <div class="opp-metric">$35M – $90M</div>
+      <div class="opp-metric-sub">Military AIP extension above Aither</div>
+      <div class="priority-bar"><div class="priority-fill" style="width:80%"></div></div>
+    </div>
+    <div class="opp-card">
+      <div class="opp-card-title">Singapore</div>
+      <div class="opp-card-sub">No Palantir · Sovereign-first · High tech capability</div>
+      <div class="opp-metric">$18M – $45M</div>
+      <div class="opp-metric-sub">Joint ops AI + cross-agency ontology</div>
+      <div class="priority-bar"><div class="priority-fill" style="width:75%"></div></div>
+    </div>
+    <div class="opp-card">
+      <div class="opp-card-title">Kuwait</div>
+      <div class="opp-card-sub">Greenfield · Microsoft entrenched · Oil wealth</div>
+      <div class="opp-metric">$15M – $40M</div>
+      <div class="opp-metric-sub">Sovereign Foundry on Azure + oil AI</div>
+      <div class="priority-bar"><div class="priority-fill" style="width:65%"></div></div>
+    </div>
+    <div class="opp-card">
+      <div class="opp-card-title">Qatar</div>
+      <div class="opp-card-sub">US forces have Maven · Sovereign contract gap</div>
+      <div class="opp-metric">$12M – $35M</div>
+      <div class="opp-metric-sub">Sovereign government AI on local Azure/GCP</div>
+      <div class="priority-bar"><div class="priority-fill" style="width:55%"></div></div>
+    </div>
+    <div class="opp-card">
+      <div class="opp-card-title">Bahrain</div>
+      <div class="opp-card-sub">Small market · US-dependent · Maritime angle</div>
+      <div class="opp-metric">$4M – $12M</div>
+      <div class="opp-metric-sub">Maritime intelligence AI</div>
+      <div class="priority-bar"><div class="priority-fill" style="width:30%"></div></div>
+    </div>
+  </div>
+
+  <div style="margin-top:2.5rem; padding:1.8rem 2rem; background:var(--bg2); border:1px solid var(--border); border-radius:14px;">
+    <div style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:1rem;">Combined Market Opportunity</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.5rem;">
+      <div>
+        <div style="font-size:2rem;font-weight:800;color:var(--accent);">$144M</div>
+        <div style="font-size:0.8rem;color:var(--muted);">Low-end total (6 countries)</div>
+      </div>
+      <div>
+        <div style="font-size:2rem;font-weight:800;color:var(--accent);">$402M</div>
+        <div style="font-size:0.8rem;color:var(--muted);">High-end total (6 countries)</div>
+      </div>
+      <div>
+        <div style="font-size:2rem;font-weight:800;color:#6ee7b7;">3</div>
+        <div style="font-size:0.8rem;color:var(--muted);">Countries with Palantir already deployed</div>
+      </div>
+      <div>
+        <div style="font-size:2rem;font-weight:800;color:#fca5a5;">3</div>
+        <div style="font-size:0.8rem;color:var(--muted);">Greenfield markets (no confirmed Palantir)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- STRATEGY -->
+<div class="section">
+  <div class="section-title">Entry Strategy: How to Win These Markets</div>
+  <p class="section-sub">Common patterns and differentiation levers across the Singapore + Gulf corridor.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.6rem;">
+      <div style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:0.8rem;">01 — Sovereignty First</div>
+      <div style="font-size:0.9rem;color:var(--text);line-height:1.7;">Every country here has a sovereignty constraint. Deploy on their national cloud (Oracle for Singapore, Azure for Kuwait/Qatar, AWS/Azure for Saudi). Palantir's strength is also its weakness: US-origin triggers data sovereignty concerns. Position as "sovereign-first, US-independent."</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.6rem;">
+      <div style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:0.8rem;">02 — Build On, Not Against</div>
+      <div style="font-size:0.9rem;color:var(--text);line-height:1.7;">G42 in UAE, HUMAIN in Saudi, Qai in Qatar, Microsoft in Kuwait — these are entrenched. Don't compete directly. Position as the intelligence layer that makes their existing investments more powerful. Interoperability is the product.</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.6rem;">
+      <div style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:0.8rem;">03 — Sector Wedges</div>
+      <div style="font-size:0.9rem;color:var(--text);line-height:1.7;">Enter via a high-value sector, not a broad platform pitch: maritime AI for Bahrain, oil infrastructure AI for Kuwait, joint ops AI for Singapore. Prove value in one silo, then expand to full Foundry-equivalent. Sector wedges close 10x faster than platform deals.</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.6rem;">
+      <div style="font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:0.8rem;">04 — Talent Pipeline</div>
+      <div style="font-size:0.9rem;color:var(--text);line-height:1.7;">All six countries have national AI ambitions but thin talent pools. An "AI bootcamp" offer (like Palantir's AIP Bootcamps) creates lock-in, builds local advocacy, and is genuinely valued. Saudi HUMAIN and Singapore DIS both need this.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.5rem;">Palantir Insider — Intelligence Reports</p>
+  <p>Singapore & Gulf States AI Defence Gap Analysis — April 2026. For strategic planning purposes only.</p>
+</footer>
+
+<!-- BURGER MENU -->
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html"><span>📡</span> Satellite Brief</a>
+  <a href="REALTIME_SATELLITE.html"><span>🔭</span> Real-Time Satellite Vision</a>
+  <a href="PALANTIR_ACCESS_MAP.html"><span>🌍</span> Palantir Access Map</a>
+  <a href="NO_SATELLITE_STACK.html"><span>🟢</span> No Satellite Stack</a>
+  <a href="UKRAINE_DEFENCE_AI.html"><span>🇺🇦</span> Ukraine Defence AI</a>
+  <a href="SINGAPORE_GULF_ANALYSIS.html"><span>🌏</span> Singapore & Gulf Analysis</a>
+</div>
+
+</body>
+</html>
