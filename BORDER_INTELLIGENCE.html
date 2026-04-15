@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autonomous Border Intelligence — AI-Powered Perimeter Surveillance</title>
+<style>
+:root {
+  --accent: #7c3aed;
+  --accent2: #a78bfa;
+  --accent3: #ddd6fe;
+  --ok: #22c55e;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --bg: #05030f;
+  --bg2: #0a0718;
+  --bg3: #110d20;
+  --border: rgba(124,58,237,0.2);
+  --text: #f5f3ff;
+  --muted: #7c6fa0;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; line-height:1.6; }
+
+nav {
+  position:fixed; top:0; width:100%; z-index:100;
+  background:rgba(5,3,15,0.97); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem; height:56px; display:flex; align-items:center; justify-content:space-between;
+}
+.nav-brand { font-size:0.78rem; font-weight:700; letter-spacing:0.14em; color:var(--accent2); text-transform:uppercase; }
+.nav-tag { font-size:0.68rem; color:var(--muted); letter-spacing:0.06em; }
+.nav-live { display:flex; align-items:center; gap:0.4rem; font-size:0.65rem; color:var(--ok); letter-spacing:0.1em; font-family:'Courier New',monospace; }
+.live-dot { width:6px; height:6px; border-radius:50%; background:var(--ok); animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.7)} }
+
+/* HERO */
+.hero {
+  min-height:100vh;
+  background:radial-gradient(ellipse 80% 60% at 50% 30%, rgba(124,58,237,0.1) 0%, transparent 65%),
+             linear-gradient(180deg, #05030f 0%, #09051a 50%, #05030f 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:7rem 2rem 4rem; position:relative; overflow:hidden;
+}
+.hero::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image: linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+  background-size:80px 80px;
+}
+
+.hero-badge {
+  display:inline-flex; align-items:center; gap:0.5rem;
+  padding:0.35rem 1rem; background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.3);
+  border-radius:4px; font-size:0.7rem; letter-spacing:0.12em; color:var(--accent2);
+  text-transform:uppercase; margin-bottom:2rem; position:relative; z-index:1;
+  font-family:'Courier New',monospace;
+}
+
+.hero h1 {
+  font-size:clamp(2rem,5.5vw,4.5rem); font-weight:900; line-height:1.05;
+  margin-bottom:1rem; position:relative; z-index:1;
+  background:linear-gradient(135deg, #ede9fe, #a78bfa, #7c3aed);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.hero-sub {
+  font-size:1.05rem; color:var(--muted); max-width:640px;
+  margin:0 auto 3rem; position:relative; z-index:1; line-height:1.7;
+}
+.hero-sub strong { color:var(--text); }
+
+/* MOCK CAMERA GRID */
+.cam-grid {
+  position:relative; z-index:1; max-width:860px; width:100%;
+  display:grid; grid-template-columns:repeat(3,1fr); gap:3px;
+  border:1px solid rgba(124,58,237,0.3); border-radius:10px; overflow:hidden;
+  box-shadow:0 0 60px rgba(124,58,237,0.12);
+}
+.cam-feed {
+  background:var(--bg3); aspect-ratio:16/10; position:relative; overflow:hidden;
+}
+.cam-feed::before {
+  content:''; position:absolute; inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(124,58,237,0.03) 3px,rgba(124,58,237,0.03) 4px);
+}
+.cam-label {
+  position:absolute; top:0.4rem; left:0.4rem;
+  font-size:0.55rem; letter-spacing:0.1em; font-family:'Courier New',monospace;
+  color:rgba(255,255,255,0.5); text-transform:uppercase;
+}
+.cam-time {
+  position:absolute; top:0.4rem; right:0.4rem;
+  font-size:0.55rem; font-family:'Courier New',monospace; color:rgba(255,255,255,0.4);
+}
+.cam-status {
+  position:absolute; bottom:0.4rem; left:0.4rem;
+  display:flex; align-items:center; gap:0.3rem;
+  font-size:0.55rem; font-family:'Courier New',monospace;
+}
+.cs-dot { width:5px; height:5px; border-radius:50%; }
+.cs-ok { background:var(--ok); }
+.cs-warn { background:var(--warn); }
+.cs-alert { background:var(--danger); animation:pulse 0.8s infinite; }
+
+/* Detection boxes */
+.det-box {
+  position:absolute; border:2px solid; border-radius:2px;
+  pointer-events:none;
+}
+.det-person { border-color:var(--warn); }
+.det-vehicle { border-color:var(--danger); }
+.det-ok { border-color:var(--ok); }
+.det-label {
+  position:absolute; top:-1.1rem; left:0;
+  font-size:0.5rem; font-family:'Courier New',monospace;
+  padding:0.1rem 0.3rem; border-radius:2px; white-space:nowrap;
+}
+.dl-warn { background:var(--warn); color:#000; }
+.dl-danger { background:var(--danger); color:#fff; }
+.dl-ok { background:var(--ok); color:#000; }
+
+/* Alert ticker */
+.alert-ticker {
+  grid-column:1/-1; background:rgba(5,3,15,0.95);
+  border-top:1px solid rgba(124,58,237,0.2);
+  padding:0.4rem 0.8rem; display:flex; align-items:center; gap:1rem;
+  overflow:hidden;
+}
+.ticker-label { font-size:0.6rem; color:var(--accent2); letter-spacing:0.1em; text-transform:uppercase; font-family:'Courier New',monospace; white-space:nowrap; }
+.ticker-items { display:flex; gap:1.5rem; font-size:0.6rem; font-family:'Courier New',monospace; color:var(--muted); }
+.ticker-alert { color:var(--danger); }
+.ticker-ok { color:var(--ok); }
+.ticker-warn { color:var(--warn); }
+
+/* SECTION */
+.section { padding:5rem 2rem; max-width:1200px; margin:0 auto; }
+.sec-label { font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--accent2); font-family:'Courier New',monospace; margin-bottom:0.5rem; }
+.sec-title { font-size:1.8rem; font-weight:800; margin-bottom:0.5rem; color:var(--text); }
+.sec-sub { color:var(--muted); margin-bottom:3rem; font-size:0.9rem; }
+.divider { border:none; border-top:1px solid var(--border); }
+
+/* ARCHITECTURE */
+.arch-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+.arch-card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:14px; overflow:hidden;
+}
+.arch-header {
+  padding:1.4rem 1.6rem; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:1rem;
+}
+.arch-icon { font-size:2rem; }
+.arch-name { font-size:1rem; font-weight:800; }
+.arch-tag { font-size:0.7rem; color:var(--muted); }
+.arch-body { padding:1.4rem 1.6rem; }
+.arch-list { list-style:none; }
+.arch-list li { font-size:0.83rem; color:var(--text); padding:0.45rem 0; padding-left:1.3rem; position:relative; border-bottom:1px solid rgba(124,58,237,0.06); line-height:1.5; }
+.arch-list li:last-child { border-bottom:none; }
+.arch-list li::before { content:'›'; position:absolute; left:0; color:var(--accent2); font-weight:700; font-size:1rem; line-height:1.3; }
+.arch-metric { margin-top:1rem; padding:0.7rem 1rem; background:rgba(124,58,237,0.06); border:1px solid rgba(124,58,237,0.15); border-radius:8px; font-size:0.78rem; color:var(--accent3); font-family:'Courier New',monospace; }
+
+/* AI LAYER */
+.ai-pipeline {
+  background:var(--bg2); border:1px solid var(--border); border-radius:16px; overflow:hidden;
+}
+.pipeline-steps {
+  display:grid; grid-template-columns:repeat(5,1fr);
+}
+@media(max-width:800px){ .pipeline-steps { grid-template-columns:1fr 1fr; } }
+.pipe-step { padding:1.6rem 1.4rem; border-right:1px solid var(--border); position:relative; }
+.pipe-step:last-child { border-right:none; }
+.pipe-num { font-size:0.65rem; color:var(--accent2); letter-spacing:0.12em; text-transform:uppercase; font-family:'Courier New',monospace; font-weight:700; margin-bottom:0.6rem; }
+.pipe-name { font-size:0.92rem; font-weight:800; margin-bottom:0.5rem; }
+.pipe-text { font-size:0.78rem; color:var(--muted); line-height:1.6; }
+.pipe-tool { margin-top:0.8rem; display:flex; flex-wrap:wrap; gap:0.3rem; }
+.ptool { font-size:0.65rem; padding:0.2rem 0.5rem; border-radius:4px; font-family:'Courier New',monospace; }
+.ptool-main { background:rgba(124,58,237,0.12); border:1px solid rgba(124,58,237,0.3); color:var(--accent3); }
+.ptool-sec { background:var(--bg3); border:1px solid var(--border); color:var(--muted); }
+
+.pipeline-output {
+  border-top:1px solid var(--border); padding:1.4rem 1.6rem;
+  display:grid; grid-template-columns:auto 1fr; gap:1.2rem; align-items:start;
+}
+.po-label { font-size:0.65rem; color:var(--accent2); letter-spacing:0.1em; text-transform:uppercase; font-family:'Courier New',monospace; font-weight:700; white-space:nowrap; }
+.po-example {
+  font-size:0.78rem; color:var(--text); font-family:'Courier New',monospace; line-height:1.7;
+  background:var(--bg3); padding:0.8rem 1rem; border-radius:6px; border:1px solid var(--border);
+}
+.po-key { color:var(--accent2); }
+.po-str { color:#86efac; }
+.po-num { color:#fcd34d; }
+.po-bool { color:#f9a8d4; }
+
+/* DETECTION TYPES */
+.detect-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.2rem; }
+.detect-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.4rem; }
+.detect-icon { font-size:1.6rem; margin-bottom:0.7rem; }
+.detect-name { font-size:0.92rem; font-weight:800; margin-bottom:0.4rem; }
+.detect-conf { font-size:0.7rem; color:var(--accent2); font-family:'Courier New',monospace; margin-bottom:0.6rem; }
+.detect-desc { font-size:0.8rem; color:var(--muted); line-height:1.6; }
+
+/* COUNTRY APPLICATIONS */
+.country-apps { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
+.ca-card { background:var(--bg2); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+.ca-header { padding:1.2rem 1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.ca-flag-name { display:flex; align-items:center; gap:0.8rem; }
+.ca-flag { font-size:1.8rem; }
+.ca-name { font-size:1rem; font-weight:800; }
+.ca-border { font-size:0.72rem; color:var(--muted); }
+.ca-badge { font-size:0.65rem; padding:0.2rem 0.6rem; border-radius:4px; font-family:'Courier New',monospace; font-weight:700; }
+.cab-crit { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; }
+.cab-high { background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); color:#fcd34d; }
+.cab-med { background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.3); color:var(--accent3); }
+.ca-body { padding:1.2rem 1.5rem; }
+.ca-stat-row { display:flex; gap:1.5rem; margin-bottom:1rem; flex-wrap:wrap; }
+.ca-stat { }
+.ca-stat-val { font-size:1.1rem; font-weight:800; color:var(--accent2); line-height:1; }
+.ca-stat-label { font-size:0.65rem; color:var(--muted); font-family:'Courier New',monospace; }
+.ca-spec { font-size:0.8rem; color:var(--muted); line-height:1.6; margin-bottom:1rem; }
+.ca-threats { display:flex; flex-wrap:wrap; gap:0.3rem; }
+.ca-threat { font-size:0.68rem; padding:0.2rem 0.6rem; border-radius:4px; background:var(--bg3); border:1px solid var(--border); color:var(--muted); }
+
+/* INTEGRATION */
+.integration-row {
+  display:flex; align-items:stretch; gap:0; flex-wrap:wrap;
+  background:var(--bg2); border:1px solid var(--border); border-radius:14px; overflow:hidden;
+  margin-top:2rem;
+}
+.int-block { flex:1; min-width:200px; padding:1.6rem; border-right:1px solid var(--border); }
+.int-block:last-child { border-right:none; }
+.int-icon { font-size:1.4rem; margin-bottom:0.6rem; }
+.int-name { font-size:0.88rem; font-weight:800; margin-bottom:0.4rem; }
+.int-desc { font-size:0.78rem; color:var(--muted); line-height:1.6; }
+.int-link { margin-top:0.6rem; font-size:0.7rem; color:var(--accent2); font-family:'Courier New',monospace; }
+
+/* HARDWARE */
+.hw-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1.2rem; }
+.hw-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.4rem; }
+.hw-category { font-size:0.65rem; color:var(--accent2); letter-spacing:0.1em; text-transform:uppercase; font-family:'Courier New',monospace; font-weight:700; margin-bottom:0.4rem; }
+.hw-name { font-size:0.92rem; font-weight:800; margin-bottom:0.5rem; }
+.hw-desc { font-size:0.78rem; color:var(--muted); line-height:1.6; }
+.hw-price { margin-top:0.7rem; font-size:0.78rem; color:var(--accent3); font-family:'Courier New',monospace; }
+
+/* REVENUE */
+.rev-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1.2rem; margin-top:2rem; }
+.rev-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.4rem; position:relative; overflow:hidden; }
+.rev-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--accent), var(--accent2)); }
+.rev-phase { font-size:0.65rem; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; font-family:'Courier New',monospace; margin-bottom:0.4rem; }
+.rev-val { font-size:1.6rem; font-weight:900; color:var(--accent2); line-height:1; margin-bottom:0.3rem; }
+.rev-label { font-size:0.78rem; color:var(--muted); }
+
+/* VERDICT */
+.verdict { margin-top:4rem; padding:3rem 2.5rem; background:linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(124,58,237,0.03) 100%); border:1px solid rgba(124,58,237,0.2); border-radius:16px; text-align:center; position:relative; overflow:hidden; }
+.verdict::before { content:'BORDER INTEL'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:5rem; font-weight:900; color:rgba(124,58,237,0.03); white-space:nowrap; pointer-events:none; }
+.v-label { font-size:0.65rem; color:var(--accent2); letter-spacing:0.18em; text-transform:uppercase; font-family:'Courier New',monospace; font-weight:700; margin-bottom:1rem; position:relative; }
+.v-text { font-size:clamp(1rem,2.5vw,1.5rem); font-weight:800; line-height:1.45; color:var(--text); max-width:820px; margin:0 auto 1.5rem; position:relative; }
+.v-text em { font-style:normal; color:var(--accent2); }
+.v-sub { font-size:0.87rem; color:var(--muted); max-width:640px; margin:0 auto; position:relative; line-height:1.7; }
+
+footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border); color:var(--muted); font-size:0.72rem; font-family:'Courier New',monospace; }
+
+/* BURGER */
+.bm-btn { position:fixed; bottom:2rem; right:2rem; z-index:999; width:52px; height:52px; border-radius:50%; background:var(--accent2); border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; box-shadow:0 4px 20px rgba(124,58,237,0.4); }
+.bm-btn span { display:block; width:20px; height:2px; background:#fff; border-radius:2px; transition:all 0.3s; }
+.bm-btn.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+.bm-btn.open span:nth-child(2) { opacity:0; }
+.bm-btn.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+.burger-menu { position:fixed; bottom:6rem; right:2rem; z-index:998; background:#05030f; border:1px solid var(--border); border-radius:16px; padding:1rem; width:295px; box-shadow:0 8px 40px rgba(0,0,0,0.7); display:none; flex-direction:column; gap:0.3rem; }
+.burger-menu.open { display:flex; }
+.bml { font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); padding:0.3rem 0.8rem 0.6rem; font-family:'Courier New',monospace; }
+.burger-menu a { display:flex; align-items:center; gap:0.7rem; padding:0.6rem 0.8rem; border-radius:8px; color:var(--text); text-decoration:none; font-size:0.84rem; transition:background 0.15s; }
+.burger-menu a:hover { background:var(--bg3); }
+.burger-menu a.active-report { background:rgba(124,58,237,0.12); color:var(--accent2); }
+.burger-menu a span { font-size:1rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">Palantir Insider</span>
+  <span class="nav-tag">Autonomous Border Intelligence — Product Blueprint</span>
+  <span class="nav-live"><span class="live-dot"></span> 6 FEEDS ACTIVE</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span class="live-dot"></span>&nbsp; LIVE SYSTEM DEMO</div>
+  <h1>Autonomous Border<br>Intelligence</h1>
+  <p class="hero-sub">
+    <strong>Fixed sensor towers + autonomous drones + AI analysis.</strong> Every camera feed processed in real time. Every anomaly detected, classified, and actioned — before a human even looks at the screen.
+  </p>
+
+  <!-- MOCK CAMERA GRID -->
+  <div class="cam-grid">
+
+    <!-- Feed 1 — ALERT -->
+    <div class="cam-feed" style="background:linear-gradient(135deg,#0d0a1a,#1a0d0d);">
+      <div class="cam-label">CAM-04 · SECTOR 7-N · KUWAIT BORDER</div>
+      <div class="cam-time">03:47:22</div>
+      <!-- Simulated scene elements -->
+      <div style="position:absolute;bottom:25%;left:20%;width:60%;height:40%;background:linear-gradient(180deg,rgba(20,15,5,0.8),rgba(40,30,10,0.4));border-radius:4px;"></div>
+      <div class="det-box det-vehicle" style="left:28%;top:30%;width:22%;height:28%;">
+        <span class="det-label dl-danger">VEHICLE · 94%</span>
+      </div>
+      <div class="det-box det-person" style="left:55%;top:38%;width:8%;height:22%;">
+        <span class="det-label dl-warn">PERSON · 87%</span>
+      </div>
+      <div class="cam-status">
+        <span class="cs-dot cs-alert"></span>
+        <span style="font-size:0.52rem;color:#fca5a5;font-family:'Courier New',monospace;">⚠ THREAT DETECTED — DRONE DISPATCHED</span>
+      </div>
+    </div>
+
+    <!-- Feed 2 — CLEAR -->
+    <div class="cam-feed" style="background:linear-gradient(135deg,#050a0a,#0a1510);">
+      <div class="cam-label">CAM-11 · SECTOR 3-E · SAUDI BORDER</div>
+      <div class="cam-time">03:47:22</div>
+      <div style="position:absolute;bottom:30%;left:0;width:100%;height:35%;background:linear-gradient(180deg,rgba(5,20,5,0.3),rgba(10,30,10,0.5));"></div>
+      <div class="det-box det-ok" style="left:40%;top:45%;width:18%;height:20%;">
+        <span class="det-label dl-ok">WILDLIFE · 91%</span>
+      </div>
+      <div class="cam-status">
+        <span class="cs-dot cs-ok"></span>
+        <span style="font-size:0.52rem;color:#86efac;font-family:'Courier New',monospace;">CLEAR — BASELINE NORMAL</span>
+      </div>
+    </div>
+
+    <!-- Feed 3 — DRONE FEED -->
+    <div class="cam-feed" style="background:linear-gradient(135deg,#080510,#100820);">
+      <div class="cam-label">DRONE-02 · RESPONDING · ALT 45M</div>
+      <div class="cam-time">03:47:31</div>
+      <div style="position:absolute;top:20%;left:15%;width:70%;height:55%;background:radial-gradient(ellipse,rgba(30,20,5,0.6),rgba(10,5,0,0.2));border-radius:50%;"></div>
+      <div class="det-box det-vehicle" style="left:32%;top:28%;width:35%;height:40%;">
+        <span class="det-label dl-danger">TRUCK · UNLIT · 96%</span>
+      </div>
+      <div style="position:absolute;bottom:0.4rem;right:0.4rem;font-size:0.5rem;font-family:'Courier New',monospace;color:var(--warn);">ETA TARGET: 00:38</div>
+      <div class="cam-status">
+        <span class="cs-dot cs-warn" style="background:var(--warn);"></span>
+        <span style="font-size:0.52rem;color:#fcd34d;font-family:'Courier New',monospace;">DRONE VISUAL — AWAITING ID</span>
+      </div>
+    </div>
+
+    <!-- Feed 4 — MARITIME -->
+    <div class="cam-feed" style="background:linear-gradient(135deg,#030810,#05101a);">
+      <div class="cam-label">CAM-07 · MARITIME · UAE COAST</div>
+      <div class="cam-time">03:47:22</div>
+      <div style="position:absolute;bottom:20%;left:0;width:100%;height:40%;background:linear-gradient(180deg,rgba(5,10,25,0.3),rgba(3,8,20,0.6));"></div>
+      <div class="det-box det-ok" style="left:20%;top:40%;width:12%;height:18%;">
+        <span class="det-label dl-ok">VESSEL · TAGGED · 99%</span>
+      </div>
+      <div class="det-box det-ok" style="left:60%;top:50%;width:10%;height:15%;">
+        <span class="det-label dl-ok">VESSEL · TAGGED · 97%</span>
+      </div>
+      <div class="cam-status">
+        <span class="cs-dot cs-ok"></span>
+        <span style="font-size:0.52rem;color:#86efac;font-family:'Courier New',monospace;">2 VESSELS — BOTH AIS CONFIRMED</span>
+      </div>
+    </div>
+
+    <!-- Feed 5 — UKRAINE FRONTLINE -->
+    <div class="cam-feed" style="background:linear-gradient(135deg,#080505,#120a05);">
+      <div class="cam-label">CAM-UKR · FRONTLINE SENSOR · ZAPORIZHZHIA</div>
+      <div class="cam-time">05:47:22</div>
+      <div style="position:absolute;bottom:15%;left:0;width:100%;height:50%;background:linear-gradient(180deg,rgba(15,8,3,0.4),rgba(25,12,5,0.6));"></div>
+      <div class="det-box" style="left:45%;top:25%;width:20%;height:30%;border-color:#f97316;">
+        <span class="det-label" style="background:#f97316;color:#000;">VEHICLE MOVEMENT · 88%</span>
+      </div>
+      <div class="cam-status">
+        <span class="cs-dot" style="background:#f97316;animation:pulse 0.6s infinite;"></span>
+        <span style="font-size:0.52rem;color:#fed7aa;font-family:'Courier New',monospace;">ACTIVITY — CROSS-REF POI SYSTEM</span>
+      </div>
+    </div>
+
+    <!-- Feed 6 — SINGAPORE MARITIME -->
+    <div class="cam-feed" style="background:linear-gradient(135deg,#030a0a,#050f12);">
+      <div class="cam-label">CAM-SGP · STRAIT OF MALACCA · BEARING 270</div>
+      <div class="cam-time">09:47:22</div>
+      <div style="position:absolute;bottom:30%;left:0;width:100%;height:35%;background:linear-gradient(180deg,rgba(3,10,15,0.2),rgba(5,15,20,0.5));"></div>
+      <div class="det-box det-ok" style="left:15%;top:35%;width:15%;height:22%;">
+        <span class="det-label dl-ok">TANKER · IMO MATCHED</span>
+      </div>
+      <div class="det-box det-ok" style="left:50%;top:42%;width:8%;height:18%;">
+        <span class="det-label dl-ok">PATROL · RSAF</span>
+      </div>
+      <div class="cam-status">
+        <span class="cs-dot cs-ok"></span>
+        <span style="font-size:0.52rem;color:#86efac;font-family:'Courier New',monospace;">ALL VESSELS IDENTIFIED — CLEAR</span>
+      </div>
+    </div>
+
+    <!-- ALERT TICKER -->
+    <div class="alert-ticker">
+      <span class="ticker-label">// LIVE</span>
+      <div class="ticker-items">
+        <span class="ticker-alert">⚠ 03:47 — CAM-04 KWT: UNLIT VEHICLE + PERSON — DRONE DISPATCHED</span>
+        <span class="ticker-ok">✓ 03:44 — CAM-07 UAE: 2 VESSELS AIS CONFIRMED — CLEAR</span>
+        <span class="ticker-warn">◈ 03:41 — CAM-UKR ZAP: VEHICLE MOVEMENT — FLAGGED TO POI SYSTEM</span>
+        <span class="ticker-ok">✓ 03:38 — CAM-11 KSA: WILDLIFE CLASSIFIED — NO ACTION</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<div class="section">
+  <div class="sec-label">// SYSTEM ARCHITECTURE</div>
+  <div class="sec-title">Why Flying Orbs Alone Don't Work — And What Does</div>
+  <p class="sec-sub">Continuous flight requires continuous power. The right architecture uses fixed sensors as the brain and drones as the eyes-on-demand.</p>
+
+  <div class="arch-grid">
+    <div class="arch-card">
+      <div class="arch-header">
+        <div class="arch-icon">🗼</div>
+        <div>
+          <div class="arch-name">Fixed Sensor Towers</div>
+          <div class="arch-tag">The permanent backbone — never sleeps</div>
+        </div>
+      </div>
+      <div class="arch-body">
+        <ul class="arch-list">
+          <li>Placed every 8–15km along border or perimeter</li>
+          <li>PTZ cameras: optical (day) + thermal (night) + wide-angle overview</li>
+          <li>Radar for vehicle/person detection beyond camera range</li>
+          <li>Starlink backhaul — no ground cable needed</li>
+          <li>Solar + battery power — fully off-grid capable</li>
+          <li>AI runs locally on edge compute — works during comms outages</li>
+        </ul>
+        <div class="arch-metric">Coverage per tower: 2–8km radius · Uptime: 99.7% · Cost: $15K–$40K/tower</div>
+      </div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-header">
+        <div class="arch-icon">🚁</div>
+        <div>
+          <div class="arch-name">Autonomous Drone Response</div>
+          <div class="arch-tag">Eyes-on-demand — launched by AI alert</div>
+        </div>
+      </div>
+      <div class="arch-body">
+        <ul class="arch-list">
+          <li>Drones parked at automated charging stations every 20–30km</li>
+          <li>Auto-launched when tower AI flags anomaly needing closer look</li>
+          <li>Arrives at target within 2–4 minutes of alert</li>
+          <li>Transmits live HD video directly to command dashboard</li>
+          <li>Flies autonomously to GPS coordinate — operator takes over if needed</li>
+          <li>Returns to station, recharges, ready again in 20 minutes</li>
+        </ul>
+        <div class="arch-metric">Response time: &lt;4 min · Flight time: 35–45 min · Recharge: 20 min</div>
+      </div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-header">
+        <div class="arch-icon">🧠</div>
+        <div>
+          <div class="arch-name">AI Intelligence Layer</div>
+          <div class="arch-tag">What you build — runs on top of any hardware</div>
+        </div>
+      </div>
+      <div class="arch-body">
+        <ul class="arch-list">
+          <li>Processes every camera feed 24/7 — no human watching screens</li>
+          <li>Classifies every object: person, vehicle type, animal, vessel</li>
+          <li>Behavioural analysis: approaching, stationary, digging, fleeing</li>
+          <li>Baseline learning: "normal" for each camera at each time of day</li>
+          <li>Anomaly scoring: how unusual is this vs the past 30 days?</li>
+          <li>Claude reasoning: generates structured alert with recommended action</li>
+        </ul>
+        <div class="arch-metric">Latency: &lt;800ms detection · False positive rate: &lt;3% after 30-day baseline</div>
+      </div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-header">
+        <div class="arch-icon">📟</div>
+        <div>
+          <div class="arch-name">Command Dashboard</div>
+          <div class="arch-tag">One operator, entire border</div>
+        </div>
+      </div>
+      <div class="arch-body">
+        <ul class="arch-list">
+          <li>Map view: all towers, all drones, all active alerts at once</li>
+          <li>Alert queue: prioritised by threat score — highest first</li>
+          <li>One-tap drone dispatch to any alert location</li>
+          <li>Live feed mosaic: jump to any camera in one click</li>
+          <li>Incident log: every detection timestamped, GPS-tagged, archived</li>
+          <li>Runs in any browser — tablet, laptop, command centre screen</li>
+        </ul>
+        <div class="arch-metric">Operators needed: 1–3 per shift vs 50+ for manual monitoring</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- AI PIPELINE -->
+<div style="background:var(--bg2);padding:5rem 2rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="sec-label">// AI PROCESSING PIPELINE</div>
+    <div class="sec-title" style="margin-bottom:0.5rem;">What Happens in Under 800ms</div>
+    <p class="sec-sub" style="margin-bottom:2.5rem;">From raw pixel to structured intelligence — fully automated, every frame, every camera.</p>
+
+    <div class="ai-pipeline">
+      <div class="pipeline-steps">
+        <div class="pipe-step">
+          <div class="pipe-num">01 · INGEST</div>
+          <div class="pipe-name">Video Stream</div>
+          <div class="pipe-text">RTSP stream from any camera — tower PTZ, drone gimbal, aerostat camera, existing CCTV. Standardised input layer accepts any source.</div>
+          <div class="pipe-tool">
+            <span class="ptool ptool-main">RTSP/WebRTC</span>
+            <span class="ptool ptool-sec">FFmpeg</span>
+            <span class="ptool ptool-sec">Edge buffer</span>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">02 · DETECT</div>
+          <div class="pipe-name">Object Detection</div>
+          <div class="pipe-text">YOLOv8 fine-tuned on military/border context. Detects: people, vehicles by type, vessels, aircraft, animals. Runs on edge GPU — no cloud needed.</div>
+          <div class="pipe-tool">
+            <span class="ptool ptool-main">YOLOv8</span>
+            <span class="ptool ptool-sec">NVIDIA Jetson</span>
+            <span class="ptool ptool-sec">Custom weights</span>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">03 · TRACK</div>
+          <div class="pipe-name">Movement Analysis</div>
+          <div class="pipe-text">Multi-object tracking across frames. Direction, speed, trajectory prediction. Behaviour classification: approaching border, stationary loitering, retreat, digging.</div>
+          <div class="pipe-tool">
+            <span class="ptool ptool-main">ByteTrack</span>
+            <span class="ptool ptool-sec">Kalman filter</span>
+            <span class="ptool ptool-sec">Trajectory model</span>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">04 · SCORE</div>
+          <div class="pipe-name">Anomaly Engine</div>
+          <div class="pipe-text">Compares current detection against 30-day baseline for this camera, this time of day. Scores 0–100: how unusual is this? Filters out daily patterns automatically.</div>
+          <div class="pipe-tool">
+            <span class="ptool ptool-main">Baseline model</span>
+            <span class="ptool ptool-sec">Time-of-day weight</span>
+            <span class="ptool ptool-sec">PostgreSQL</span>
+          </div>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-num">05 · REASON</div>
+          <div class="pipe-name">Claude Alert</div>
+          <div class="pipe-text">High-score detections sent to Claude API. Claude generates: threat classification, recommended response, confidence, cross-reference with active intel (POI system, Swarm Brain).</div>
+          <div class="pipe-tool">
+            <span class="ptool ptool-main">Claude API</span>
+            <span class="ptool ptool-main">Structured output</span>
+            <span class="ptool ptool-sec">Intel cross-ref</span>
+          </div>
+        </div>
+      </div>
+      <div class="pipeline-output">
+        <div class="po-label">// SAMPLE OUTPUT</div>
+        <div class="po-example">
+{<br>
+&nbsp;&nbsp;<span class="po-key">"alert_id"</span>: <span class="po-str">"KWT-CAM04-20260415-0347"</span>,<br>
+&nbsp;&nbsp;<span class="po-key">"threat_score"</span>: <span class="po-num">87</span>,<br>
+&nbsp;&nbsp;<span class="po-key">"classification"</span>: <span class="po-str">"UNLIT VEHICLE + PERSON — BORDER APPROACH"</span>,<br>
+&nbsp;&nbsp;<span class="po-key">"objects"</span>: [<span class="po-str">"truck_medium"</span>, <span class="po-str">"person_x1"</span>],<br>
+&nbsp;&nbsp;<span class="po-key">"behaviour"</span>: <span class="po-str">"approaching_border_northeast_4kmh"</span>,<br>
+&nbsp;&nbsp;<span class="po-key">"anomaly_vs_baseline"</span>: <span class="po-str">"unlit vehicle at 03:47 — 0 prior occurrences in 30 days"</span>,<br>
+&nbsp;&nbsp;<span class="po-key">"recommended_action"</span>: <span class="po-str">"DISPATCH DRONE — intercept at grid 2847-1193"</span>,<br>
+&nbsp;&nbsp;<span class="po-key">"cross_reference"</span>: <span class="po-str">"POI system: no elevated threat on this axis today"</span>,<br>
+&nbsp;&nbsp;<span class="po-key">"drone_dispatched"</span>: <span class="po-bool">true</span>, <span class="po-key">"eta_seconds"</span>: <span class="po-num">142</span><br>
+}
+        </div>
+      </div>
+    </div>
+
+    <!-- DETECTION TYPES -->
+    <div style="margin-top:3rem;">
+      <div class="sec-label" style="margin-bottom:1.5rem;">// WHAT THE AI DETECTS</div>
+      <div class="detect-grid">
+        <div class="detect-card">
+          <div class="detect-icon">🚶</div>
+          <div class="detect-name">Person / Group</div>
+          <div class="detect-conf">Confidence: 85–97% · Range: up to 800m (thermal)</div>
+          <div class="detect-desc">Individual or group crossing detection. Head count. Carrying objects. Direction and speed. Distinguishes from wildlife via gait analysis.</div>
+        </div>
+        <div class="detect-card">
+          <div class="detect-icon">🚛</div>
+          <div class="detect-name">Vehicle Classification</div>
+          <div class="detect-conf">Confidence: 88–98% · Type: 12 classes</div>
+          <div class="detect-desc">Car, truck, pickup, motorcycle, APC, tank, construction. Identifies if unlit (lights off at night = anomaly). Estimates occupant count.</div>
+        </div>
+        <div class="detect-card">
+          <div class="detect-icon">⛵</div>
+          <div class="detect-name">Maritime Vessel</div>
+          <div class="detect-conf">Confidence: 90–99% · AIS cross-ref</div>
+          <div class="detect-desc">Vessel detection and type classification. Cross-references AIS transponder data. Flags vessels without AIS, unusual speed, or approach vectors.</div>
+        </div>
+        <div class="detect-card">
+          <div class="detect-icon">⛏️</div>
+          <div class="detect-name">Digging / Construction</div>
+          <div class="detect-conf">Confidence: 75–88%</div>
+          <div class="detect-desc">Detects earthwork activity — IED emplacement, tunnel construction, fortification building. Compared against prior terrain baseline.</div>
+        </div>
+        <div class="detect-card">
+          <div class="detect-icon">🦌</div>
+          <div class="detect-name">Wildlife Filter</div>
+          <div class="detect-conf">Filter accuracy: 94%</div>
+          <div class="detect-desc">Critically reduces false alarms. Distinguishes human vs animal movement by gait, size, thermal signature. Camel, goat, dog classified and filtered automatically.</div>
+        </div>
+        <div class="detect-card">
+          <div class="detect-icon">🔥</div>
+          <div class="detect-name">Thermal Anomalies</div>
+          <div class="detect-conf">Night detection range: 2–4km</div>
+          <div class="detect-desc">Engine heat, body heat, fire, weapons discharge flash. Thermal cameras defeat darkness completely. No visible light required for detection.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTRY APPLICATIONS -->
+<div class="section">
+  <div class="sec-label">// MARKET APPLICATIONS</div>
+  <div class="sec-title">Six Deployments. All from the Same Platform.</div>
+  <p class="sec-sub">The AI layer is identical. The hardware configuration, threat models, and detection priorities are customised per country.</p>
+
+  <div class="country-apps">
+    <div class="ca-card">
+      <div class="ca-header">
+        <div class="ca-flag-name">
+          <span class="ca-flag">🇰🇼</span>
+          <div>
+            <div class="ca-name">Kuwait</div>
+            <div class="ca-border">Iraqi border — 254km land</div>
+          </div>
+        </div>
+        <span class="ca-badge cab-crit">HIGH PRIORITY</span>
+      </div>
+      <div class="ca-body">
+        <div class="ca-stat-row">
+          <div class="ca-stat"><div class="ca-stat-val">254km</div><div class="ca-stat-label">Border length</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">~25</div><div class="ca-stat-label">Towers needed</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">$4M–$8M</div><div class="ca-stat-label">Deployment cost</div></div>
+        </div>
+        <div class="ca-spec">Flat desert terrain — ideal for sensor towers. Minimal natural cover means long camera ranges. Key threat: smuggling, militia infiltration from Iraqi border regions. Currently monitored by US forces at Camp Buehring — Kuwait needs sovereign capability.</div>
+        <div class="ca-threats">
+          <span class="ca-threat">Cross-border smuggling</span>
+          <span class="ca-threat">Militia infiltration</span>
+          <span class="ca-threat">Vehicle border runs</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ca-card">
+      <div class="ca-header">
+        <div class="ca-flag-name">
+          <span class="ca-flag">🇸🇦</span>
+          <div>
+            <div class="ca-name">Saudi Arabia</div>
+            <div class="ca-border">Yemen border — 1,800km + Red Sea coast</div>
+          </div>
+        </div>
+        <span class="ca-badge cab-crit">CRITICAL</span>
+      </div>
+      <div class="ca-body">
+        <div class="ca-stat-row">
+          <div class="ca-stat"><div class="ca-stat-val">1,800km</div><div class="ca-stat-label">Yemen border</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">~180</div><div class="ca-stat-label">Towers needed</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">$25M–$60M</div><div class="ca-stat-label">Full deployment</div></div>
+        </div>
+        <div class="ca-spec">Active conflict zone — Houthi drone and missile launches, infiltration attempts, arms smuggling. Saudi already has physical fencing but zero AI analysis layer. The existing Elbit sensor network has no predictive intelligence integration. Largest addressable market in the region.</div>
+        <div class="ca-threats">
+          <span class="ca-threat">Houthi infiltration</span>
+          <span class="ca-threat">Drone launch sites</span>
+          <span class="ca-threat">Arms smuggling routes</span>
+          <span class="ca-threat">Ballistic missile prep</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ca-card">
+      <div class="ca-header">
+        <div class="ca-flag-name">
+          <span class="ca-flag">🇦🇪</span>
+          <div>
+            <div class="ca-name">UAE</div>
+            <div class="ca-border">Maritime coast + Strait of Hormuz</div>
+          </div>
+        </div>
+        <span class="ca-badge cab-high">HIGH</span>
+      </div>
+      <div class="ca-body">
+        <div class="ca-stat-row">
+          <div class="ca-stat"><div class="ca-stat-val">1,318km</div><div class="ca-stat-label">Coastline</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">Maritime</div><div class="ca-stat-label">Primary threat axis</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">$10M–$25M</div><div class="ca-stat-label">Phase 1</div></div>
+        </div>
+        <div class="ca-spec">Maritime surveillance is the UAE's primary need — Strait of Hormuz passage, Iranian fast-boat threat, smuggling via sea routes. Tower network on coastal headlands with maritime radar integration. AIS cross-referencing flags vessels without transponders automatically.</div>
+        <div class="ca-threats">
+          <span class="ca-threat">Iranian fast boats</span>
+          <span class="ca-threat">Non-AIS vessels</span>
+          <span class="ca-threat">Maritime smuggling</span>
+          <span class="ca-threat">Underwater approach</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ca-card">
+      <div class="ca-header">
+        <div class="ca-flag-name">
+          <span class="ca-flag">🇶🇦</span>
+          <div>
+            <div class="ca-name">Qatar</div>
+            <div class="ca-border">Peninsula — maritime all sides</div>
+          </div>
+        </div>
+        <span class="ca-badge cab-high">HIGH</span>
+      </div>
+      <div class="ca-body">
+        <div class="ca-stat-row">
+          <div class="ca-stat"><div class="ca-stat-val">563km</div><div class="ca-stat-label">Coastline</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">Peninsula</div><div class="ca-stat-label">Terrain type</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">$6M–$15M</div><div class="ca-stat-label">Full perimeter</div></div>
+        </div>
+        <div class="ca-spec">Qatar is a peninsula — maritime surveillance covers the entire perimeter. LNG infrastructure protection is the primary use case. North Field (world's largest gas field) requires perimeter monitoring. Also: Al Udeid Air Base perimeter AI for US forces.</div>
+        <div class="ca-threats">
+          <span class="ca-threat">LNG infrastructure</span>
+          <span class="ca-threat">Al Udeid perimeter</span>
+          <span class="ca-threat">Maritime intrusion</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ca-card">
+      <div class="ca-header">
+        <div class="ca-flag-name">
+          <span class="ca-flag">🇸🇬</span>
+          <div>
+            <div class="ca-name">Singapore</div>
+            <div class="ca-border">Strait of Malacca — maritime + port</div>
+          </div>
+        </div>
+        <span class="ca-badge cab-med">STRATEGIC</span>
+      </div>
+      <div class="ca-body">
+        <div class="ca-stat-row">
+          <div class="ca-stat"><div class="ca-stat-val">193km</div><div class="ca-stat-label">Coastline</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">~90K</div><div class="ca-stat-label">Vessel transits/yr</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">$8M–$20M</div><div class="ca-stat-label">Maritime layer</div></div>
+        </div>
+        <div class="ca-spec">One of the world's busiest shipping lanes. Port security, maritime surveillance, and aerial approach monitoring. Singapore already has advanced radar systems — the AI intelligence layer on top of existing hardware is the gap. DSTA would fund this directly.</div>
+        <div class="ca-threats">
+          <span class="ca-threat">Piracy / maritime threat</span>
+          <span class="ca-threat">Port security</span>
+          <span class="ca-threat">Straits surveillance</span>
+          <span class="ca-threat">UAV intrusion</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ca-card">
+      <div class="ca-header">
+        <div class="ca-flag-name">
+          <span class="ca-flag">🇺🇦</span>
+          <div>
+            <div class="ca-name">Ukraine</div>
+            <div class="ca-border">Active frontline — 1,200km+</div>
+          </div>
+        </div>
+        <span class="ca-badge cab-crit">FRONTLINE</span>
+      </div>
+      <div class="ca-body">
+        <div class="ca-stat-row">
+          <div class="ca-stat"><div class="ca-stat-val">1,200km+</div><div class="ca-stat-label">Active front</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">Feeds POI</div><div class="ca-stat-label">System integration</div></div>
+          <div class="ca-stat"><div class="ca-stat-val">$10M–$30M</div><div class="ca-stat-label">Donor-funded</div></div>
+        </div>
+        <div class="ca-spec">Frontline sensor network feeding directly into Swarm Brain and Predictive Offensive Intelligence. Visual detections of Russian vehicle movement cross-referenced with POI threat assessments. Every anomaly on a flagged axis gets elevated threat score automatically.</div>
+        <div class="ca-threats">
+          <span class="ca-threat">Armour assembly</span>
+          <span class="ca-threat">Infantry approach</span>
+          <span class="ca-threat">EW vehicle movement</span>
+          <span class="ca-threat">Artillery repositioning</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- INTEGRATION -->
+<div class="section">
+  <div class="sec-label">// PRODUCT INTEGRATION</div>
+  <div class="sec-title">One Platform. Four Products. Compound Intelligence.</div>
+  <p class="sec-sub">Border Intelligence feeds into every other product in the suite — each one making the others more valuable.</p>
+
+  <div class="integration-row">
+    <div class="int-block">
+      <div class="int-icon">🔮</div>
+      <div class="int-name">Predictive Offensive Intel</div>
+      <div class="int-desc">Visual detections of vehicle concentrations and logistics movement feed directly into the POI threat assessment engine. Ground truth confirmation of satellite-detected patterns.</div>
+      <div class="int-link">→ Feeds: vehicle movement data, infrastructure changes</div>
+    </div>
+    <div class="int-block">
+      <div class="int-icon">🎯</div>
+      <div class="int-name">Swarm Brain</div>
+      <div class="int-desc">Confirmed vehicle positions from border sensors go straight into the drone mission target queue. No operator needed to log the target — the border AI does it automatically.</div>
+      <div class="int-link">→ Feeds: confirmed target coordinates, vehicle type</div>
+    </div>
+    <div class="int-block">
+      <div class="int-icon">🧠</div>
+      <div class="int-name">Sovereign AI Analyst</div>
+      <div class="int-desc">Border detection data becomes part of the sovereign data platform. Ministers and commanders can query "what vehicle activity occurred on the northern border last week?" in natural language.</div>
+      <div class="int-link">→ Feeds: incident log, pattern data, monthly summaries</div>
+    </div>
+    <div class="int-block">
+      <div class="int-icon">🌏</div>
+      <div class="int-name">Country Intelligence</div>
+      <div class="int-desc">Border activity patterns over time become geopolitical intelligence. Unusual troop movements, new infrastructure, civilian displacement — all automatically correlated and surfaced.</div>
+      <div class="int-link">→ Feeds: long-term pattern library, threat evolution data</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- HARDWARE PARTNERS -->
+<div class="section">
+  <div class="sec-label">// HARDWARE — YOU DON'T MANUFACTURE</div>
+  <div class="sec-title">Off-the-Shelf Hardware. Your AI on Top.</div>
+  <p class="sec-sub">You are not a hardware company. You build the intelligence layer that runs on cameras and drones the customer already has or can buy from established vendors.</p>
+
+  <div class="hw-grid">
+    <div class="hw-card">
+      <div class="hw-category">PTZ Camera</div>
+      <div class="hw-name">Axis Q6135-LE</div>
+      <div class="hw-desc">Long-range optical + IR. 32x optical zoom. RTSP stream. Industry standard for perimeter security. Your software connects via standard API.</div>
+      <div class="hw-price">~$3,000–$6,000/unit</div>
+    </div>
+    <div class="hw-card">
+      <div class="hw-category">Thermal Camera</div>
+      <div class="hw-name">FLIR Elara FR-345</div>
+      <div class="hw-desc">Long-wave infrared. 3.5km detection range for vehicles. Fully integrates with standard video management systems via ONVIF protocol.</div>
+      <div class="hw-price">~$8,000–$15,000/unit</div>
+    </div>
+    <div class="hw-card">
+      <div class="hw-category">Surveillance Drone</div>
+      <div class="hw-name">DJI Dock 2 + M3T</div>
+      <div class="hw-desc">Automated dock — drone auto-launches, lands, recharges without human. Thermal + optical payload. RTMP video stream. Available now, proven in field.</div>
+      <div class="hw-price">~$20,000–$35,000/dock</div>
+    </div>
+    <div class="hw-card">
+      <div class="hw-category">Edge Compute</div>
+      <div class="hw-name">NVIDIA Jetson Orin</div>
+      <div class="hw-desc">Runs YOLOv8 detection at 30fps locally on tower. No cloud latency for detection. Sends only alert events to central server — minimal bandwidth.</div>
+      <div class="hw-price">~$800–$1,500/unit</div>
+    </div>
+    <div class="hw-card">
+      <div class="hw-category">Connectivity</div>
+      <div class="hw-name">Starlink Maritime</div>
+      <div class="hw-desc">200Mbps uplink per tower. Works anywhere. No infrastructure required. Each tower is fully autonomous — power (solar) + comms (Starlink) + compute (Jetson).</div>
+      <div class="hw-price">~$2,500 hardware + $250/mo</div>
+    </div>
+    <div class="hw-card">
+      <div class="hw-category">Radar</div>
+      <div class="hw-name">Echodyne EchoFlight</div>
+      <div class="hw-desc">Compact MESA radar. Detects people at 300m, vehicles at 1.5km. Triggers camera PTZ automatically to point at detected object. Works in total darkness, fog, dust.</div>
+      <div class="hw-price">~$15,000–$25,000/unit</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- REVENUE -->
+<div class="section">
+  <div class="sec-label">// REVENUE MODEL</div>
+  <div class="sec-title">Hardware Pass-Through + AI Software License</div>
+  <p class="sec-sub">You don't make money on cameras. You make money on the intelligence layer — priced as annual SaaS per km of border covered.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-bottom:2rem;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.6rem;">
+      <div style="font-size:0.65rem;color:var(--accent2);letter-spacing:0.12em;text-transform:uppercase;font-family:'Courier New',monospace;margin-bottom:0.5rem;">Pricing Model</div>
+      <div style="font-size:1rem;font-weight:800;margin-bottom:0.5rem;">Per-KM Software License</div>
+      <div style="font-size:2rem;font-weight:900;color:var(--accent2);margin-bottom:0.3rem;">$8K–$15K</div>
+      <div style="font-size:0.82rem;color:var(--muted);">Per km of border per year. Includes AI platform, dashboard, updates, support. Hardware quoted separately at cost + 15% margin.</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.6rem;">
+      <div style="font-size:0.65rem;color:var(--accent2);letter-spacing:0.12em;text-transform:uppercase;font-family:'Courier New',monospace;margin-bottom:0.5rem;">Example — Kuwait</div>
+      <div style="font-size:1rem;font-weight:800;margin-bottom:0.5rem;">254km Iraqi Border</div>
+      <div style="font-size:2rem;font-weight:900;color:var(--accent2);margin-bottom:0.3rem;">$2M–$3.8M</div>
+      <div style="font-size:0.82rem;color:var(--muted);">Software ARR. Hardware one-off: $4M–$8M (25 towers + 8 drone docks). Total Year 1: $6M–$12M.</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.6rem;">
+      <div style="font-size:0.65rem;color:var(--accent2);letter-spacing:0.12em;text-transform:uppercase;font-family:'Courier New',monospace;margin-bottom:0.5rem;">Example — Saudi Arabia</div>
+      <div style="font-size:1rem;font-weight:800;margin-bottom:0.5rem;">1,800km Yemen Border</div>
+      <div style="font-size:2rem;font-weight:900;color:var(--accent2);margin-bottom:0.3rem;">$14M–$27M</div>
+      <div style="font-size:0.82rem;color:var(--muted);">Software ARR alone. Largest single contract in the product suite. Hardware: $25M–$60M one-off. Total Year 1: $40M–$90M.</div>
+    </div>
+  </div>
+
+  <div class="rev-grid">
+    <div class="rev-card">
+      <div class="rev-phase">Pilot</div>
+      <div class="rev-val">Free</div>
+      <div class="rev-label">10km stretch, 3 towers, 1 drone dock. 90-day proof. Customer provides hardware or you supply at cost.</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-phase">First Contract</div>
+      <div class="rev-val">$2M–$5M</div>
+      <div class="rev-label">100km border segment. Software + implementation. Kuwait or Qatar as first customer.</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-phase">Full Country</div>
+      <div class="rev-val">$6M–$28M ARR</div>
+      <div class="rev-label">Complete border deployment. Per-km SaaS recurring. Saudi Arabia alone is $14M–$27M/yr.</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-phase">Suite Upsell</div>
+      <div class="rev-val">+40–60%</div>
+      <div class="rev-label">Every Border Intel customer is a natural buyer for Sovereign AI Analyst and Predictive Intel. Same trust, same infrastructure.</div>
+    </div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="section" style="padding-top:2rem;">
+  <div class="verdict">
+    <div class="v-label">// THE INSIGHT</div>
+    <div class="v-text">
+      You're not selling cameras.<br>
+      You're selling <em>the intelligence layer</em> that makes cameras<br>
+      worth having in the first place.
+    </div>
+    <div class="v-sub">
+      Every country in this analysis already has some cameras, some towers, some sensors on their borders. None of them have AI that watches all of it simultaneously, learns what's normal, and tells operators exactly what to look at and why. That gap is worth $80K–$150K per km of border per year in software licensing alone — and it connects every other product in the suite.
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.4rem;">PALANTIR INSIDER — INTELLIGENCE REPORTS</p>
+  <p>AUTONOMOUS BORDER INTELLIGENCE — PRODUCT BLUEPRINT — APRIL 2026 // FOR STRATEGIC PLANNING PURPOSES ONLY</p>
+</footer>
+
+<!-- BURGER MENU -->
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">// Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html"><span>📡</span> Satellite Brief</a>
+  <a href="REALTIME_SATELLITE.html"><span>🔭</span> Real-Time Satellite Vision</a>
+  <a href="PALANTIR_ACCESS_MAP.html"><span>🌍</span> Palantir Access Map</a>
+  <a href="NO_SATELLITE_STACK.html"><span>🟢</span> No Satellite Stack</a>
+  <a href="UKRAINE_DEFENCE_AI.html"><span>🇺🇦</span> Ukraine Defence AI</a>
+  <a href="SINGAPORE_GULF_ANALYSIS.html"><span>🌏</span> Singapore &amp; Gulf Analysis</a>
+  <a href="SOVEREIGN_AI_PRODUCT.html"><span>🧠</span> The Product They Can't Refuse</a>
+  <a href="SWARM_BRAIN.html"><span>🎯</span> Swarm Brain — Ukraine</a>
+  <a href="PREDICTIVE_INTEL.html"><span>🔮</span> Predictive Offensive Intel</a>
+  <a href="BORDER_INTELLIGENCE.html" class="active-report"><span>👁️</span> Autonomous Border Intel</a>
+</div>
+
+</body>
+</html>
