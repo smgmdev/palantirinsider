@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SENTINEL-AI — Hardware & Cost Report</title>
+  <style>
+    :root {
+      --bg:       #ffffff;
+      --surface:  #f4f6f9;
+      --surface2: #edf0f5;
+      --border:   #d0d8e8;
+      --accent:   #0055cc;
+      --accent2:  #003a99;
+      --gold:     #b86a00;
+      --red:      #cc2222;
+      --green:    #007a44;
+      --text:     #1a2333;
+      --muted:    #5a6a85;
+      --heading:  #0a1628;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* COVER */
+    .cover {
+      background: linear-gradient(135deg, #0a1628 0%, #0d2550 100%);
+      color: #fff;
+      padding: 60px 40px;
+      text-align: center;
+    }
+    .cover-badge {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      padding: 5px 18px;
+      border-radius: 2px;
+      margin-bottom: 32px;
+      text-transform: uppercase;
+    }
+    .cover h1 { font-size: 52px; font-weight: 900; letter-spacing: -1px; color: #fff; line-height: 1; margin-bottom: 6px; }
+    .cover h1 span { color: #4da6ff; }
+    .cover .sub { font-size: 12px; letter-spacing: 5px; color: #4da6ff; text-transform: uppercase; margin-bottom: 28px; }
+    .cover .desc { font-size: 16px; color: #a8c0e0; max-width: 560px; margin: 0 auto 36px; }
+    .cover-stats { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+    .cstat { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 18px 28px; min-width: 140px; }
+    .cstat .val { font-size: 26px; font-weight: 800; color: #4da6ff; line-height: 1; margin-bottom: 5px; }
+    .cstat .lbl { font-size: 10px; color: #7090b0; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* LAYOUT */
+    .container { max-width: 960px; margin: 0 auto; padding: 0 32px; }
+
+    /* SECTION */
+    .section { padding: 52px 0; border-bottom: 1px solid var(--border); }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+    .section-num { background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 2px; padding: 4px 10px; border-radius: 3px; text-transform: uppercase; white-space: nowrap; }
+    .section-title { font-size: 22px; font-weight: 700; color: var(--heading); }
+
+    h3 { font-size: 13px; font-weight: 700; color: var(--accent2); margin: 32px 0 10px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 2px solid var(--surface2); padding-bottom: 6px; }
+    h4 { font-size: 13px; font-weight: 700; color: var(--heading); margin: 18px 0 6px; padding-left: 10px; border-left: 3px solid var(--accent); }
+
+    p { margin-bottom: 12px; }
+    ul { padding-left: 18px; margin-bottom: 10px; }
+    li { margin-bottom: 4px; font-size: 13.5px; }
+    strong { color: var(--heading); }
+
+    /* TABLES */
+    .table-wrap { overflow-x: auto; margin: 12px 0 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: var(--accent); }
+    thead th { padding: 10px 14px; text-align: left; color: #fff; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:hover { background: var(--surface); }
+    tbody tr:nth-child(even) { background: #fafbfd; }
+    td { padding: 9px 14px; vertical-align: top; }
+    .total-row td { background: var(--surface2) !important; font-weight: 700; color: var(--heading); border-top: 2px solid var(--border); }
+
+    /* NOTE */
+    .note { background: #fff8e6; border-left: 4px solid var(--gold); border-radius: 0 4px 4px 0; padding: 12px 16px; margin: 14px 0; font-size: 13px; color: #7a4a00; }
+
+    /* IMAGE GALLERY */
+    .img-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin: 18px 0 28px;
+    }
+    .img-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .img-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+      background: var(--surface2);
+    }
+    .img-card .img-cap {
+      padding: 8px 12px;
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.4;
+      border-top: 1px solid var(--border);
+    }
+    .img-card .img-cap strong { color: var(--heading); font-size: 12px; display: block; margin-bottom: 2px; }
+
+    /* SINGLE WIDE IMAGE */
+    .img-wide {
+      width: 100%;
+      max-height: 260px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+      margin: 14px 0;
+    }
+    .img-caption { font-size: 11px; color: var(--muted); text-align: center; margin-top: -8px; margin-bottom: 18px; font-style: italic; }
+
+    /* CARDS */
+    .card-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+    .card .ct { font-size: 12px; font-weight: 700; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .card .cv { font-size: 22px; font-weight: 800; color: var(--heading); margin-bottom: 4px; }
+    .card .cd { font-size: 12px; color: var(--muted); }
+
+    /* PHASE STRIP */
+    .phase-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 16px 0; }
+    .ph { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid; border-radius: 0 0 4px 4px; padding: 14px; }
+    .ph:nth-child(1) { border-top-color: #888; }
+    .ph:nth-child(2) { border-top-color: var(--accent); }
+    .ph:nth-child(3) { border-top-color: var(--gold); }
+    .ph:nth-child(4) { border-top-color: var(--green); }
+    .ph .ph-name { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
+    .ph .ph-cost { font-size: 18px; font-weight: 800; color: var(--accent); margin-bottom: 2px; }
+    .ph .ph-time { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+    .ph ul { font-size: 11.5px; padding-left: 14px; }
+    .ph li { margin-bottom: 2px; color: var(--text); }
+
+    /* KPI */
+    .kpi-strip { display: flex; gap: 4px; flex-wrap: wrap; margin: 16px 0; }
+    .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 20px; flex: 1; min-width: 130px; text-align: center; }
+    .kpi .kv { font-size: 22px; font-weight: 800; color: var(--accent); }
+    .kpi .kl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+    .cost-hl { color: var(--accent); font-weight: 700; }
+    .cost-total { color: var(--heading); font-weight: 800; font-size: 15px; }
+    .green { color: var(--green); font-weight: 600; }
+    .red { color: var(--red); font-weight: 600; }
+
+    /* FOOTER */
+    footer { background: var(--heading); color: #a0b0c8; text-align: center; padding: 32px; font-size: 12px; line-height: 1.7; }
+    footer strong { color: #fff; }
+
+    @media (max-width: 700px) {
+      .phase-strip { grid-template-columns: 1fr 1fr; }
+      .card-row { grid-template-columns: 1fr; }
+      .cover-stats { flex-direction: column; align-items: center; }
+      .container { padding: 0 16px; }
+      .img-gallery { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-badge">Confidential — Investors &amp; Partners Only</div>
+  <h1>SENTINEL<span>-AI</span></h1>
+  <div class="sub">Space-Based Surveillance &amp; AI Threat Detection</div>
+  <div class="desc">Hardware requirements, satellite &amp; radar counts, and full cost breakdown for a real-time LEO surveillance system with AI threat recognition.</div>
+  <div class="cover-stats">
+    <div class="cstat"><div class="val">300–500</div><div class="lbl">Satellites (global)</div></div>
+    <div class="cstat"><div class="val">12</div><div class="lbl">Ground stations</div></div>
+    <div class="cstat"><div class="val">$8.74B</div><div class="lbl">Total programme cost</div></div>
+    <div class="cstat"><div class="val">&lt;30s</div><div class="lbl">Alert latency (Phase 3)</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ SECTION 1 ═══════════════════════ -->
+<div class="section" id="s1">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">Section 01</div>
+      <div class="section-title">Hardware &amp; Systems Required</div>
+    </div>
+
+    <!-- ── 1A SATELLITES ── -->
+    <h3>A — Satellite Constellation</h3>
+    <p>Three satellite types flown in combination across 12 orbital planes at 500–700 km altitude. Each carries onboard AI edge processors for real-time triage before downlink.</p>
+
+    <!-- EO SATELLITES -->
+    <h4>1. Electro-Optical (EO) — Visual Imaging</h4>
+    <div class="img-gallery">
+      <div class="img-card">
+        <img src="images/eo_satellite_ers2.jpg" alt="ERS-2 Earth Observation Satellite" loading="lazy" />
+        <div class="img-cap"><strong>ERS-2 Satellite</strong> ESA Earth observation satellite — representative of LEO EO platform design. Carries high-resolution optical camera arrays.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/eo_satellite_eros.jpg" alt="EROS A reconnaissance satellite" loading="lazy" />
+        <div class="img-cap"><strong>EROS-A Satellite</strong> Commercial high-resolution reconnaissance satellite. Comparable sensor class to EO satellites in SENTINEL-AI constellation.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/eo_imagery_beijing.jpg" alt="Planet Labs satellite imagery Beijing Airport" loading="lazy" />
+        <div class="img-cap"><strong>EO Output — Planet Labs</strong> Real satellite imagery of Beijing Airport. Demonstrates sub-metre object recognition capability from LEO orbit.</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Spec</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Purpose</td><td>High-resolution daylight visual imagery, object identification</td></tr>
+          <tr><td>Resolution (GSD)</td><td>0.3m–0.5m per pixel</td></tr>
+          <tr><td>Swath width</td><td>20–30 km per pass</td></tr>
+          <tr><td>Video mode</td><td>Up to 30 fps</td></tr>
+          <tr><td>Camera vendors</td><td>Airbus Defence, Harris Corporation, Thales Alenia</td></tr>
+          <tr><td>Satellite bus vendors</td><td>Airbus, Northrop Grumman, Surrey Satellite Technology</td></tr>
+          <tr><td>Unit cost</td><td>$15M–$40M per satellite</td></tr>
+          <tr><td>Quantity needed</td><td>Phase 1: 15 &nbsp;|&nbsp; Phase 2: 60 &nbsp;|&nbsp; Phase 3: 150+</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- IR SATELLITES -->
+    <h4>2. Infrared (IR) / Thermal — Heat &amp; Missile Detection</h4>
+    <div class="img-gallery">
+      <div class="img-card">
+        <img src="images/ir_rocket_plume.jpg" alt="Rocket launch IR plume" loading="lazy" />
+        <div class="img-cap"><strong>Rocket Plume — IR Signature</strong> The exhaust plume from a rocket launch is detectable by IR sensors within 2–5 seconds of ignition — even through cloud cover.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/launch_falcon9.jpg" alt="Falcon 9 launch plume" loading="lazy" />
+        <div class="img-cap"><strong>IR Detection Target</strong> Missile launches produce a thermal bloom visible to MWIR sensors (3–5 μm band) within seconds — the primary trigger for early warning alerts.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/ir_satellite_model.jpg" alt="ERS-1 satellite model with sensor payload" loading="lazy" />
+        <div class="img-cap"><strong>IR Satellite Platform</strong> Satellite platform with multi-spectral sensor payload. IR satellites carry MWIR &amp; LWIR detector arrays with cryogenic cooling systems.</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Spec</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Purpose</td><td>Detect rocket plumes, nuclear detonations, engine exhaust, industrial heat signatures</td></tr>
+          <tr><td>Spectral bands</td><td>MWIR 3–5 μm &nbsp;|&nbsp; LWIR 8–12 μm</td></tr>
+          <tr><td>Missile plume detection</td><td>Visible within 2–5 seconds of launch ignition</td></tr>
+          <tr><td>Nuclear flash detection</td><td>1–5 seconds post-detonation</td></tr>
+          <tr><td>Sensor vendors</td><td>L3Harris, Ball Aerospace, Teledyne FLIR</td></tr>
+          <tr><td>Reference heritage</td><td>US SBIRS, DSP satellites (proven programme)</td></tr>
+          <tr><td>Unit cost</td><td>$20M–$80M per satellite</td></tr>
+          <tr><td>Quantity needed</td><td>Phase 1: 10 &nbsp;|&nbsp; Phase 2: 40 &nbsp;|&nbsp; Phase 3: 100+</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SAR SATELLITES -->
+    <h4>3. Synthetic Aperture Radar (SAR) — All-Weather Imaging</h4>
+    <div class="img-gallery">
+      <div class="img-card">
+        <img src="images/sar_satellite.jpg" alt="Sentinel-1 SAR satellite" loading="lazy" />
+        <div class="img-cap"><strong>Sentinel-1 SAR Satellite</strong> ESA Sentinel-1 at 693 km LEO. SENTINEL-AI SAR satellites use equivalent radar payload technology from MDA Space, Airbus, and Thales.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/sar_imagery_vancouver.jpg" alt="SAR satellite imagery example" loading="lazy" />
+        <div class="img-cap"><strong>SAR Radar Imagery Output</strong> SAR penetrates cloud cover and works in total darkness — detecting vehicles, ships, and military movements regardless of weather.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/sar_topography.jpg" alt="SAR radar topography" loading="lazy" />
+        <div class="img-cap"><strong>SAR Topographic Mapping</strong> Maps terrain, detects underground structures, identifies camouflaged assets invisible to optical sensors.</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Spec</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Purpose</td><td>Penetrates clouds, works at night, sees through camouflage netting</td></tr>
+          <tr><td>Resolution</td><td>0.25m–1m</td></tr>
+          <tr><td>All-weather</td><td>Unaffected by cloud cover or darkness</td></tr>
+          <tr><td>Payload vendors</td><td>MDA Space, Airbus, Thales</td></tr>
+          <tr><td>Reference systems</td><td>Capella Space, ICEYE, Umbra (commercial)</td></tr>
+          <tr><td>Unit cost</td><td>$10M–$30M per satellite</td></tr>
+          <tr><td>Quantity needed</td><td>Phase 1: 8 &nbsp;|&nbsp; Phase 2: 35 &nbsp;|&nbsp; Phase 3: 80+</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ONBOARD AI -->
+    <h4>4. Onboard AI Processor (fitted on every satellite)</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Spec</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Purpose</td><td>Edge inference onboard — triage frames, flag threats, reduce downlink load 60–80%</td></tr>
+          <tr><td>Chipset</td><td>Radiation-hardened NPU — Ubotica, Spiral Technology, or custom rad-hard ASIC</td></tr>
+          <tr><td>Performance</td><td>10–50 TOPS, real-time at 30fps, model size &lt;50MB</td></tr>
+          <tr><td>Cost per unit</td><td>$500K–$2M (included in satellite unit cost)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ISL -->
+    <h4>5. Inter-Satellite Laser Links (ISL)</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Spec</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Purpose</td><td>Relay alerts satellite-to-satellite without waiting for ground station contact</td></tr>
+          <tr><td>Technology</td><td>Free-space optical laser terminals</td></tr>
+          <tr><td>Vendors</td><td>Mynaric, TESAT Spacecom</td></tr>
+          <tr><td>Cost per terminal</td><td>$500K–$2M per satellite (added Phase 2 onward)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SATELLITE COUNT SUMMARY -->
+    <h3>Satellite Count Summary</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Phase</th><th>EO</th><th>IR</th><th>SAR</th><th>Total</th><th>Coverage</th><th>Revisit Time</th></tr></thead>
+        <tbody>
+          <tr><td>Phase 1 — Regional</td><td>15</td><td>10</td><td>8</td><td><strong>~33</strong></td><td>Europe / Middle East OR Indo-Pacific</td><td>8–15 min</td></tr>
+          <tr><td>Phase 2 — Multi-Regional</td><td>60</td><td>40</td><td>35</td><td><strong>~135</strong></td><td>3–4 global regions</td><td>3–6 min</td></tr>
+          <tr class="total-row"><td>Phase 3 — Global</td><td>150+</td><td>100+</td><td>80+</td><td><strong>330–500</strong></td><td>Full global persistent</td><td>&lt;90 seconds</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── 1B GROUND STATIONS ── -->
+    <h3>B — Ground Station Network</h3>
+    <p>12 globally distributed stations ensure &lt;90 second maximum satellite contact gap. Each station downlinks at 2–10 Gbps and runs local AI processing before forwarding to mission control.</p>
+
+    <div class="img-gallery">
+      <div class="img-card">
+        <img src="images/ground_station_array.jpg" alt="Satellite ground station antenna array" loading="lazy" />
+        <div class="img-cap"><strong>Multi-Antenna Ground Station</strong> Array of large parabolic tracking antennas for simultaneous multi-satellite downlink. Each SENTINEL-AI site uses primary 7.3m + backup 3.7m dish configuration.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/ground_station_astra.jpg" alt="Astra NBG satellite ground station" loading="lazy" />
+        <div class="img-cap"><strong>Professional Satellite Earth Station</strong> High-throughput commercial ground station with multiple X/Ka-band antennas — representative of the infrastructure deployed at each of the 12 global SENTINEL-AI sites.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/gpu_server_room.jpg" alt="GPU server room data centre" loading="lazy" />
+        <div class="img-cap"><strong>On-Site AI Processing</strong> Each ground station houses a GPU cluster (8–32× NVIDIA H100) for real-time AI inference within 5 seconds of downlink, before sending to mission control.</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Equipment</th><th>Specification</th><th>Cost per Station</th></tr></thead>
+        <tbody>
+          <tr><td>Primary tracking antenna</td><td>7.3m dish, X/Ka dual-band</td><td>$2.5M</td></tr>
+          <tr><td>Backup antenna</td><td>3.7m dish</td><td>$800K</td></tr>
+          <tr><td>High-throughput modem array</td><td>2–10 Gbps downlink throughput</td><td>$500K</td></tr>
+          <tr><td>TT&amp;C system</td><td>Full telemetry, tracking &amp; command suite</td><td>$1.2M</td></tr>
+          <tr><td>Secure data centre</td><td>Tier 3+, 200kW capacity</td><td>$3M–$8M</td></tr>
+          <tr><td>GPU cluster (AI processing)</td><td>8–32× NVIDIA H100 per station</td><td>$3M–$12M</td></tr>
+          <tr><td>Fibre / MPLS backhaul</td><td>Dedicated encrypted line to mission control</td><td>$200K–$1M/yr</td></tr>
+          <tr><td>Power + UPS</td><td>N+1 redundancy</td><td>$500K</td></tr>
+          <tr><td>Physical security</td><td>Perimeter, biometric access control</td><td>$300K</td></tr>
+          <tr class="total-row"><td><strong>Per station total</strong></td><td></td><td><strong>$11M–$26M</strong></td></tr>
+          <tr class="total-row"><td><strong>12-station network total</strong></td><td></td><td><strong>$132M–$312M</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>12 Global Ground Station Locations</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Location</th><th>Region Covered</th><th>Role</th></tr></thead>
+        <tbody>
+          <tr><td>Svalbard, Norway</td><td>Arctic / Northern Europe</td><td>Primary downlink hub</td></tr>
+          <tr><td>Fairbanks, Alaska</td><td>North America / Arctic</td><td>Primary downlink hub</td></tr>
+          <tr><td>Perth, Australia</td><td>Indo-Pacific / Southern Ocean</td><td>Primary downlink hub</td></tr>
+          <tr><td>Maspalomas, Spain</td><td>Europe / Africa</td><td>Primary downlink hub</td></tr>
+          <tr><td>Riyadh, Saudi Arabia</td><td>Middle East</td><td>Regional hub</td></tr>
+          <tr><td>Singapore</td><td>Southeast Asia</td><td>Regional hub</td></tr>
+          <tr><td>Nairobi, Kenya</td><td>Sub-Saharan Africa</td><td>Regional hub</td></tr>
+          <tr><td>Buenos Aires, Argentina</td><td>South America</td><td>Regional hub</td></tr>
+          <tr><td>Tokyo, Japan</td><td>Northeast Asia</td><td>Regional hub</td></tr>
+          <tr><td>Dubai, UAE</td><td>Middle East / South Asia</td><td>Regional hub</td></tr>
+          <tr><td>London, UK</td><td>Western Europe</td><td>Mission control backup</td></tr>
+          <tr><td>Washington DC, USA</td><td>Primary Mission Control</td><td><strong>HQ &amp; C2</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── 1C RADAR ── -->
+    <h3>C — Ground-Based Radar Systems</h3>
+    <p>Radar fills the gaps between satellite passes, providing continuous tracking and detection of low-flying threats invisible to optical sensors.</p>
+
+    <div class="img-gallery">
+      <div class="img-card">
+        <img src="images/radar_long_range.jpg" alt="AN/FPS-20 military radar system" loading="lazy" />
+        <div class="img-cap"><strong>Military Long-Range Radar</strong> Large-aperture military radar system. Long-range AESA radars (Raytheon AN/TPY-2 class) track ICBMs, cruise missiles, and aircraft at ranges up to 3,000 km.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/radar_missile_defense.jpg" alt="Nike Zeus missile defense acquisition radar" loading="lazy" />
+        <div class="img-cap"><strong>Missile Defense Acquisition Radar</strong> Nike Zeus missile defense radar — heritage of modern AESA ballistic missile tracking. Modern equivalents: Raytheon LRDR, AN/TPY-2 (THAAD radar).</div>
+      </div>
+      <div class="img-card">
+        <img src="images/radar_early_warning.jpg" alt="Military early warning radar" loading="lazy" />
+        <div class="img-cap"><strong>Early Warning Radar</strong> Ground-based long-range early warning radar. Modern AESA equivalents (Thales Ground Master 400) detect drones and cruise missiles at 400–800 km range.</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>Long-Range Radar</th><th>Medium-Range Radar</th></tr></thead>
+        <tbody>
+          <tr><td>Detection range</td><td>2,000–3,000 km</td><td>400–800 km</td></tr>
+          <tr><td>Primary targets</td><td>ICBMs, cruise missiles, aircraft</td><td>Drones, low-altitude cruise missiles</td></tr>
+          <tr><td>Technology</td><td>AESA (Active Electronically Scanned Array)</td><td>AESA / PESA</td></tr>
+          <tr><td>Procurement examples</td><td>Raytheon AN/TPY-2, LRDR</td><td>Thales Ground Master 400</td></tr>
+          <tr><td>Unit cost</td><td>$200M–$500M</td><td>$20M–$60M</td></tr>
+          <tr><td>Quantity recommended</td><td>4 systems</td><td>8 systems</td></tr>
+          <tr class="total-row"><td><strong>Radar layer total</strong></td><td colspan="2"><strong>$960M–$2.5B (Phase 3 proprietary build-out)</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><strong>Phase 1 recommendation:</strong> License existing national radar data feeds (NORAD, NATO Air Defence) at $5M–$50M/yr rather than building proprietary radar. Own radar deployment from Phase 2 onward.</div>
+
+    <!-- ── 1D AI COMPUTE ── -->
+    <h3>D — AI &amp; Computing Infrastructure</h3>
+
+    <div class="img-gallery">
+      <div class="img-card">
+        <img src="images/gpu_server_room.jpg" alt="High-performance computing server cluster" loading="lazy" />
+        <div class="img-cap"><strong>Mission Control GPU Cluster</strong> High-density server racks housing NVIDIA H100 GPUs for real-time AI inference, multi-sensor fusion, and threat scoring. 500–2,000 GPUs at mission control hub.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/ai_satellite_output.jpg" alt="High resolution satellite imagery AI analysis" loading="lazy" />
+        <div class="img-cap"><strong>AI Output — Object Recognition</strong> Sub-metre satellite imagery fed into AI pipeline. The AI identifies vehicles, structures, and terrain changes at &gt;90–97% confidence per object class.</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Component</th><th>Specification</th><th>Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Mission control GPU cluster</td><td>500–2,000× NVIDIA H100 (or B200 class)</td><td>$150M–$600M</td></tr>
+          <tr><td>Ground station GPU clusters</td><td>8–32× H100 per site × 12 sites</td><td>$36M–$144M</td></tr>
+          <tr><td>AI software development</td><td>Object detection, tracking, fusion, trajectory modelling</td><td>$40M–$80M</td></tr>
+          <tr><td>Training data &amp; labelling</td><td>10M+ annotated frames, 100M+ radar tracks</td><td>$20M–$40M</td></tr>
+          <tr><td>Cybersecurity stack</td><td>AES-256, HSMs, zero-trust architecture</td><td>$15M–$30M</td></tr>
+          <tr class="total-row"><td><strong>AI infrastructure total</strong></td><td></td><td><strong>$261M–$894M</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── 1E LAUNCH ── -->
+    <h3>E — Launch Services</h3>
+
+    <div class="img-gallery">
+      <div class="img-card">
+        <img src="images/launch_falcon9.jpg" alt="SpaceX Falcon 9 rocket on launch pad" loading="lazy" />
+        <div class="img-cap"><strong>SpaceX Falcon 9</strong> Primary launch vehicle. Rideshare missions deploy 5–15 satellites per launch at $4M–$7M per launch. Proven reliability with 200+ consecutive successful missions.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/launch_heavy.jpg" alt="Heavy lift rocket launch" loading="lazy" />
+        <div class="img-cap"><strong>Heavy-Lift Launch Capability</strong> For larger satellite batches, Falcon Heavy and Ariane 6 carry 15–30 satellites per launch. Reduces per-satellite launch cost at scale.</div>
+      </div>
+      <div class="img-card">
+        <img src="images/ir_rocket_plume.jpg" alt="Rocket launch" loading="lazy" />
+        <div class="img-cap"><strong>Dedicated Launch Option</strong> Dedicated small launchers (RocketLab Electron, Arianespace Vega) for 1–3 satellites requiring specific orbital insertion. Used for high-priority or replacement satellites.</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Launch Vehicle</th><th>Satellites per Launch</th><th>Cost per Launch</th></tr></thead>
+        <tbody>
+          <tr><td>SpaceX Falcon 9 (rideshare)</td><td>5–15 small/medium sats</td><td>$4M–$7M</td></tr>
+          <tr><td>SpaceX Falcon Heavy</td><td>15–30 sats</td><td>$10M–$15M</td></tr>
+          <tr><td>Arianespace Vega-C / Ariane 6</td><td>5–20 sats</td><td>$5M–$20M</td></tr>
+          <tr><td>RocketLab Electron</td><td>1–3 sats (dedicated)</td><td>$7M–$10M</td></tr>
+          <tr class="total-row"><td><strong>Total launch cost (full programme)</strong></td><td></td><td><strong>~$900M</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════ SECTION 2 ═══════════════════════ -->
+<div class="section" id="s2">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-num">Section 02</div>
+      <div class="section-title">Full Cost Breakdown</div>
+    </div>
+
+    <h3>Phase-by-Phase Capital Expenditure</h3>
+    <div class="phase-strip">
+      <div class="ph">
+        <div class="ph-name">Phase 0 — Foundation</div>
+        <div class="ph-cost">$120M</div>
+        <div class="ph-time">Months 1–18</div>
+        <ul>
+          <li>Company setup + legal: $5M</li>
+          <li>ITU spectrum filing: $3M</li>
+          <li>System design (CDR): $15M</li>
+          <li>130 staff × 18 months: $45M</li>
+          <li>AI platform v0.1: $20M</li>
+          <li>Prototype satellite + launch: $25M</li>
+          <li>Land acquisition (3 sites): $7M</li>
+        </ul>
+      </div>
+      <div class="ph">
+        <div class="ph-name">Phase 1 — Regional</div>
+        <div class="ph-cost">$1.32B</div>
+        <div class="ph-time">Months 18–42</div>
+        <ul>
+          <li>15 EO satellites: $375M</li>
+          <li>10 IR satellites: $350M</li>
+          <li>8 SAR satellites: $160M</li>
+          <li>8 launches: $48M</li>
+          <li>4 ground stations: $88M</li>
+          <li>AI infrastructure: $80M</li>
+          <li>AI software v1.0: $35M</li>
+          <li>Mission control: $20M</li>
+          <li>Contingency 10%: $120M</li>
+        </ul>
+      </div>
+      <div class="ph">
+        <div class="ph-name">Phase 2 — Multi-Regional</div>
+        <div class="ph-cost">$2.8B</div>
+        <div class="ph-time">Months 42–72</div>
+        <ul>
+          <li>110 more satellites: $1.8B</li>
+          <li>Launch services: $200M</li>
+          <li>6 more ground stations: $120M</li>
+          <li>AI expand: $150M</li>
+          <li>AI software v2.0: $50M</li>
+          <li>ISL terminals: $100M</li>
+          <li>Operations 3yr: $180M</li>
+          <li>Contingency: $200M</li>
+        </ul>
+      </div>
+      <div class="ph">
+        <div class="ph-name">Phase 3 — Global</div>
+        <div class="ph-cost">$4.5B</div>
+        <div class="ph-time">Months 72–108</div>
+        <ul>
+          <li>200+ more satellites: $3.0B</li>
+          <li>Launch services: $400M</li>
+          <li>2 more stations: $30M</li>
+          <li>Radar nodes: $250M</li>
+          <li>AI infrastructure v3.0: $200M</li>
+          <li>AI software v3.0: $80M</li>
+          <li>Operations 3yr: $300M</li>
+          <li>Contingency: $240M</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Total Programme Cost</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Phase</th><th>Cost</th><th>Timeline</th><th>Satellites Deployed</th></tr></thead>
+        <tbody>
+          <tr><td>Phase 0 — Foundation</td><td class="cost-hl">$120M</td><td>Months 1–18</td><td>1 (prototype)</td></tr>
+          <tr><td>Phase 1 — Regional Pilot</td><td class="cost-hl">$1.32B</td><td>Months 18–42</td><td>~33</td></tr>
+          <tr><td>Phase 2 — Multi-Regional</td><td class="cost-hl">$2.8B</td><td>Months 42–72</td><td>~145</td></tr>
+          <tr><td>Phase 3 — Global</td><td class="cost-hl">$4.5B</td><td>Months 72–108</td><td>330–500</td></tr>
+          <tr class="total-row"><td>TOTAL (full programme)</td><td class="cost-total">~$8.74B</td><td>9 years</td><td>330–500</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Where the Money Goes</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Category</th><th>Share</th><th>Amount</th></tr></thead>
+        <tbody>
+          <tr><td>Satellites (hardware, sensors, onboard AI)</td><td>~50%</td><td>~$4.4B</td></tr>
+          <tr><td>Launch services</td><td>~10%</td><td>~$900M</td></tr>
+          <tr><td>Ground stations (antennas, data centres, equipment)</td><td>~15%</td><td>~$1.3B</td></tr>
+          <tr><td>AI infrastructure (GPU clusters, software, training)</td><td>~12%</td><td>~$1.05B</td></tr>
+          <tr><td>Operations, staff, R&amp;D (9 years)</td><td>~10%</td><td>~$875M</td></tr>
+          <tr><td>Radar systems (Phase 3 only)</td><td>~2.5%</td><td>~$215M</td></tr>
+          <tr><td>Contingency / legal / regulatory</td><td>~0.5%</td><td>~$43M</td></tr>
+          <tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>100%</strong></td><td><strong>~$8.74B</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Annual Operating Cost (Full Scale — Year 9+)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Category</th><th>Annual Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Satellite operations &amp; maintenance</td><td>$80M</td></tr>
+          <tr><td>Ground station operations (12 sites)</td><td>$60M</td></tr>
+          <tr><td>AI compute &amp; cloud infrastructure</td><td>$80M</td></tr>
+          <tr><td>Staff (800–1,200 people)</td><td>$200M</td></tr>
+          <tr><td>Satellite replenishment launches</td><td>$100M</td></tr>
+          <tr><td>Cybersecurity &amp; compliance</td><td>$30M</td></tr>
+          <tr><td>Data licensing (radar, ADS-B, AIS, met feeds)</td><td>$40M</td></tr>
+          <tr><td>R&amp;D (continuous AI improvement)</td><td>$100M</td></tr>
+          <tr class="total-row"><td><strong>Total Annual OpEx</strong></td><td><strong>~$690M/yr</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Revenue vs Cost Projection</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Year</th><th>Satellites</th><th>Revenue</th><th>EBITDA</th></tr></thead>
+        <tbody>
+          <tr><td>Year 3</td><td>15</td><td>$80M</td><td class="red">-$120M</td></tr>
+          <tr><td>Year 4</td><td>35</td><td>$250M</td><td class="red">-$80M</td></tr>
+          <tr><td>Year 5</td><td>80</td><td>$550M</td><td class="green">+$50M</td></tr>
+          <tr><td>Year 6</td><td>150</td><td>$1.1B</td><td class="green">+$300M</td></tr>
+          <tr><td>Year 7</td><td>200</td><td>$1.8B</td><td class="green">+$600M</td></tr>
+          <tr><td>Year 8</td><td>300</td><td>$2.8B</td><td class="green">+$980M</td></tr>
+          <tr class="total-row"><td>Year 9</td><td>400+</td><td>$4.2B</td><td class="green">+$1.7B</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Investment Rounds</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Round</th><th>Amount</th><th>Purpose</th><th>Investor Type</th></tr></thead>
+        <tbody>
+          <tr><td>Series A</td><td class="cost-hl">$120M</td><td>Phase 0 — team, design, prototype</td><td>Defence VCs, sovereign wealth funds</td></tr>
+          <tr><td>Series B</td><td class="cost-hl">$400M</td><td>Phase 1 first tranche</td><td>Defence PE, NATO innovation funds</td></tr>
+          <tr><td>Series C</td><td class="cost-hl">$920M</td><td>Phase 1 completion</td><td>Airbus, L3Harris, Thales (strategic)</td></tr>
+          <tr><td>Series D</td><td class="cost-hl">$2.8B</td><td>Phase 2</td><td>Infrastructure funds, large PE</td></tr>
+          <tr><td>IPO / Phase 3</td><td class="cost-hl">$4.5B</td><td>Global deployment</td><td>Public markets + government co-invest</td></tr>
+          <tr class="total-row"><td><strong>Total</strong></td><td class="cost-total">$8.74B</td><td colspan="2">9-year programme to global coverage</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>SENTINEL-AI</strong> &nbsp;·&nbsp; See Everything. Detect Anything. Respond in Seconds.<br><br>
+  Images: Wikimedia Commons (CC licences). This document is for investment and R&amp;D planning purposes only.
+  All cost estimates are indicative based on publicly available market data as of April 2026.
+  This document does not constitute a securities offering.
+</footer>
+
+<!-- BURGER MENU -->
+<style>
+.bm-btn { position:fixed; bottom:2rem; right:2rem; z-index:999; width:52px; height:52px; border-radius:50%; background:#e11d48; border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; box-shadow:0 4px 20px rgba(225,29,72,0.4); }
+.bm-btn span { display:block; width:20px; height:2px; background:#fff; border-radius:2px; transition:all 0.3s; }
+.bm-btn.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+.bm-btn.open span:nth-child(2) { opacity:0; }
+.bm-btn.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+.burger-menu { position:fixed; bottom:6rem; right:2rem; z-index:998; background:#0a0800; border:1px solid rgba(225,29,72,0.3); border-radius:16px; padding:1rem; width:300px; box-shadow:0 8px 40px rgba(0,0,0,0.7); display:none; flex-direction:column; gap:0.3rem; max-height:80vh; overflow-y:auto; }
+.burger-menu.open { display:flex; }
+.bml { font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.3); padding:0.3rem 0.8rem 0.6rem; font-family:'Courier New',monospace; }
+.burger-menu a { display:flex; align-items:center; gap:0.7rem; padding:0.6rem 0.8rem; border-radius:8px; color:rgba(255,255,255,0.7); text-decoration:none; font-size:0.84rem; transition:background 0.15s; }
+.burger-menu a:hover { background:rgba(225,29,72,0.15); color:#fff; }
+.burger-menu a.active-report { background:rgba(225,29,72,0.15); color:#fb7185; }
+.burger-menu a span { font-size:1rem; }
+</style>
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">// Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html"><span>📡</span> Satellite Brief</a>
+  <a href="REALTIME_SATELLITE.html"><span>🔭</span> Real-Time Satellite Vision</a>
+  <a href="PALANTIR_ACCESS_MAP.html"><span>🌍</span> Palantir Access Map</a>
+  <a href="NO_SATELLITE_STACK.html"><span>🟢</span> No Satellite Stack</a>
+  <a href="UKRAINE_DEFENCE_AI.html"><span>🇺🇦</span> Ukraine Defence AI</a>
+  <a href="SENTINEL_AI_RD_Investor_Report.html" class="active-report"><span>🔴</span> Sentinel AI R&amp;D</a>
+  <a href="SINGAPORE_GULF_ANALYSIS.html"><span>🌏</span> Singapore &amp; Gulf Analysis</a>
+  <a href="SOVEREIGN_AI_PRODUCT.html"><span>🧠</span> The Product They Can't Refuse</a>
+  <a href="SWARM_BRAIN.html"><span>🎯</span> Swarm Brain — Ukraine</a>
+  <a href="PREDICTIVE_INTEL.html"><span>🔮</span> Predictive Offensive Intel</a>
+  <a href="BORDER_INTELLIGENCE.html"><span>👁️</span> Autonomous Border Intel</a>
+  <a href="ORB_DEFENCE.html"><span>🛡️</span> Orb Defence — UAE 3D AI Grid</a>
+</div>
+
+</body>
+</html>
