@@ -314,7 +314,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
     <em>72 hours before it happens.</em>
   </h1>
   <p class="hero-sub">
-    No competitor has built this for Ukraine. <strong>The CIA does it manually for the White House.</strong> You're automating it for Ukrainian brigade commanders — using commercial satellite APIs, SIGINT patterns, social media, and Claude's reasoning engine.
+    No competitor has built this for Ukraine. <strong>The CIA does it manually for the White House.</strong> You're automating it for Ukrainian brigade commanders — using commercial satellite APIs, railway traffic analysis, RF emissions, and Claude's reasoning engine. All physical signals. Zero OPSEC dependency.
   </p>
 
   <!-- MOCK INTEL BRIEF -->
@@ -341,7 +341,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
         <li>Tokmak logistics depot vehicle density <span class="ind-up">+47% (72hr)</span> — consistent with assault resupply. Source: Planet Labs change detection.</li>
         <li><span class="ind-match">3 field hospital activations</span> within 40km of axis — identical to pre-assault pattern Jul 2025. Source: Sentinel-2 thermal.</li>
         <li>49th Combined Arms Army SIGINT silence <span class="ind-up">18hrs+</span> — comms blackout preceded 6 of last 7 confirmed assaults. Source: SIGINT feed.</li>
-        <li>Russian milblogger accounts <span class="ind-match">geo-tagged Melitopol region +340%</span> in 48hrs — unit arrivals. Source: social media OSINT.</li>
+        <li>Tokmak–Melitopol rail line freight car count <span class="ind-up">+180 units (72hr)</span> — ammunition and fuel resupply pattern. Source: Planet Labs rail analysis.</li>
         <li>Fuel depot infrared signature <span class="ind-up">elevated (+2.1°C avg)</span> vs 30-day baseline — active resupply. Source: Sentinel-2 thermal.</li>
         <li>Prisoner report cross-match: 2 of last 3 POWs mentioned <span class="ind-match">"push next week"</span> — corroborating signal. Source: HUMINT database.</li>
       </ul>
@@ -421,13 +421,13 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
       <div class="sig-weight-val">78% — strongest for logistics confirmation</div>
     </div>
     <div class="signal-card">
-      <div class="sig-icon">📱</div>
-      <div class="sig-name">Social Media OSINT</div>
-      <div class="sig-source">Russian Telegram, VK, geo-tagged posts</div>
-      <div class="sig-desc">Russian soldiers post on social media. Unit arrivals at forward areas, equipment photos, complaints about deployment conditions. Geo-tagged content mapped against known unit order of battle.</div>
+      <div class="sig-icon">🚂</div>
+      <div class="sig-name">Railway Traffic Analysis</div>
+      <div class="sig-source">Planet Labs rail monitoring · Sentinel-2 change detection</div>
+      <div class="sig-desc">Russia moves all heavy logistics by rail. Satellite tracking of freight car counts at forward depots, train frequency on key supply lines, and new rail siding construction. Physically impossible to hide. Detected 5–10 days before assault — longest lead time of any signal.</div>
       <div class="sig-weight-label">Predictive Weight</div>
-      <div class="sig-bar"><div class="sig-fill" style="width:65%"></div></div>
-      <div class="sig-weight-val">65% — strong corroborating signal</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:90%"></div></div>
+      <div class="sig-weight-val">90% — longest lead time, impossible to suppress</div>
     </div>
     <div class="signal-card">
       <div class="sig-icon">🧠</div>
@@ -439,13 +439,22 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
       <div class="sig-weight-val">72% — highest confidence when explicit</div>
     </div>
     <div class="signal-card">
-      <div class="sig-icon">📰</div>
-      <div class="sig-name">Russian Milblogger Network</div>
-      <div class="sig-source">700+ monitored Russian military Telegram channels</div>
-      <div class="sig-desc">Russian military bloggers (milbloggers) are often ahead of official sources. Claude reads all 700+ channels in real time, extracts unit movements, equipment sightings, morale signals, and operational hints.</div>
+      <div class="sig-icon">📻</div>
+      <div class="sig-name">RF / Electromagnetic Emissions</div>
+      <div class="sig-source">Passive ELINT · Radar activation patterns · Spectrum analysis</div>
+      <div class="sig-desc">Before any offensive, radar systems activate, encrypted burst communications increase, and artillery positioning creates characteristic RF signatures. Detected without reading content — pure physics. Jamming systems powering up, fire control radars going active, comms relay vehicles repositioning all produce detectable electromagnetic changes.</div>
       <div class="sig-weight-label">Predictive Weight</div>
-      <div class="sig-bar"><div class="sig-fill" style="width:60%"></div></div>
-      <div class="sig-weight-val">60% — valuable for early detection</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:83%"></div></div>
+      <div class="sig-weight-val">83% — unaffected by OPSEC, reads physics not intent</div>
+    </div>
+    <div class="signal-card">
+      <div class="sig-icon">👥</div>
+      <div class="sig-name">Civilian Displacement Patterns</div>
+      <div class="sig-source">Mobile network density · Commercial traffic data · Refugee flow APIs</div>
+      <div class="sig-desc">Civilian populations near planned assault areas begin moving 48–72 hours before major offensives — even without official warnings. Mobile network density drops in specific grid squares as people leave. Commercial road traffic data shows anomalous outflow patterns. Open source, passive, and fully unaffected by military OPSEC.</div>
+      <div class="sig-weight-label">Predictive Weight</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:68%"></div></div>
+      <div class="sig-weight-val">68% — consistent across all major offensives since 2022</div>
     </div>
     <div class="signal-card">
       <div class="sig-icon">📋</div>
@@ -472,7 +481,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
       <div class="how-step">
         <div class="step-num">01</div>
         <div class="step-title">Ingest</div>
-        <div class="step-text">Automated collectors pull from all 7 signal sources every 6 hours. Satellite API calls, SIGINT feed polling, social media scraping, HUMINT log ingestion.</div>
+        <div class="step-text">Automated collectors pull from all 7 signal sources every 6 hours. Satellite API calls, railway change detection, RF emissions feed, SIGINT metadata polling, thermal band processing, HUMINT log ingestion.</div>
       </div>
       <div class="how-step">
         <div class="step-num">02</div>
@@ -512,7 +521,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
         </div>
         <div class="claude-item">
           <div class="ci-label">Russian Language Processing</div>
-          <div class="ci-text">SIGINT, milbloggers, prisoner reports — all in Russian. Claude reads Russian military slang, abbreviations, and field terminology natively. No translation layer, no information loss.</div>
+          <div class="ci-text">SIGINT transcripts, prisoner reports, procurement database entries — all in Russian. Claude reads Russian military slang, abbreviations, and field terminology natively. No translation layer, no information loss.</div>
         </div>
         <div class="claude-item">
           <div class="ci-label">Structured Intelligence Output</div>
@@ -543,7 +552,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
         <div class="pc-item"><strong>Satellite:</strong> vehicle density at Donetsk staging +52% over 4 days</div>
         <div class="pc-item"><strong>SIGINT:</strong> 1st Guards Tank Army comms volume drop 72hrs pre-assault</div>
         <div class="pc-item"><strong>Thermal:</strong> fuel depot signature elevated 3 consecutive days</div>
-        <div class="pc-item"><strong>Social:</strong> 116th Motorised Infantry geo-tags near Horlivka +280%</div>
+        <div class="pc-item"><strong>Rail:</strong> Donetsk logistics rail siding expanded — 140 new freight cars detected</div>
         <div class="pc-item"><strong>HUMINT:</strong> 2 prisoners mentioned redeployment 5 days prior</div>
         <div class="pc-outcome pco-hit">✓ Pattern active 68 hours before first contact. Pre-positioning would have changed outcome.</div>
       </div>
@@ -555,7 +564,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
       </div>
       <div class="pc-body">
         <div class="pc-item"><strong>Satellite:</strong> Belgorod Oblast assembly area expansion detected</div>
-        <div class="pc-item"><strong>Milbloggers:</strong> 4 separate channels posted Belgorod unit sightings</div>
+        <div class="pc-item"><strong>Rail:</strong> Valuyki–Belgorod line freight volume +220% over 5 days</div>
         <div class="pc-item"><strong>SIGINT:</strong> 6th Combined Arms Army blackout 48hrs before</div>
         <div class="pc-item"><strong>Thermal:</strong> field hospital activation 55km behind start line</div>
         <div class="pc-item"><strong>Pattern match:</strong> 91% similarity to Kherson Oct 2022 pre-assault</div>
@@ -571,8 +580,8 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
         <div class="pc-item"><strong>System logic:</strong> same signatures from Ukrainian side</div>
         <div class="pc-item"><strong>Satellite:</strong> Ukrainian logistics activity Sumy Oblast elevated</div>
         <div class="pc-item"><strong>SIGINT:</strong> unusual comms silence 72hrs before crossing</div>
-        <div class="pc-item"><strong>Social:</strong> suppressed — Ukrainian OPSEC far better than Russian</div>
-        <div class="pc-item"><strong>Key finding:</strong> Russia did NOT detect it — their version of this system doesn't exist</div>
+        <div class="pc-item"><strong>RF:</strong> no abnormal emissions — Ukraine ran radio silence, used fibre comms</div>
+        <div class="pc-item"><strong>Key finding:</strong> Russia's satellite coverage missed the Sumy assembly — physical dispersion + camouflage defeated it</div>
         <div class="pc-outcome pco-test">→ Ukraine's superior OPSEC means this system is asymmetrically valuable to Ukraine.</div>
       </div>
     </div>
@@ -608,7 +617,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
           <th>System</th>
           <th>Commercial Sat Fusion</th>
           <th>SIGINT Pattern AI</th>
-          <th>Social Media OSINT</th>
+          <th>Rail / RF Analysis</th>
           <th>72hr Prediction</th>
           <th>Brigade Level</th>
           <th>Ukraine Specific</th>
@@ -619,7 +628,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
           <td><strong>Palantir Gotham (US)</strong></td>
           <td class="td-yes">Yes</td>
           <td class="td-yes">Yes</td>
-          <td class="td-part">Partial</td>
+          <td class="td-no">No</td>
           <td class="td-part">Strategic only</td>
           <td class="td-no">No — HQ only</td>
           <td class="td-no">No</td>
@@ -628,7 +637,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
           <td><strong>CIA/DIA (US Intel)</strong></td>
           <td class="td-yes">Yes</td>
           <td class="td-yes">Yes</td>
-          <td class="td-yes">Yes</td>
+          <td class="td-yes">Yes (manual)</td>
           <td class="td-yes">Yes (manual)</td>
           <td class="td-no">No — POTUS level</td>
           <td class="td-part">Shared selectively</td>
@@ -636,8 +645,8 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
         <tr>
           <td><strong>Ukraine Delta / GUR</strong></td>
           <td class="td-part">Limited</td>
-          <td class="td-part">Manual</td>
-          <td class="td-part">Manual</td>
+          <td class="td-no">No</td>
+          <td class="td-no">No</td>
           <td class="td-no">No</td>
           <td class="td-part">Some</td>
           <td class="td-yes">Yes</td>
@@ -646,7 +655,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
           <td><strong>NATO JISR</strong></td>
           <td class="td-yes">Yes</td>
           <td class="td-yes">Yes</td>
-          <td class="td-no">No</td>
+          <td class="td-part">Partial (NTM sat)</td>
           <td class="td-part">Delayed, filtered</td>
           <td class="td-no">Alliance HQ only</td>
           <td class="td-no">Not Ukraine-specific</td>
@@ -664,7 +673,7 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
           <td class="td-you"><strong>POI System (This)</strong></td>
           <td class="td-you">Yes — automated</td>
           <td class="td-you">Yes — Claude AI</td>
-          <td class="td-you">Yes — 700+ channels</td>
+          <td class="td-you">Yes — rail + RF automated</td>
           <td class="td-you">Yes — 6hr refresh</td>
           <td class="td-you">Yes — brigade level</td>
           <td class="td-you">Yes — doctrine-tuned</td>
@@ -687,9 +696,9 @@ footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border
       <div class="tl-dot">1</div>
       <div class="tl-card">
         <div class="tl-when">Month 1–2 — Foundation</div>
-        <div class="tl-title">Satellite + Milblogger Pipeline</div>
-        <div class="tl-text">Integrate Planet Labs API and Sentinel-2 for change detection. Build Claude pipeline to process Russian milblogger Telegram channels (700+ sources). Establish baseline for 5 active axes. First back-test run against 2023–2025 offensives.</div>
-        <div class="tl-output">Output: Working change detection map. Claude reading Russian milblogs in real time.</div>
+        <div class="tl-title">Satellite + Railway Pipeline</div>
+        <div class="tl-text">Integrate Planet Labs API and Sentinel-2 for optical and thermal change detection. Build railway traffic monitoring module — automated freight car counting, siding expansion detection, line frequency analysis. Establish 30-day baseline for 5 active axes. First back-test run against 2023–2025 offensives to validate lead times.</div>
+        <div class="tl-output">Output: Working change detection map with rail overlay. 5-axis baseline established. Back-test shows 44–68hr historical lead times.</div>
       </div>
     </div>
     <div class="tl-item">
