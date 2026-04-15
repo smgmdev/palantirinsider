@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>No Satellite Required — The Full Ground-Level Intelligence Stack</title>
+<style>
+  :root {
+    --accent: #059669;
+    --accent2: #047857;
+    --accent3: #34d399;
+    --bg: #ffffff;
+    --bg2: #f0fdf4;
+    --bg3: #dcfce7;
+    --border: #bbf7d0;
+    --text: #052e16;
+    --muted: #2d6a4a;
+    --red: #dc2626;
+    --blue: #2563eb;
+    --orange: #ea580c;
+    --purple: #7c3aed;
+    --yellow: #ca8a04;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.65; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.97); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; height: 52px;
+    backdrop-filter: blur(10px);
+  }
+  .nav-brand { font-size: 13px; font-weight: 800; color: var(--accent2); letter-spacing: 0.08em; text-transform: uppercase; }
+  .nav-links { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-left: 20px; padding-left: 20px; border-left: 1px solid var(--border); }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 12px; padding: 5px 10px; border-radius: 6px; white-space: nowrap; transition: all 0.2s; }
+  .nav-links a:hover { color: var(--accent2); background: rgba(5,150,105,0.08); }
+
+  .hero {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 72px 24px 52px; text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 40% at 50% 0%, rgba(5,150,105,0.08), transparent); }
+  .hero-badge {
+    display: inline-block; position: relative;
+    background: rgba(5,150,105,0.1); border: 1px solid var(--accent);
+    color: var(--accent2); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 5px 16px; border-radius: 20px; margin-bottom: 20px;
+  }
+  .hero h1 { font-size: clamp(24px, 4vw, 48px); font-weight: 900; letter-spacing: -0.02em; margin-bottom: 14px; position: relative; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 15px; max-width: 620px; margin: 0 auto 32px; position: relative; }
+  .hero-stats { display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; position: relative; }
+  .hero-stat .val { font-size: clamp(20px, 3vw, 32px); font-weight: 900; color: var(--accent2); display: block; }
+  .hero-stat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  section { max-width: 1040px; margin: 0 auto; padding: 56px 24px; }
+  hr.divider { border: none; border-top: 1px solid var(--border); }
+  .section-label {
+    display: inline-block;
+    background: rgba(5,150,105,0.07); border: 1px solid rgba(5,150,105,0.3);
+    color: var(--accent2); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 4px; margin-bottom: 14px;
+  }
+  section h2 { font-size: clamp(18px, 2.5vw, 30px); font-weight: 800; margin-bottom: 6px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+  /* PRODUCT CARDS — big */
+  .product { background: #fff; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 36px; }
+  .product-header {
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  .product-header .ph-left h3 { font-size: clamp(17px, 2vw, 22px); font-weight: 900; margin-bottom: 6px; }
+  .product-header .ph-left p { font-size: 13px; color: var(--muted); max-width: 560px; }
+  .product-body { padding: 24px 28px; }
+
+  .tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+  .tag-green  { background: rgba(5,150,105,0.1);  color: var(--accent2); border: 1px solid var(--border); }
+  .tag-blue   { background: rgba(37,99,235,0.1);  color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .tag-orange { background: rgba(234,88,12,0.1);  color: #c2410c; border: 1px solid #fed7aa; }
+  .tag-purple { background: rgba(124,58,237,0.1); color: #6d28d9; border: 1px solid #ddd6fe; }
+  .tag-red    { background: rgba(220,38,38,0.1);  color: #b91c1c; border: 1px solid #fecaca; }
+
+  /* MINI GRID */
+  .mini-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .mini-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+  .mini-card h5 { font-size: 13px; font-weight: 700; color: var(--accent2); margin-bottom: 8px; }
+  .mini-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .mini-card ul li { font-size: 13px; color: var(--muted); display: flex; gap: 7px; align-items: flex-start; }
+  .mini-card ul li::before { content:'›'; color: var(--accent); font-weight: 700; flex-shrink: 0; margin-top:1px; }
+  .mini-card p { font-size: 13px; color: var(--muted); }
+
+  /* METRICS ROW */
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-bottom: 20px; }
+  .metric { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; text-align: center; }
+  .metric .mv { font-size: clamp(15px,2vw,20px); font-weight: 900; color: var(--accent2); }
+  .metric .ml { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 3px; }
+
+  /* DATA SOURCES FLOW */
+  .flow { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+  .flow-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--accent2); }
+  .flow-arrow { color: var(--accent); font-size: 18px; font-weight: 700; }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 24px; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; min-width: 480px; }
+  th { background: var(--bg3); color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 14px; font-size: 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(5,150,105,0.02); }
+  .td-bold { font-weight: 700; }
+  .td-green { color: var(--accent2); font-weight: 600; }
+  .td-muted { color: var(--muted); font-size: 13px; }
+  .td-orange { color: var(--orange); font-weight: 600; }
+  .td-blue { color: var(--blue); font-weight: 600; }
+
+  /* NOTES */
+  .note-green  { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: #14532d; }
+  .note-blue   { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: #1e3a5f; }
+  .note-orange { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: #7c2d12; }
+  .highlight { background: var(--bg2); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; padding: 18px 20px; margin-bottom: 24px; font-size: 14px; color: var(--muted); }
+  .highlight strong { color: var(--text); }
+
+  /* COMPARISON */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .compare-col { border-radius: 12px; padding: 20px; }
+  .compare-col.no-sat { background: #f0fdf4; border: 2px solid var(--accent); }
+  .compare-col.with-sat { background: #eff6ff; border: 1px solid #bfdbfe; }
+  .compare-col h4 { font-size: 14px; font-weight: 800; margin-bottom: 12px; }
+  .compare-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .compare-col ul li { font-size: 13px; display: flex; gap: 8px; }
+  .compare-col ul li::before { content:'·'; font-weight: 900; flex-shrink: 0; }
+  .no-sat ul li { color: #14532d; }
+  .no-sat ul li::before { color: var(--accent); }
+  .with-sat ul li { color: #1e40af; }
+  .with-sat ul li::before { color: #3b82f6; }
+
+  /* ROADMAP */
+  .roadmap { display: flex; flex-direction: column; gap: 0; margin-bottom: 32px; }
+  .rm { display: flex; gap: 0; position: relative; }
+  .rm::before { content:''; position:absolute; left:27px; top:54px; bottom:-1px; width:2px; background: var(--border); z-index:0; }
+  .rm:last-child::before { display:none; }
+  .rm-dot { width:54px; flex-shrink:0; display:flex; flex-direction:column; align-items:center; padding-top:18px; position:relative; z-index:1; }
+  .rm-circle { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; border:2px solid; background:#fff; flex-shrink:0; }
+  .rm-body { flex:1; padding:16px 0 28px 14px; }
+  .rm-body h4 { font-size:15px; font-weight:800; margin-bottom:4px; }
+  .rm-time { font-size:12px; font-weight:700; margin-bottom:8px; }
+  .rm-body ul { list-style:none; margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+  .rm-body ul li { font-size:13px; color:var(--muted); display:flex; gap:8px; }
+  .rm-body ul li::before { content:'·'; color:var(--accent); font-weight:900; flex-shrink:0; }
+
+  /* FINAL */
+  .final-box { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border:1px solid var(--border); border-radius:16px; padding:40px 32px; text-align:center; }
+  .final-box h3 { font-size: clamp(18px,2.5vw,26px); font-weight:900; margin-bottom:12px; }
+  .final-box p { color:var(--muted); max-width:640px; margin:0 auto 28px; font-size:14px; }
+  .fb-stats { display:flex; justify-content:center; gap:40px; flex-wrap:wrap; }
+  .fb-stat .fv { font-size: clamp(20px,3vw,28px); font-weight:900; color:var(--accent2); }
+  .fb-stat .fl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:4px; }
+
+  /* BURGER */
+  .bm-btn {
+    position:fixed; bottom:24px; right:24px; z-index:999;
+    width:50px; height:50px; border-radius:50%;
+    background:var(--accent); border:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:5px;
+    box-shadow:0 4px 16px rgba(5,150,105,0.4); transition:transform 0.2s;
+  }
+  .bm-btn:hover { transform:scale(1.08); }
+  .bm-btn span { display:block; width:18px; height:2px; background:#fff; border-radius:2px; transition:all 0.3s; }
+  .bm-btn.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+  .bm-btn.open span:nth-child(2) { opacity:0; }
+  .bm-btn.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+  .burger-menu {
+    position:fixed; bottom:82px; right:24px; z-index:998;
+    background:#fff; border:1px solid var(--border);
+    border-radius:14px; padding:14px; width:250px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.12);
+    display:none; flex-direction:column; gap:4px;
+  }
+  .burger-menu.open { display:flex; }
+  .burger-menu a { color:var(--text); text-decoration:none; font-size:13px; font-weight:500; padding:9px 12px; border-radius:8px; display:flex; align-items:center; gap:10px; transition:all 0.15s; }
+  .burger-menu a:hover { background:rgba(5,150,105,0.08); color:var(--accent2); }
+  .burger-menu a.active-report { background:rgba(5,150,105,0.08); color:var(--accent2); }
+  .bml { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.12em; padding:4px 12px 2px; }
+
+  @media (max-width: 768px) {
+    .hero { padding:52px 16px 36px; }
+    section { padding:44px 16px; }
+    .product-header { padding:20px 20px 16px; }
+    .product-body { padding:20px; }
+    .compare { grid-template-columns:1fr; }
+    .final-box { padding:28px 20px; }
+  }
+  @media (max-width:480px) {
+    .hero-stats { gap:20px; }
+    .flow { gap:6px; }
+    .flow-arrow { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">🟢 No Satellite Required</div>
+  <div class="nav-links">
+    <a href="#insight">Core Insight</a>
+    <a href="#military">Military</a>
+    <a href="#finance">Finance / AML</a>
+    <a href="#health">Health / Ops</a>
+    <a href="#government">Government</a>
+    <a href="#ukraine">Ukraine</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">Product Stack Brief</div>
+  <h1>Zero Satellites.<br><span>Full Intelligence.</span></h1>
+  <p>85% of Palantir's value — and every high-ROI product in the sovereign stack — requires no satellite at all. Ground data, drone feeds, databases, and sensors deliver more than enough to build a $50B+ platform.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="val">85%</span><span class="lbl">Of Palantir revenue is satellite-free</span></div>
+    <div class="hero-stat"><span class="val">$5M</span><span class="lbl">Minimum build for first product</span></div>
+    <div class="hero-stat"><span class="val">6 weeks</span><span class="lbl">To first deployable module</span></div>
+    <div class="hero-stat"><span class="val">$50B+</span><span class="lbl">Valuation path — no satellites needed</span></div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECTION 01 — CORE INSIGHT -->
+<section id="insight">
+  <div class="section-label">Section 01</div>
+  <h2>The Core Insight — Data Is Everywhere Already</h2>
+  <p class="sub">Every government and military already generates enormous amounts of data. The problem is it's siloed, un-analysed, and invisible. That's the gap — not missing satellites.</p>
+
+  <div class="highlight">
+    <strong>Palantir's founding insight (2003):</strong> The US intelligence community already had all the data it needed to prevent 9/11. The failure was not a lack of collection — it was a lack of connection. The CIA had pieces. The FBI had pieces. They sat in different databases that never talked to each other. Palantir was built to connect those databases and find the patterns. Satellites had nothing to do with it.
+  </div>
+
+  <div class="compare">
+    <div class="compare-col no-sat">
+      <h4 style="color:var(--accent2);">✅ What You Can Do Without Satellites</h4>
+      <ul>
+        <li>Fuse drone feeds, radio intercepts, human reports into one picture</li>
+        <li>Track logistics — ammunition, fuel, medical supplies in real time</li>
+        <li>Detect financial crime across millions of transactions</li>
+        <li>Connect hospital databases across an entire country</li>
+        <li>Build a government operations platform for 20+ ministries</li>
+        <li>AI-assisted targeting from drone video alone</li>
+        <li>Cyber threat intelligence and network monitoring</li>
+        <li>Border control — ground sensors + camera feeds + databases</li>
+        <li>Counter-terrorism — phone records, financial flows, travel data</li>
+        <li>Infrastructure monitoring — power grid, water, telecoms</li>
+      </ul>
+    </div>
+    <div class="compare-col with-sat">
+      <h4 style="color:#1d4ed8;">🛰️ What Requires Satellites (Add Later)</h4>
+      <ul>
+        <li>Wide-area change detection — spotting new military buildup</li>
+        <li>Open-ocean vessel tracking</li>
+        <li>Monitoring denied areas you can't fly drones into</li>
+        <li>Global persistent surveillance of multiple regions</li>
+        <li>Verifying treaty compliance from space</li>
+        <li>Disaster damage assessment at scale</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Palantir Product</th><th>Satellite Required?</th><th>Primary Data Sources</th><th>Revenue Share</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-bold">Foundry (Government Ops)</td><td class="td-green">❌ None</td><td class="td-muted">Ministry databases, financial systems, HR records</td><td class="td-green">~35%</td></tr>
+        <tr><td class="td-bold">Gotham (Intel Fusion)</td><td class="td-orange">Partial — optional</td><td class="td-muted">SIGINT, HUMINT, OSINT, drone feeds, phone records</td><td class="td-green">~30%</td></tr>
+        <tr><td class="td-bold">AIP (AI Platform)</td><td class="td-green">❌ None</td><td class="td-muted">Any internal data the client has</td><td class="td-green">~15%</td></tr>
+        <tr><td class="td-bold">Apollo (Deployment OS)</td><td class="td-green">❌ None</td><td class="td-muted">Software packages, configuration</td><td class="td-green">~8%</td></tr>
+        <tr><td class="td-bold">Maven Smart System</td><td class="td-orange">Optional — drone-based works fine</td><td class="td-muted">Drone video feeds, radar, SIGINT</td><td class="td-green">~7%</td></tr>
+        <tr><td class="td-bold">MetaConstellation</td><td class="td-red">✅ Yes — core product</td><td class="td-muted">Satellite imagery, SAR, RF signals</td><td class="td-orange">~5%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 02 — MILITARY (NO SATELLITE) -->
+<section id="military">
+  <div class="section-label">Section 02</div>
+  <h2>Military Intelligence — No Satellite Needed</h2>
+  <p class="sub">The most valuable military intelligence products run entirely on ground sensors, drones, intercepts, and human reports. Ukraine proved this.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>⚔️ Battlefield Intelligence Fusion Platform</h3>
+        <p>Connects every non-satellite data source a military generates into one live operational picture. A commander sees everything on one screen — no phone calls, no spreadsheets, no guesswork.</p>
+      </div>
+      <div class="tag tag-green">No satellites · Core product</div>
+    </div>
+    <div class="product-body">
+      <div class="flow">
+        <div class="flow-item">📡 Radio Intercepts (SIGINT)</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">🚁 Drone Video Feeds</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">👤 HUMINT Reports</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">📱 OSINT / Social Media</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">🎯 Artillery Radar</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">📍 GPS Tracker Data</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item" style="background:#d1fae5; border-color:var(--accent);">🧠 AI Fusion Engine</div>
+      </div>
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>Entity Resolution</h5>
+          <ul>
+            <li>Same vehicle spotted in drone feed, intercepted radio, and human report — AI links them automatically</li>
+            <li>Builds a "pattern of life" for every tracked entity</li>
+            <li>Alerts when a known asset deviates from normal pattern</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Drone Video AI</h5>
+          <ul>
+            <li>YOLO-class object detection on live feeds</li>
+            <li>Classifies: tank type, artillery calibre, troop count, vehicle convoy direction</li>
+            <li>Processes 100s of simultaneous drone streams</li>
+            <li>Auto-alerts on new detections — no analyst overload</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Logistics Intelligence</h5>
+          <ul>
+            <li>Real-time ammunition stock by unit and location</li>
+            <li>Fuel consumption and resupply prediction</li>
+            <li>Equipment maintenance status across entire force</li>
+            <li>Medical evacuation routing and hospital capacity</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Commander Dashboard</h5>
+          <ul>
+            <li>Map-centric — all data overlaid on terrain</li>
+            <li>AI recommends courses of action with confidence scores</li>
+            <li>Rules of engagement filter on every recommendation</li>
+            <li>Works on tablet in field — offline-capable</li>
+          </ul>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="mv">$8M–$20M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">3–4 months</div><div class="ml">To Deploy</div></div>
+        <div class="metric"><div class="mv">$50M–$200M/yr</div><div class="ml">Per Sovereign Client</div></div>
+        <div class="metric"><div class="mv">$20B–$60B</div><div class="ml">Valuation at 10 Clients</div></div>
+      </div>
+      <div class="note-green"><strong>Ukraine proof point:</strong> The most effective drone-based intelligence in the Ukraine war runs on ground-processed video feeds — not satellites. A field unit with a $500 DJI drone and the right AI software can generate more actionable intelligence than a $400M satellite pass over the same area.</div>
+    </div>
+  </div>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>🔒 Cyber Defence Intelligence Platform</h3>
+        <p>Russia, China, Iran run constant offensive cyber operations against every government on this list. None of them have AI-powered defence. This is a $3M build with immediate demand from 50+ governments.</p>
+      </div>
+      <div class="tag tag-blue">No satellites · Immediate demand</div>
+    </div>
+    <div class="product-body">
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>Network Threat Detection</h5>
+          <ul>
+            <li>AI baseline of normal network behaviour</li>
+            <li>Anomaly detection in real time — lateral movement, exfiltration, C2 beacons</li>
+            <li>Sub-second alert on novel attack patterns</li>
+            <li>Integrates with existing SIEM (Splunk, Elastic)</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Attack Attribution AI</h5>
+          <ul>
+            <li>Fingerprints attack tools and techniques against known threat actor database</li>
+            <li>Confidence-scored attribution: "87% likely Sandworm (GRU Unit 74455)"</li>
+            <li>Shared threat intelligence across allied sovereign clients</li>
+            <li>Each new attack improves detection for all clients</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Critical Infrastructure Protection</h5>
+          <ul>
+            <li>Monitors power grid, water treatment, telecoms control systems</li>
+            <li>OT/ICS-specific detection — knows what normal looks like for a substation</li>
+            <li>Pre-attack indicators — reconnaissance patterns before an attack</li>
+            <li>Automated isolation recommendations</li>
+          </ul>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="mv">$3M–$8M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">2–3 months</div><div class="ml">To Deploy</div></div>
+        <div class="metric"><div class="mv">$10M–$40M/yr</div><div class="ml">Per Sovereign Client</div></div>
+        <div class="metric"><div class="mv">$5B–$15B</div><div class="ml">Valuation at 15 Clients</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 03 — FINANCE / AML -->
+<section id="finance">
+  <div class="section-label">Section 03</div>
+  <h2>Financial Crime & AML — Easiest First Product</h2>
+  <p class="sub">Pure transaction data. No satellites, no drones, no sensors. Every bank, central bank, and financial intelligence unit in the world needs this. The fastest path to first revenue.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>💰 Sovereign AML & Financial Crime AI</h3>
+        <p>AI platform that detects money laundering, sanctions evasion, terrorist financing, and corruption across an entire national financial system. Connect every bank's transaction data to one sovereign intelligence layer.</p>
+      </div>
+      <div class="tag tag-purple">No satellites · Fastest ROI</div>
+    </div>
+    <div class="product-body">
+      <div class="flow">
+        <div class="flow-item">🏦 Bank Transaction Data</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">🌐 SWIFT Messages</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">🏢 Company Registry</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">✈️ Travel Records</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">📋 Sanctions Lists</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">🔍 Beneficial Ownership</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item" style="background:#d1fae5; border-color:var(--accent);">🧠 AI Crime Graph</div>
+      </div>
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>Transaction Graph Analysis</h5>
+          <ul>
+            <li>Traces money through shell company chains automatically</li>
+            <li>Detects structuring, layering, smurfing patterns</li>
+            <li>Cross-bank view — impossible for individual bank compliance teams</li>
+            <li>Alerts within seconds of suspicious transaction</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Sanctions Intelligence</h5>
+          <ul>
+            <li>Real-time screening against OFAC, UN, EU, local lists</li>
+            <li>Beneficial ownership look-through — who actually owns this company</li>
+            <li>Vessel tracking via AIS (no satellite — ground-based AIS receivers)</li>
+            <li>Correspondent banking risk scoring</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Corruption Detection</h5>
+          <ul>
+            <li>PEP (Politically Exposed Person) transaction monitoring</li>
+            <li>Government procurement anomaly detection — overpriced contracts, fake vendors</li>
+            <li>Asset enrichment analysis — does this official's lifestyle match their salary?</li>
+            <li>Cross-border capital flight early warning</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Why Governments Pay for This</h5>
+          <ul>
+            <li>FATF pressure — blacklisting threat forces compliance investment</li>
+            <li>Direct ROI: one major case = $100M+ recovered</li>
+            <li>Low political sensitivity — no one opposes catching criminals</li>
+            <li>Easy proof-of-concept: run on 3 months of data, show results in week 1</li>
+          </ul>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="mv">$5M–$15M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">6–12 weeks</div><div class="ml">To First Demo</div></div>
+        <div class="metric"><div class="mv">$10M–$50M/yr</div><div class="ml">Per Central Bank Client</div></div>
+        <div class="metric"><div class="mv">$3B–$8B</div><div class="ml">Valuation at 10 Clients</div></div>
+      </div>
+      <div class="note-blue"><strong>Best entry product:</strong> AML is the lowest-friction first product. Every country has a Financial Intelligence Unit (FIU). They all have the data. None have good AI. No data sovereignty concerns — you deploy on their infrastructure. First client can be signed in 3 months, revenue flowing in 6.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 04 — HEALTH / OPS -->
+<section id="health">
+  <div class="section-label">Section 04</div>
+  <h2>Health & Emergency Operations</h2>
+  <p class="sub">The UK's NHS is Palantir's largest non-US contract. Pure database integration. Proven model, massive demand, zero satellites.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>🏥 National Health Intelligence Platform</h3>
+        <p>Connect every hospital, clinic, pharmacy, and ambulance service into one national operational view. Replicate what Palantir did for NHS — for any country's health system. The demand is universal.</p>
+      </div>
+      <div class="tag tag-orange">No satellites · NHS proven model</div>
+    </div>
+    <div class="product-body">
+      <div class="flow">
+        <div class="flow-item">🏥 Hospital EHR Systems</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">🚑 Ambulance Dispatch</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">💊 Pharmacy Records</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">🧪 Lab Results</div>
+        <div class="flow-arrow">+</div>
+        <div class="flow-item">📊 Bed Availability</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-item" style="background:#d1fae5; border-color:var(--accent);">🧠 Health AI</div>
+      </div>
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>Capacity & Flow Management</h5>
+          <ul>
+            <li>Real-time bed availability across all hospitals nationally</li>
+            <li>Predict A&amp;E demand 48 hours ahead — adjust staffing</li>
+            <li>Intelligent patient routing — direct ambulances to right hospital</li>
+            <li>Reduces cancelled operations by predicting resource conflicts</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Outbreak Detection</h5>
+          <ul>
+            <li>Spots disease clusters before they become outbreaks</li>
+            <li>Correlates GP visits + pharmacy purchases + A&amp;E admissions</li>
+            <li>Early warning for pandemic preparedness</li>
+            <li>Supply chain alerts for critical medicines</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Procurement Intelligence</h5>
+          <ul>
+            <li>Tracks spend across every hospital — identifies waste and fraud</li>
+            <li>Benchmarks supplier pricing nationally</li>
+            <li>Stock level visibility — prevents shortages and over-ordering</li>
+            <li>Audit trail on every procurement decision</li>
+          </ul>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="mv">$10M–$30M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">3–5 months</div><div class="ml">To MVP</div></div>
+        <div class="metric"><div class="mv">$30M–$120M/yr</div><div class="ml">Per National Health System</div></div>
+        <div class="metric"><div class="mv">$5B–$20B</div><div class="ml">Valuation at 10 Clients</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 05 — GOVERNMENT OPS -->
+<section id="government">
+  <div class="section-label">Section 05</div>
+  <h2>Government Operations Platform</h2>
+  <p class="sub">Every government runs dozens of disconnected ministries. Budget, Interior, Justice, Infrastructure, Health — all separate databases, all invisible to each other. This is the Foundry use case.</p>
+
+  <div class="product">
+    <div class="product-header">
+      <div class="ph-left">
+        <h3>🏛️ Sovereign Government Data Platform</h3>
+        <p>A single data fabric connecting every government ministry. A head of state can see the entire country's operations on one dashboard. Budget flows, infrastructure status, social services, public safety — all live, all connected, all AI-analysed.</p>
+      </div>
+      <div class="tag tag-green">No satellites · Gulf states + Vision 2030 type demand</div>
+    </div>
+    <div class="product-body">
+      <div class="mini-grid">
+        <div class="mini-card">
+          <h5>Cross-Ministry Data Ontology</h5>
+          <ul>
+            <li>Single source of truth for every citizen, asset, and transaction</li>
+            <li>Citizen ID connects tax records, benefits, health, police, passport — all in one view</li>
+            <li>No more 6-month data requests between ministries</li>
+            <li>Privacy controls: each ministry sees only what it's authorised to see</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Budget & Procurement Intelligence</h5>
+          <ul>
+            <li>Real-time government spend vs. budget</li>
+            <li>Fraud detection: fake contractors, duplicate payments, inflated pricing</li>
+            <li>Project delivery tracking — which infrastructure projects are behind</li>
+            <li>Minister-level KPI dashboards updated daily</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Public Safety & Justice</h5>
+          <ul>
+            <li>Crime pattern analysis — predict and prevent, not just respond</li>
+            <li>Court case backlog management</li>
+            <li>Prison population tracking and recidivism AI</li>
+            <li>Border crossing intelligence — flags persons of interest in real time</li>
+          </ul>
+        </div>
+        <div class="mini-card">
+          <h5>Infrastructure & Utilities</h5>
+          <ul>
+            <li>Power grid health monitoring — sensor data from substations</li>
+            <li>Water network anomaly detection — leaks, pressure drops</li>
+            <li>Road and bridge maintenance prioritisation</li>
+            <li>Predictive maintenance AI — fix before it fails</li>
+          </ul>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="mv">$20M–$60M</div><div class="ml">Build Cost</div></div>
+        <div class="metric"><div class="mv">4–6 months</div><div class="ml">To First Ministry</div></div>
+        <div class="metric"><div class="mv">$50M–$200M/yr</div><div class="ml">Per National Government</div></div>
+        <div class="metric"><div class="mv">$20B–$80B</div><div class="ml">Valuation at 10 Govts</div></div>
+      </div>
+      <div class="note-orange"><strong>Gulf state opportunity:</strong> Saudi Vision 2030, UAE We the UAE 2031, Qatar National Vision — every Gulf state is actively spending billions to build "smart government." They have the budget, the mandate, and the urgency. They do NOT have the platform. This is a $10B+ contract opportunity with zero satellite requirement.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 06 — UKRAINE NO-SATELLITE PACKAGE -->
+<section id="ukraine">
+  <div class="section-label">Section 06</div>
+  <h2>Ukraine — Satellite-Free Sovereign Package</h2>
+  <p class="sub">Everything Ukraine needs right now can be delivered with zero satellites. Drones, radio intercepts, databases, and sensors are the data. Satellites are a premium add-on for later.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Module</th><th>Data Sources (No Satellite)</th><th>What It Replaces</th><th>Build</th><th>Timeline</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-bold">🚁 Drone ISR AI</td>
+          <td class="td-muted">DJI / military drone video, thermal IR, acoustic sensors</td>
+          <td class="td-green">Maven Smart System</td>
+          <td class="td-green">$5M–$12M</td>
+          <td class="td-green">6–8 weeks</td>
+        </tr>
+        <tr>
+          <td class="td-bold">📡 SIGINT Fusion</td>
+          <td class="td-muted">Ground radio intercept stations, comms analysis</td>
+          <td class="td-green">Gotham intelligence layer</td>
+          <td class="td-green">$3M–$8M</td>
+          <td class="td-green">4–6 weeks</td>
+        </tr>
+        <tr>
+          <td class="td-bold">📦 Logistics AI</td>
+          <td class="td-muted">Supply chain databases, GPS trackers on vehicles</td>
+          <td class="td-green">Foundry logistics</td>
+          <td class="td-green">$3M–$8M</td>
+          <td class="td-green">3–4 weeks</td>
+        </tr>
+        <tr>
+          <td class="td-bold">🔒 Cyber Defence</td>
+          <td class="td-muted">Network telemetry, log data, threat intel feeds</td>
+          <td class="td-green">No current equivalent</td>
+          <td class="td-green">$3M–$8M</td>
+          <td class="td-green">4–6 weeks</td>
+        </tr>
+        <tr>
+          <td class="td-bold">🏗️ Reconstruction AI</td>
+          <td class="td-muted">Damage reports, contractor data, fund flows — ground-based</td>
+          <td class="td-green">Nothing exists today</td>
+          <td class="td-green">$5M–$15M</td>
+          <td class="td-orange">3–4 months</td>
+        </tr>
+        <tr style="background:#f0fdf4;">
+          <td class="td-bold">Total Package</td>
+          <td class="td-muted">All ground-based — zero satellite dependency</td>
+          <td class="td-green">Full Palantir replacement</td>
+          <td class="td-green">$19M–$51M</td>
+          <td class="td-green">8–10 weeks core</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-green">
+    <strong>Key advantage over current Palantir setup:</strong> Ukraine would own 100% of the system and the data. No US company can withdraw access. No US policy change can turn it off. The software runs on Ukrainian-controlled air-gapped infrastructure. Add satellite imagery later via Planet/BlackSky API when budget allows — but the core capability works immediately without it.
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 07 — BUILD ROADMAP -->
+<section id="roadmap">
+  <div class="section-label">Section 07</div>
+  <h2>Build Sequence — No Satellite Required at Any Stage</h2>
+  <p class="sub">Every phase delivers standalone value. Satellites can be added as an optional layer at Phase 3 — they are never a prerequisite.</p>
+
+  <div class="roadmap">
+    <div class="rm">
+      <div class="rm-dot"><div class="rm-circle" style="border-color:#059669; color:#059669;">0</div></div>
+      <div class="rm-body">
+        <h4 style="color:#059669;">Phase 0 — AML + Cyber (Fastest Revenue)</h4>
+        <div class="rm-time" style="color:#059669;">Weeks 1–8 · $8M–$23M total</div>
+        <ul>
+          <li>AML Financial Crime AI: sign 1–2 central bank pilots, run on their transaction data</li>
+          <li>Cyber Defence module: deploy at Ukraine MOD + 1 NATO ally</li>
+          <li>Pure software — no hardware, no satellites, no infrastructure to own</li>
+          <li>Revenue starts: $10M–$30M from first signed contracts</li>
+        </ul>
+      </div>
+    </div>
+    <div class="rm">
+      <div class="rm-dot"><div class="rm-circle" style="border-color:#2563eb; color:#2563eb;">1</div></div>
+      <div class="rm-body">
+        <h4 style="color:#2563eb;">Phase 1 — Military Intelligence Fusion</h4>
+        <div class="rm-time" style="color:#2563eb;">Months 2–5 · $30M–$70M total</div>
+        <ul>
+          <li>Deploy Drone ISR AI + SIGINT Fusion + Logistics platform to Ukraine</li>
+          <li>Simultaneously pitch Poland, Romania, Taiwan as second clients</li>
+          <li>Data: drone feeds + radio intercepts + GPS + databases — all ground-based</li>
+          <li>Revenue: $50M–$150M annual from 3–4 sovereign defence clients</li>
+        </ul>
+      </div>
+    </div>
+    <div class="rm">
+      <div class="rm-dot"><div class="rm-circle" style="border-color:#7c3aed; color:#7c3aed;">2</div></div>
+      <div class="rm-body">
+        <h4 style="color:#7c3aed;">Phase 2 — Government Ops + Health</h4>
+        <div class="rm-time" style="color:#7c3aed;">Months 5–12 · $60M–$150M total</div>
+        <ul>
+          <li>Sovereign Government Platform: target Gulf states (Saudi, Qatar, Kuwait)</li>
+          <li>National Health Intelligence: 2–3 national health systems</li>
+          <li>All ground data — databases, sensors, records</li>
+          <li>Revenue: $200M–$600M annual from 8–12 sovereign clients</li>
+        </ul>
+      </div>
+    </div>
+    <div class="rm">
+      <div class="rm-dot"><div class="rm-circle" style="border-color:#ea580c; color:#ea580c;">3</div></div>
+      <div class="rm-body">
+        <h4 style="color:#ea580c;">Phase 3 — Add Satellite as Optional Layer</h4>
+        <div class="rm-time" style="color:#ea580c;">Year 2+ · Revenue-funded</div>
+        <ul>
+          <li>Integrate Planet Labs / BlackSky / Umbra via API — $10/km², no hardware needed</li>
+          <li>Add satellite imagery as one more data source into the existing fusion engine</li>
+          <li>Upgrade clients who want wider-area surveillance capability</li>
+          <li>Consider own satellite constellation only when revenue justifies the investment</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="final-box">
+    <h3>The Bottom Line</h3>
+    <p>Every high-value, fast-deployable product in the sovereign intelligence stack runs on data that already exists — inside government databases, from drone feeds, from radio intercepts, from financial transactions. No rockets. No satellites. No billion-dollar hardware. Just software, AI, and the courage to connect the data that's already there.</p>
+    <div class="fb-stats">
+      <div class="fb-stat"><div class="fv">$5M</div><div class="fl">Minimum viable first product</div></div>
+      <div class="fb-stat"><div class="fv">6 weeks</div><div class="fl">To first live deployment</div></div>
+      <div class="fb-stat"><div class="fv">$50B+</div><div class="fl">Valuation — zero satellites</div></div>
+      <div class="fb-stat"><div class="fv">Phase 3</div><div class="fl">When satellites become relevant</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- BURGER -->
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html"><span>📡</span> Satellite Brief</a>
+  <a href="REALTIME_SATELLITE.html"><span>🔭</span> Real-Time Satellite Vision</a>
+  <a href="PALANTIR_ACCESS_MAP.html"><span>🌍</span> Palantir Access Map</a>
+  <a href="NO_SATELLITE_STACK.html" class="active-report"><span>🟢</span> No Satellite Stack</a>
+</div>
+
+</body>
+</html>
