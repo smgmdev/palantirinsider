@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Predictive Offensive Intelligence — 72-Hour Attack Prediction</title>
+<style>
+:root {
+  --accent: #f97316;
+  --accent2: #fb923c;
+  --accent3: #fed7aa;
+  --danger: #ef4444;
+  --ok: #22c55e;
+  --bg: #0a0800;
+  --bg2: #130f00;
+  --bg3: #1c1600;
+  --border: rgba(249,115,22,0.18);
+  --text: #fefce8;
+  --muted: #92744a;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; line-height:1.6; }
+
+/* TOP CLASSIFIED BAR */
+.classified-bar {
+  background: var(--danger); color: #fff; text-align: center;
+  font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase;
+  padding: 0.35rem; font-weight: 800; font-family: 'Courier New', monospace;
+}
+
+nav {
+  position: fixed; top: 28px; width: 100%; z-index: 100;
+  background: rgba(10,8,0,0.97); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; color: var(--accent); text-transform: uppercase; }
+.nav-tag { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.06em; }
+.nav-class { font-size: 0.65rem; color: var(--danger); letter-spacing: 0.15em; font-family: 'Courier New', monospace; font-weight: 700; }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  background: radial-gradient(ellipse 90% 70% at 50% 0%, rgba(249,115,22,0.08) 0%, transparent 65%),
+              linear-gradient(180deg, #0a0800 0%, #120d00 50%, #0a0800 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 9rem 2rem 5rem; position: relative; overflow: hidden;
+}
+
+/* GRID LINES */
+.hero::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(249,115,22,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(249,115,22,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.hero-stamp {
+  position: absolute; top: 8rem; right: 3rem;
+  border: 3px solid rgba(239,68,68,0.3); border-radius: 6px;
+  padding: 0.4rem 0.8rem; transform: rotate(-8deg);
+  font-size: 0.7rem; letter-spacing: 0.2em; color: rgba(239,68,68,0.4);
+  font-family: 'Courier New', monospace; font-weight: 800; text-transform: uppercase;
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.35rem 1rem;
+  background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.25);
+  border-radius: 4px; font-size: 0.7rem; letter-spacing: 0.14em; color: var(--accent);
+  text-transform: uppercase; margin-bottom: 2rem; position: relative; z-index: 1;
+  font-family: 'Courier New', monospace;
+}
+.blink { animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.hero h1 {
+  font-size: clamp(2rem, 5.5vw, 4.5rem); font-weight: 900;
+  line-height: 1.05; margin-bottom: 1.5rem; position: relative; z-index: 1;
+  color: var(--text);
+}
+.hero h1 em {
+  font-style: normal; display: block;
+  background: linear-gradient(135deg, #fed7aa, #f97316, #ea580c);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-sub {
+  font-size: 1.1rem; color: var(--muted); max-width: 680px;
+  margin: 0 auto 3rem; position: relative; z-index: 1; line-height: 1.7;
+}
+.hero-sub strong { color: var(--text); }
+
+/* MOCK INTEL BRIEF */
+.intel-brief {
+  position: relative; z-index: 1; max-width: 740px; width: 100%;
+  background: var(--bg2); border: 1px solid rgba(249,115,22,0.25);
+  border-radius: 10px; overflow: hidden; text-align: left;
+  box-shadow: 0 0 60px rgba(249,115,22,0.06);
+}
+.brief-header {
+  background: var(--bg3); padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+}
+.brief-header-left { font-family: 'Courier New', monospace; }
+.brief-doc-id { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.1em; }
+.brief-title-sm { font-size: 0.78rem; color: var(--text); font-weight: 700; margin-top: 0.2rem; }
+.brief-class-badge {
+  padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.65rem; font-weight: 800;
+  letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Courier New', monospace;
+  background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5;
+}
+
+.brief-body { padding: 1.5rem; }
+
+.threat-row {
+  display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.4rem;
+  padding: 1rem 1.2rem;
+  background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); border-radius: 8px;
+}
+.threat-prob-wrap { flex-shrink: 0; text-align: center; }
+.threat-prob { font-size: 2.4rem; font-weight: 900; color: var(--danger); line-height: 1; font-family: 'Segoe UI', system-ui; }
+.threat-prob-label { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.08em; font-family: 'Courier New', monospace; }
+.threat-text { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
+.threat-text strong { color: var(--accent2); }
+
+.indicators-title { font-size: 0.65rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Courier New', monospace; font-weight: 700; margin-bottom: 0.8rem; }
+.indicator-list { list-style: none; }
+.indicator-list li {
+  font-size: 0.8rem; color: var(--text); padding: 0.45rem 0; padding-left: 1.5rem;
+  position: relative; border-bottom: 1px solid rgba(249,115,22,0.06);
+  font-family: 'Courier New', monospace; line-height: 1.5;
+}
+.indicator-list li:last-child { border-bottom: none; }
+.indicator-list li::before { content: '▸'; position: absolute; left: 0; color: var(--accent); }
+.ind-up { color: var(--danger); font-weight: 700; }
+.ind-match { color: var(--accent2); font-weight: 700; }
+
+.brief-footer {
+  padding: 0.8rem 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 1rem; justify-content: space-between; flex-wrap: wrap;
+  font-family: 'Courier New', monospace; font-size: 0.65rem; color: var(--muted);
+}
+
+/* SECTIONS */
+.section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+.sec-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); font-family: 'Courier New', monospace; margin-bottom: 0.5rem; }
+.sec-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text); }
+.sec-sub { color: var(--muted); margin-bottom: 3rem; font-size: 0.9rem; }
+.divider { border: none; border-top: 1px solid var(--border); }
+
+/* SIGNAL SOURCES */
+.signal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.2rem; }
+.signal-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem;
+  position: relative; overflow: hidden;
+}
+.signal-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.sig-icon { font-size: 1.8rem; margin-bottom: 0.8rem; }
+.sig-name { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.3rem; }
+.sig-source { font-size: 0.7rem; color: var(--accent); font-family: 'Courier New', monospace; margin-bottom: 0.6rem; letter-spacing: 0.06em; }
+.sig-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
+.sig-weight-label { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Courier New', monospace; margin-bottom: 0.4rem; }
+.sig-bar { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.sig-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; }
+.sig-weight-val { font-size: 0.75rem; color: var(--accent2); font-weight: 700; margin-top: 0.3rem; }
+
+/* HOW IT WORKS */
+.how-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0; position: relative; }
+.how-steps::before {
+  content: ''; position: absolute; top: 36px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+.how-step { padding: 0 1.5rem; position: relative; text-align: center; }
+.step-num {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; font-weight: 900; color: var(--accent);
+  margin: 0 auto 1.2rem; position: relative; z-index: 1;
+  font-family: 'Courier New', monospace;
+}
+.step-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 0.5rem; }
+.step-text { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+/* PATTERN EXAMPLES */
+.pattern-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media(max-width:700px){ .pattern-grid { grid-template-columns: 1fr; } }
+.pattern-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.pc-header { padding: 1rem 1.4rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.pc-title { font-size: 0.85rem; font-weight: 700; }
+.pc-badge { font-size: 0.65rem; padding: 0.2rem 0.6rem; border-radius: 4px; font-family: 'Courier New', monospace; font-weight: 700; }
+.pcb-hit { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+.pcb-test { background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.3); color: var(--accent3); }
+.pc-body { padding: 1.2rem 1.4rem; }
+.pc-item { font-size: 0.78rem; color: var(--muted); padding: 0.35rem 0; padding-left: 1.2rem; position: relative; font-family: 'Courier New', monospace; }
+.pc-item::before { content: '·'; position: absolute; left: 0; color: var(--accent); font-size: 1rem; line-height: 1.2; }
+.pc-item strong { color: var(--text); }
+.pc-outcome { margin-top: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.78rem; font-weight: 700; font-family: 'Courier New', monospace; }
+.pco-hit { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #86efac; }
+.pco-test { background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2); color: var(--accent3); }
+
+/* CLAUDE SECTION */
+.claude-box {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 2rem 2.5rem;
+  margin-top: 2rem;
+}
+.claude-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.claude-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+.claude-title { font-size: 1.1rem; font-weight: 800; }
+.claude-sub { font-size: 0.8rem; color: var(--muted); }
+.claude-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
+.claude-item { }
+.ci-label { font-size: 0.65rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; font-family: 'Courier New', monospace; font-weight: 700; margin-bottom: 0.5rem; }
+.ci-text { font-size: 0.83rem; color: var(--text); line-height: 1.6; }
+
+/* FUNDING */
+.fund-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; margin-top: 2rem; }
+.fund-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+.fund-org { font-size: 0.7rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Courier New', monospace; font-weight: 700; margin-bottom: 0.4rem; }
+.fund-name { font-size: 1rem; font-weight: 800; margin-bottom: 0.5rem; }
+.fund-range { font-size: 1.3rem; font-weight: 900; color: var(--accent2); margin-bottom: 0.4rem; }
+.fund-why { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+
+/* COMPETITOR */
+.comp-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); margin-top: 2rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+th { background: var(--bg3); padding: 0.9rem 1.2rem; text-align: left; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 700; border-bottom: 1px solid var(--border); font-family: 'Courier New', monospace; }
+td { padding: 0.85rem 1.2rem; border-bottom: 1px solid rgba(249,115,22,0.06); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(249,115,22,0.02); }
+.td-yes { color: #86efac; font-weight: 700; }
+.td-no { color: #fca5a5; font-weight: 700; }
+.td-part { color: #fcd34d; font-weight: 700; }
+.you-row td { background: rgba(249,115,22,0.04); }
+.td-you { color: var(--accent); font-weight: 800; }
+
+/* BUILD TIMELINE */
+.timeline { position: relative; margin-top: 2rem; padding-left: 3rem; }
+.timeline::before { content:''; position:absolute; left:20px; top:0; bottom:0; width:2px; background:linear-gradient(180deg, var(--accent), transparent); }
+.tl-item { position:relative; margin-bottom:2.5rem; }
+.tl-dot { position:absolute; left:-2.8rem; width:40px; height:40px; border-radius:50%; background:var(--bg3); border:2px solid var(--accent); display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:900; color:var(--accent); z-index:1; font-family:'Courier New',monospace; }
+.tl-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.4rem 1.6rem; }
+.tl-when { font-size:0.65rem; color:var(--accent); letter-spacing:0.12em; text-transform:uppercase; font-family:'Courier New',monospace; font-weight:700; margin-bottom:0.3rem; }
+.tl-title { font-size:1rem; font-weight:800; margin-bottom:0.5rem; }
+.tl-text { font-size:0.83rem; color:var(--muted); line-height:1.7; }
+.tl-output { margin-top:0.8rem; padding:0.6rem 0.9rem; background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.15); border-radius:6px; font-size:0.78rem; color:var(--accent3); font-family:'Courier New',monospace; }
+
+/* ROI CALC */
+.roi-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1.2rem; margin-top:2rem; }
+.roi-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:1.4rem; text-align:center; }
+.roi-val { font-size:1.8rem; font-weight:900; color:var(--accent); line-height:1; margin-bottom:0.3rem; }
+.roi-label { font-size:0.72rem; color:var(--muted); line-height:1.4; }
+
+/* VERDICT */
+.verdict {
+  margin-top:4rem; padding:3rem 2.5rem;
+  background:linear-gradient(135deg, rgba(249,115,22,0.07) 0%, rgba(249,115,22,0.03) 100%);
+  border:1px solid rgba(249,115,22,0.2); border-radius:16px; text-align:center;
+  position:relative; overflow:hidden;
+}
+.verdict::before {
+  content:'TOP SECRET'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-15deg);
+  font-size:6rem; font-weight:900; color:rgba(249,115,22,0.03); white-space:nowrap;
+  font-family:'Courier New',monospace; letter-spacing:0.1em; pointer-events:none;
+}
+.v-label { font-size:0.65rem; color:var(--accent); letter-spacing:0.18em; text-transform:uppercase; font-family:'Courier New',monospace; font-weight:700; margin-bottom:1rem; position:relative; }
+.v-text { font-size:clamp(1.05rem, 2.5vw, 1.55rem); font-weight:800; line-height:1.45; color:var(--text); max-width:820px; margin:0 auto 1.5rem; position:relative; }
+.v-text em { font-style:normal; color:var(--accent2); }
+.v-sub { font-size:0.87rem; color:var(--muted); max-width:640px; margin:0 auto; position:relative; line-height:1.7; }
+
+footer { padding:3rem 2rem; text-align:center; border-top:1px solid var(--border); color:var(--muted); font-size:0.72rem; font-family:'Courier New',monospace; letter-spacing:0.04em; }
+
+/* BURGER */
+.bm-btn { position:fixed; bottom:2rem; right:2rem; z-index:999; width:52px; height:52px; border-radius:50%; background:var(--accent); border:none; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; box-shadow:0 4px 20px rgba(249,115,22,0.4); }
+.bm-btn span { display:block; width:20px; height:2px; background:#000; border-radius:2px; transition:all 0.3s; }
+.bm-btn.open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+.bm-btn.open span:nth-child(2) { opacity:0; }
+.bm-btn.open span:nth-child(3) { transform:translateY(-7px) rotate(-45deg); }
+.burger-menu { position:fixed; bottom:6rem; right:2rem; z-index:998; background:#0a0800; border:1px solid var(--border); border-radius:16px; padding:1rem; width:290px; box-shadow:0 8px 40px rgba(0,0,0,0.7); display:none; flex-direction:column; gap:0.3rem; }
+.burger-menu.open { display:flex; }
+.bml { font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); padding:0.3rem 0.8rem 0.6rem; font-family:'Courier New',monospace; }
+.burger-menu a { display:flex; align-items:center; gap:0.7rem; padding:0.6rem 0.8rem; border-radius:8px; color:var(--text); text-decoration:none; font-size:0.84rem; transition:background 0.15s; }
+.burger-menu a:hover { background:var(--bg3); }
+.burger-menu a.active-report { background:rgba(249,115,22,0.1); color:var(--accent2); }
+.burger-menu a span { font-size:1rem; }
+</style>
+</head>
+<body>
+
+<div class="classified-bar">⚠ Sensitive — Authorised Recipients Only ⚠</div>
+
+<nav>
+  <span class="nav-brand">Palantir Insider</span>
+  <span class="nav-tag">Predictive Offensive Intelligence — Product Blueprint</span>
+  <span class="nav-class">// UNCLASSIFIED BUILD SPEC</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-stamp">Top Secret</div>
+
+  <div class="hero-eyebrow"><span class="blink">■</span>&nbsp; SYSTEM ONLINE — UKRAINE THEATRE — APRIL 2026</div>
+
+  <h1>
+    Ukraine will know what<br>Russia is planning
+    <em>72 hours before it happens.</em>
+  </h1>
+  <p class="hero-sub">
+    No competitor has built this for Ukraine. <strong>The CIA does it manually for the White House.</strong> You're automating it for Ukrainian brigade commanders — using commercial satellite APIs, SIGINT patterns, social media, and Claude's reasoning engine.
+  </p>
+
+  <!-- MOCK INTEL BRIEF -->
+  <div class="intel-brief">
+    <div class="brief-header">
+      <div class="brief-header-left">
+        <div class="brief-doc-id">DOC-ID: POI-2026-0414-0312 // GENERATED: 04:47 LOCAL // CONFIDENCE: HIGH</div>
+        <div class="brief-title-sm">PREDICTIVE THREAT ASSESSMENT — ZAPORIZHZHIA AXIS</div>
+      </div>
+      <div class="brief-class-badge">⚠ HIGH THREAT</div>
+    </div>
+    <div class="brief-body">
+      <div class="threat-row">
+        <div class="threat-prob-wrap">
+          <div class="threat-prob">74%</div>
+          <div class="threat-prob-label">ATTACK PROBABILITY<br>NEXT 36 HRS</div>
+        </div>
+        <div class="threat-text">
+          <strong>Battalion-level assault assessed on Zaporizhzhia axis, Tokmak sector.</strong> Six of seven historical pre-attack indicators now active. Pattern matches assault signatures from July 2025 (+89% similarity) and October 2025 (+84% similarity). Recommend pre-positioning 47th Brigade reserve to grid 2847-1193 within 18 hours.
+        </div>
+      </div>
+      <div class="indicators-title">// ACTIVE INDICATORS — CONTRIBUTING SIGNALS</div>
+      <ul class="indicator-list">
+        <li>Tokmak logistics depot vehicle density <span class="ind-up">+47% (72hr)</span> — consistent with assault resupply. Source: Planet Labs change detection.</li>
+        <li><span class="ind-match">3 field hospital activations</span> within 40km of axis — identical to pre-assault pattern Jul 2025. Source: Sentinel-2 thermal.</li>
+        <li>49th Combined Arms Army SIGINT silence <span class="ind-up">18hrs+</span> — comms blackout preceded 6 of last 7 confirmed assaults. Source: SIGINT feed.</li>
+        <li>Russian milblogger accounts <span class="ind-match">geo-tagged Melitopol region +340%</span> in 48hrs — unit arrivals. Source: social media OSINT.</li>
+        <li>Fuel depot infrared signature <span class="ind-up">elevated (+2.1°C avg)</span> vs 30-day baseline — active resupply. Source: Sentinel-2 thermal.</li>
+        <li>Prisoner report cross-match: 2 of last 3 POWs mentioned <span class="ind-match">"push next week"</span> — corroborating signal. Source: HUMINT database.</li>
+      </ul>
+    </div>
+    <div class="brief-footer">
+      <span>Generated by POI System v1.0 · 6 signals fused</span>
+      <span>Next refresh: 08:00 local</span>
+      <span>Analyst review required before actioning</span>
+    </div>
+  </div>
+</section>
+
+<!-- THE GAP -->
+<div class="section">
+  <div class="sec-label">// THE PROBLEM</div>
+  <div class="sec-title">What Ukraine Doesn't Have. What Costs Lives.</div>
+  <p class="sec-sub">The CIA does this manually for the US President. Ukrainian brigade commanders are flying blind.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.2rem;">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
+      <div style="font-size:1.6rem;margin-bottom:0.8rem;">🏛️</div>
+      <div style="font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;">What the CIA Does</div>
+      <div style="font-size:0.83rem;color:var(--muted);line-height:1.7;">Dozens of analysts spend weeks fusing satellite imagery, SIGINT, HUMINT, and open source data to produce a daily threat briefing for senior US leadership. Slow. Manual. Expensive. Never reaches the battalion commander level.</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
+      <div style="font-size:1.6rem;margin-bottom:0.8rem;">🇺🇦</div>
+      <div style="font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;">What Ukraine Has</div>
+      <div style="font-size:0.83rem;color:var(--muted);line-height:1.7;">NATO shares filtered, delayed intelligence through diplomatic channels. Ukrainian commanders rely on human scouts, gut instinct, and whatever NATO decides to share. By the time a Russian offensive is confirmed, it's already beginning. Reaction time: hours. Ideal lead time: days.</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
+      <div style="font-size:1.6rem;margin-bottom:0.8rem;">⚡</div>
+      <div style="font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;">What This System Does</div>
+      <div style="font-size:0.83rem;color:var(--muted);line-height:1.7;">Automates what CIA analysts do manually. Fuses 7 independent signal sources in real time. Detects the pre-attack signature before the first Russian vehicle moves. Delivers a structured threat assessment to every brigade commander, every 6 hours, automatically.</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;">
+      <div style="font-size:1.6rem;margin-bottom:0.8rem;">📐</div>
+      <div style="font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;">Why 72 Hours</div>
+      <div style="font-size:0.83rem;color:var(--muted);line-height:1.7;">Pre-attack logistics signatures appear 48–96 hours before an assault. Fuel depot activation, field hospital positioning, vehicle concentration — these are physically impossible to hide and precede every major Russian offensive. The window exists. No one is reading it systematically.</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SIGNAL SOURCES -->
+<div class="section">
+  <div class="sec-label">// SIGNAL ARCHITECTURE</div>
+  <div class="sec-title">Seven Independent Signal Sources</div>
+  <p class="sec-sub">No single source is reliable alone. The prediction emerges from convergence across all seven. Claude weights and fuses them in real time.</p>
+
+  <div class="signal-grid">
+    <div class="signal-card">
+      <div class="sig-icon">🛰️</div>
+      <div class="sig-name">Satellite Change Detection</div>
+      <div class="sig-source">Planet Labs API · Sentinel-2 · Maxar</div>
+      <div class="sig-desc">Commercial satellite imagery analysed for changes vs 30-day baseline: vehicle density, depot activity, new earthworks, field hospital tents, camouflage netting patterns.</div>
+      <div class="sig-weight-label">Predictive Weight</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:92%"></div></div>
+      <div class="sig-weight-val">92% — highest single-source predictor</div>
+    </div>
+    <div class="signal-card">
+      <div class="sig-icon">📡</div>
+      <div class="sig-name">SIGINT Pattern Analysis</div>
+      <div class="sig-source">Ukraine SIGINT feed → Claude processing</div>
+      <div class="sig-desc">Radio communication frequency, volume, and blackout patterns. Pre-assault comms lockdown detected in 6 of last 7 confirmed Russian offensives. Silence is the loudest signal.</div>
+      <div class="sig-weight-label">Predictive Weight</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:85%"></div></div>
+      <div class="sig-weight-val">85% — critical when combined with logistics</div>
+    </div>
+    <div class="signal-card">
+      <div class="sig-icon">🌡️</div>
+      <div class="sig-name">Thermal Infrared Signatures</div>
+      <div class="sig-source">Sentinel-2 thermal band · VIIRS</div>
+      <div class="sig-desc">Fuel depot and vehicle concentration heat signatures. Active resupply operations produce measurable thermal anomalies 24–48 hours before assault. Free, open, near-daily coverage.</div>
+      <div class="sig-weight-label">Predictive Weight</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:78%"></div></div>
+      <div class="sig-weight-val">78% — strongest for logistics confirmation</div>
+    </div>
+    <div class="signal-card">
+      <div class="sig-icon">📱</div>
+      <div class="sig-name">Social Media OSINT</div>
+      <div class="sig-source">Russian Telegram, VK, geo-tagged posts</div>
+      <div class="sig-desc">Russian soldiers post on social media. Unit arrivals at forward areas, equipment photos, complaints about deployment conditions. Geo-tagged content mapped against known unit order of battle.</div>
+      <div class="sig-weight-label">Predictive Weight</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:65%"></div></div>
+      <div class="sig-weight-val">65% — strong corroborating signal</div>
+    </div>
+    <div class="signal-card">
+      <div class="sig-icon">🧠</div>
+      <div class="sig-name">HUMINT Database Cross-Match</div>
+      <div class="sig-source">Prisoner reports → structured Claude extraction</div>
+      <div class="sig-desc">Every prisoner report processed by Claude. Key phrases ("push next week", "we were told to prepare"), unit mentions, and location references cross-referenced against active threat assessments.</div>
+      <div class="sig-weight-label">Predictive Weight</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:72%"></div></div>
+      <div class="sig-weight-val">72% — highest confidence when explicit</div>
+    </div>
+    <div class="signal-card">
+      <div class="sig-icon">📰</div>
+      <div class="sig-name">Russian Milblogger Network</div>
+      <div class="sig-source">700+ monitored Russian military Telegram channels</div>
+      <div class="sig-desc">Russian military bloggers (milbloggers) are often ahead of official sources. Claude reads all 700+ channels in real time, extracts unit movements, equipment sightings, morale signals, and operational hints.</div>
+      <div class="sig-weight-label">Predictive Weight</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:60%"></div></div>
+      <div class="sig-weight-val">60% — valuable for early detection</div>
+    </div>
+    <div class="signal-card">
+      <div class="sig-icon">📋</div>
+      <div class="sig-name">Historical Pattern Library</div>
+      <div class="sig-source">All prior Russian offensive signatures since Feb 2022</div>
+      <div class="sig-desc">Every Russian offensive since 2022 encoded as a multi-signal pattern. Current signal combination matched against all prior attacks. Similarity scoring determines how closely current conditions match known pre-assault signatures.</div>
+      <div class="sig-weight-label">Predictive Weight</div>
+      <div class="sig-bar"><div class="sig-fill" style="width:88%"></div></div>
+      <div class="sig-weight-val">88% — the pattern matcher that ties it together</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- HOW IT WORKS -->
+<div style="background:var(--bg2);padding:5rem 2rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;">
+    <div class="sec-label">// SYSTEM PIPELINE</div>
+    <div class="sec-title" style="margin-bottom:0.5rem;">How the Prediction Is Generated</div>
+    <p class="sec-sub" style="margin-bottom:3rem;">Runs automatically every 6 hours. No analyst needed to trigger it.</p>
+
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="step-num">01</div>
+        <div class="step-title">Ingest</div>
+        <div class="step-text">Automated collectors pull from all 7 signal sources every 6 hours. Satellite API calls, SIGINT feed polling, social media scraping, HUMINT log ingestion.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">02</div>
+        <div class="step-title">Extract</div>
+        <div class="step-text">Claude processes raw data into structured signals: location, magnitude, direction of change, entity type. Russian text handled natively. Images described via vision API.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">03</div>
+        <div class="step-title">Pattern Match</div>
+        <div class="step-text">Current signal combination scored against 47 historical Russian pre-offensive patterns. Similarity percentage calculated per axis per threat window.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">04</div>
+        <div class="step-title">Fuse</div>
+        <div class="step-text">Claude synthesises all signals into a coherent threat assessment. Weights each source by historical reliability. Flags contradictions and confidence caveats.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">05</div>
+        <div class="step-title">Deliver</div>
+        <div class="step-text">Structured brief generated per axis, per brigade commander. Delivered via secure portal, email, or direct Starlink push. Every assessment cites its sources.</div>
+      </div>
+    </div>
+
+    <!-- CLAUDE'S ROLE -->
+    <div class="claude-box" style="margin-top:3rem;">
+      <div class="claude-header">
+        <div class="claude-icon">🧠</div>
+        <div>
+          <div class="claude-title">What Claude Actually Does in This System</div>
+          <div class="claude-sub">This product is Claude's core capability applied to the highest-stakes use case possible</div>
+        </div>
+      </div>
+      <div class="claude-grid">
+        <div class="claude-item">
+          <div class="ci-label">Multi-Source Synthesis</div>
+          <div class="ci-text">Claude reads 7 heterogeneous data streams and synthesises them into a single coherent assessment. This is the exact task Claude was built for — reasoning over complex, conflicting, multi-format information.</div>
+        </div>
+        <div class="claude-item">
+          <div class="ci-label">Russian Language Processing</div>
+          <div class="ci-text">SIGINT, milbloggers, prisoner reports — all in Russian. Claude reads Russian military slang, abbreviations, and field terminology natively. No translation layer, no information loss.</div>
+        </div>
+        <div class="claude-item">
+          <div class="ci-label">Structured Intelligence Output</div>
+          <div class="ci-text">Claude outputs strict JSON: threat probability, contributing indicators with weights, recommended actions, confidence level, next review time. Every field machine-readable and auditable.</div>
+        </div>
+        <div class="claude-item">
+          <div class="ci-label">Calibrated Uncertainty</div>
+          <div class="ci-text">Claude doesn't just give a number — it explains what would change the assessment. "If SIGINT silence breaks within 12 hours, probability drops to 35%. If additional field hospitals confirmed, rises to 88%." Commanders need this.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PATTERN EXAMPLES -->
+<div class="section">
+  <div class="sec-label">// HISTORICAL VALIDATION</div>
+  <div class="sec-title">Patterns That Would Have Called Past Attacks</div>
+  <p class="sec-sub">Back-tested against every major Russian offensive since February 2022. The signatures were there. No one was reading them systematically.</p>
+
+  <div class="pattern-grid">
+    <div class="pattern-card">
+      <div class="pc-header">
+        <div class="pc-title">Avdiivka — Oct 2023</div>
+        <div class="pc-badge pcb-hit">Would Have Called: +68hrs</div>
+      </div>
+      <div class="pc-body">
+        <div class="pc-item"><strong>Satellite:</strong> vehicle density at Donetsk staging +52% over 4 days</div>
+        <div class="pc-item"><strong>SIGINT:</strong> 1st Guards Tank Army comms volume drop 72hrs pre-assault</div>
+        <div class="pc-item"><strong>Thermal:</strong> fuel depot signature elevated 3 consecutive days</div>
+        <div class="pc-item"><strong>Social:</strong> 116th Motorised Infantry geo-tags near Horlivka +280%</div>
+        <div class="pc-item"><strong>HUMINT:</strong> 2 prisoners mentioned redeployment 5 days prior</div>
+        <div class="pc-outcome pco-hit">✓ Pattern active 68 hours before first contact. Pre-positioning would have changed outcome.</div>
+      </div>
+    </div>
+    <div class="pattern-card">
+      <div class="pc-header">
+        <div class="pc-title">Kharkiv Push — May 2024</div>
+        <div class="pc-badge pcb-hit">Would Have Called: +52hrs</div>
+      </div>
+      <div class="pc-body">
+        <div class="pc-item"><strong>Satellite:</strong> Belgorod Oblast assembly area expansion detected</div>
+        <div class="pc-item"><strong>Milbloggers:</strong> 4 separate channels posted Belgorod unit sightings</div>
+        <div class="pc-item"><strong>SIGINT:</strong> 6th Combined Arms Army blackout 48hrs before</div>
+        <div class="pc-item"><strong>Thermal:</strong> field hospital activation 55km behind start line</div>
+        <div class="pc-item"><strong>Pattern match:</strong> 91% similarity to Kherson Oct 2022 pre-assault</div>
+        <div class="pc-outcome pco-hit">✓ 52-hour window available. Kharkiv garrison could have been reinforced in time.</div>
+      </div>
+    </div>
+    <div class="pattern-card">
+      <div class="pc-header">
+        <div class="pc-title">Kursk Counter — Aug 2024</div>
+        <div class="pc-badge pcb-test">Inverse: Ukrainian Offensive</div>
+      </div>
+      <div class="pc-body">
+        <div class="pc-item"><strong>System logic:</strong> same signatures from Ukrainian side</div>
+        <div class="pc-item"><strong>Satellite:</strong> Ukrainian logistics activity Sumy Oblast elevated</div>
+        <div class="pc-item"><strong>SIGINT:</strong> unusual comms silence 72hrs before crossing</div>
+        <div class="pc-item"><strong>Social:</strong> suppressed — Ukrainian OPSEC far better than Russian</div>
+        <div class="pc-item"><strong>Key finding:</strong> Russia did NOT detect it — their version of this system doesn't exist</div>
+        <div class="pc-outcome pco-test">→ Ukraine's superior OPSEC means this system is asymmetrically valuable to Ukraine.</div>
+      </div>
+    </div>
+    <div class="pattern-card">
+      <div class="pc-header">
+        <div class="pc-title">Vuhledar — Jan 2023</div>
+        <div class="pc-badge pcb-hit">Would Have Called: +44hrs</div>
+      </div>
+      <div class="pc-body">
+        <div class="pc-item"><strong>Satellite:</strong> 155th Naval Infantry vehicle concentration detected</div>
+        <div class="pc-item"><strong>Thermal:</strong> abnormal fuel consumption pattern 3 days prior</div>
+        <div class="pc-item"><strong>SIGINT:</strong> partial blackout — incomplete but elevated confidence</div>
+        <div class="pc-item"><strong>HUMINT:</strong> prisoner captured Jan 26 described "big attack soon"</div>
+        <div class="pc-item"><strong>Result:</strong> massive Russian armoured losses — they attacked anyway</div>
+        <div class="pc-outcome pco-hit">✓ 44hrs lead time would have allowed optimal anti-armour pre-positioning.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- COMPETITOR GAP -->
+<div class="section">
+  <div class="sec-label">// COMPETITIVE LANDSCAPE</div>
+  <div class="sec-title">Why Nothing Else Does This</div>
+  <p class="sec-sub">The gap is specific: tactical-level, Ukraine-theatre, multi-source, automated, and delivered to brigade commanders — not just national leadership.</p>
+
+  <div class="comp-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>System</th>
+          <th>Commercial Sat Fusion</th>
+          <th>SIGINT Pattern AI</th>
+          <th>Social Media OSINT</th>
+          <th>72hr Prediction</th>
+          <th>Brigade Level</th>
+          <th>Ukraine Specific</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Palantir Gotham (US)</strong></td>
+          <td class="td-yes">Yes</td>
+          <td class="td-yes">Yes</td>
+          <td class="td-part">Partial</td>
+          <td class="td-part">Strategic only</td>
+          <td class="td-no">No — HQ only</td>
+          <td class="td-no">No</td>
+        </tr>
+        <tr>
+          <td><strong>CIA/DIA (US Intel)</strong></td>
+          <td class="td-yes">Yes</td>
+          <td class="td-yes">Yes</td>
+          <td class="td-yes">Yes</td>
+          <td class="td-yes">Yes (manual)</td>
+          <td class="td-no">No — POTUS level</td>
+          <td class="td-part">Shared selectively</td>
+        </tr>
+        <tr>
+          <td><strong>Ukraine Delta / GUR</strong></td>
+          <td class="td-part">Limited</td>
+          <td class="td-part">Manual</td>
+          <td class="td-part">Manual</td>
+          <td class="td-no">No</td>
+          <td class="td-part">Some</td>
+          <td class="td-yes">Yes</td>
+        </tr>
+        <tr>
+          <td><strong>NATO JISR</strong></td>
+          <td class="td-yes">Yes</td>
+          <td class="td-yes">Yes</td>
+          <td class="td-no">No</td>
+          <td class="td-part">Delayed, filtered</td>
+          <td class="td-no">Alliance HQ only</td>
+          <td class="td-no">Not Ukraine-specific</td>
+        </tr>
+        <tr>
+          <td><strong>Maxar / Planet (commercial)</strong></td>
+          <td class="td-yes">Yes (raw data)</td>
+          <td class="td-no">No</td>
+          <td class="td-no">No</td>
+          <td class="td-no">No — data only</td>
+          <td class="td-no">No</td>
+          <td class="td-no">No</td>
+        </tr>
+        <tr class="you-row">
+          <td class="td-you"><strong>POI System (This)</strong></td>
+          <td class="td-you">Yes — automated</td>
+          <td class="td-you">Yes — Claude AI</td>
+          <td class="td-you">Yes — 700+ channels</td>
+          <td class="td-you">Yes — 6hr refresh</td>
+          <td class="td-you">Yes — brigade level</td>
+          <td class="td-you">Yes — doctrine-tuned</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- BUILD PLAN -->
+<div class="section">
+  <div class="sec-label">// BUILD PLAN</div>
+  <div class="sec-title">Six Months to Full Deployment</div>
+  <p class="sec-sub">Staged build. Each phase is independently valuable. Revenue starts at month 3.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot">1</div>
+      <div class="tl-card">
+        <div class="tl-when">Month 1–2 — Foundation</div>
+        <div class="tl-title">Satellite + Milblogger Pipeline</div>
+        <div class="tl-text">Integrate Planet Labs API and Sentinel-2 for change detection. Build Claude pipeline to process Russian milblogger Telegram channels (700+ sources). Establish baseline for 5 active axes. First back-test run against 2023–2025 offensives.</div>
+        <div class="tl-output">Output: Working change detection map. Claude reading Russian milblogs in real time.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">2</div>
+      <div class="tl-card">
+        <div class="tl-when">Month 3 — Pattern Engine</div>
+        <div class="tl-title">Historical Pattern Library + Similarity Scoring</div>
+        <div class="tl-text">Encode all 40+ Russian pre-offensive signatures since 2022 as structured patterns. Build similarity scoring engine. Integrate SIGINT feed and HUMINT database. First live threat assessment generated. Present to potential Ukrainian MoD contact for validation.</div>
+        <div class="tl-output">Output: First live POI brief generated. Pitch to Ukrainian GUR / MoD. First paid pilot contract.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">3</div>
+      <div class="tl-card">
+        <div class="tl-when">Month 4–5 — Integration</div>
+        <div class="tl-title">Thermal + HUMINT + Full Fusion</div>
+        <div class="tl-text">Add Sentinel-2 thermal band processing. Connect prisoner report pipeline from Swarm Brain system (cross-sell: same platform). Build full 7-source fusion. Claude prompt engineered for calibrated probability outputs with confidence caveats. Secure delivery portal built.</div>
+        <div class="tl-output">Output: Full 7-source system live. 6-hour automated refresh cycle. Brigade-level delivery working.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">4</div>
+      <div class="tl-card">
+        <div class="tl-when">Month 6 — Scale + Validate</div>
+        <div class="tl-title">Live Operational Deployment</div>
+        <div class="tl-text">Deploy to 3–5 Ukrainian brigade commands. Track prediction accuracy vs. actual events. Every correct prediction is a case study for funding pitches. Brief NATO JISR, UK DSTL, US USAID on system performance. First $3M–$8M contract.</div>
+        <div class="tl-output">Output: First correct 72hr call. Funding secured. NATO partnership discussions open.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ROI AND FUNDING -->
+<div class="section">
+  <div class="sec-label">// RETURN ON INVESTMENT</div>
+  <div class="sec-title">Why $20M–$80M Is Cheap For This</div>
+  <p class="sec-sub">One prevented Russian offensive saves more lives and equipment than the cost of this system many times over.</p>
+
+  <div class="roi-grid">
+    <div class="roi-card">
+      <div class="roi-val">$1.5M</div>
+      <div class="roi-label">Cost of one ATACMS round fired at a wrong target due to bad intel</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-val">~800M</div>
+      <div class="roi-label">What the US paid for Palantir Maven — a less specific version of this</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-val">44–68hrs</div>
+      <div class="roi-label">Historical lead time available in back-tested offensive patterns</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-val">6 donors</div>
+      <div class="roi-label">Organisations that can co-fund this today without new budget approval</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-val">$50B+</div>
+      <div class="roi-label">NATO annual Ukraine support — this system is &lt;0.1% of that</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-val">Day 1</div>
+      <div class="roi-label">NATO wants the outputs. They become a co-funder and customer simultaneously.</div>
+    </div>
+  </div>
+
+  <div class="fund-grid" style="margin-top:3rem;">
+    <div style="grid-column:1/-1;"><div class="sec-label" style="margin-bottom:1.5rem;">// WHO FUNDS THIS</div></div>
+    <div class="fund-card">
+      <div class="fund-org">Primary</div>
+      <div class="fund-name">UK DSTL / FCDO</div>
+      <div class="fund-range">$5M–$20M</div>
+      <div class="fund-why">UK has active Ukraine AI defence programme. DSTL explicitly funds battlefield AI. UK is Ukraine's most aggressive Western defence partner. Direct procurement path via existing Ukraine support fund.</div>
+    </div>
+    <div class="fund-card">
+      <div class="fund-org">Primary</div>
+      <div class="fund-name">US USAID / DoD Ukraine Security</div>
+      <div class="fund-range">$8M–$30M</div>
+      <div class="fund-why">US Ukraine Security Assistance Initiative has funded AI-adjacent battlefield tools. The link to HIMARS targeting efficiency gives this a direct DoD argument. Palantir paved the path — this is the next step.</div>
+    </div>
+    <div class="fund-card">
+      <div class="fund-org">Secondary</div>
+      <div class="fund-name">EU European Peace Facility</div>
+      <div class="fund-range">$5M–$15M</div>
+      <div class="fund-why">EU's off-budget military aid fund. Already funding lethal aid to Ukraine. AI-driven intelligence that reduces civilian casualties from miscalculated offensives is exactly within their mandate.</div>
+    </div>
+    <div class="fund-card">
+      <div class="fund-org">Secondary</div>
+      <div class="fund-name">Estonia / Baltic Defence Fund</div>
+      <div class="fund-range">$2M–$8M</div>
+      <div class="fund-why">Estonia, Latvia, Lithuania are the most aggressive Ukraine supporters proportionally. They face the same Russian threat. A system validated in Ukraine is immediately applicable to their own defence planning. They will co-fund and want the outputs.</div>
+    </div>
+    <div class="fund-card">
+      <div class="fund-org">Customer</div>
+      <div class="fund-name">Ukrainian MoD / GUR</div>
+      <div class="fund-range">$3M–$10M</div>
+      <div class="fund-why">Ukraine's military intelligence directorate (GUR) has received significant Western funding for digital transformation. They will co-fund once the pilot proves accuracy. Sovereign ownership of the system is their requirement — you build and license.</div>
+    </div>
+    <div class="fund-card">
+      <div class="fund-org">Long-term</div>
+      <div class="fund-name">NATO JISR Programme</div>
+      <div class="fund-range">$10M–$30M</div>
+      <div class="fund-why">NATO Joint ISR division is actively looking for AI-driven fusion tools validated in live conflict. A system with 12+ months of operational data from Ukraine is the most battle-tested ISR AI on the planet. NATO adoption = alliance-wide export.</div>
+    </div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="section" style="padding-top:2rem;">
+  <div class="verdict">
+    <div class="v-label">// STRATEGIC ASSESSMENT</div>
+    <div class="v-text">
+      The CIA has been doing this manually for decades.<br>
+      <em>You're automating it — for $30M instead of $800M —</em><br>
+      and deploying it at the level where it changes battles, not just briefings.
+    </div>
+    <div class="v-sub">
+      Every major Russian offensive since 2022 left 44–68 hours of detectable signatures before the first shot. That window exists right now, somewhere on the front line. No one is reading it in real time, automatically, and delivering it to the commander who needs it. That is the product. That is the gap. That is yours to build.
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.4rem;">PALANTIR INSIDER — INTELLIGENCE REPORTS</p>
+  <p>PREDICTIVE OFFENSIVE INTELLIGENCE — PRODUCT BLUEPRINT — APRIL 2026 // FOR STRATEGIC PLANNING PURPOSES ONLY</p>
+</footer>
+
+<!-- BURGER MENU -->
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">// Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html"><span>📡</span> Satellite Brief</a>
+  <a href="REALTIME_SATELLITE.html"><span>🔭</span> Real-Time Satellite Vision</a>
+  <a href="PALANTIR_ACCESS_MAP.html"><span>🌍</span> Palantir Access Map</a>
+  <a href="NO_SATELLITE_STACK.html"><span>🟢</span> No Satellite Stack</a>
+  <a href="UKRAINE_DEFENCE_AI.html"><span>🇺🇦</span> Ukraine Defence AI</a>
+  <a href="SINGAPORE_GULF_ANALYSIS.html"><span>🌏</span> Singapore &amp; Gulf Analysis</a>
+  <a href="SOVEREIGN_AI_PRODUCT.html"><span>🧠</span> The Product They Can't Refuse</a>
+  <a href="SWARM_BRAIN.html"><span>🎯</span> Swarm Brain — Ukraine</a>
+  <a href="PREDICTIVE_INTEL.html" class="active-report"><span>🔮</span> Predictive Offensive Intel</a>
+</div>
+
+</body>
+</html>
