@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palantir Access Map — Who Has It, Who Wants It, What's Next</title>
+<style>
+  :root {
+    --accent: #e11d48;
+    --accent2: #be123c;
+    --accent3: #fb7185;
+    --bg: #ffffff;
+    --bg2: #fff1f2;
+    --bg3: #ffe4e6;
+    --border: #fecdd3;
+    --text: #1a0a0e;
+    --muted: #6b4a52;
+    --green: #16a34a;
+    --blue: #2563eb;
+    --orange: #ea580c;
+    --yellow: #ca8a04;
+    --purple: #7c3aed;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.65; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,0.97); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; height: 52px;
+    backdrop-filter: blur(10px);
+  }
+  .nav-brand { font-size: 13px; font-weight: 800; color: var(--accent2); letter-spacing: 0.08em; text-transform: uppercase; }
+  .nav-links { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-left: 20px; padding-left: 20px; border-left: 1px solid var(--border); }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 12px; padding: 5px 10px; border-radius: 6px; white-space: nowrap; transition: all 0.2s; }
+  .nav-links a:hover { color: var(--accent2); background: rgba(225,29,72,0.07); }
+
+  .hero {
+    background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 50%, #fff1f2 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 72px 24px 52px; text-align: center; position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(225,29,72,0.08), transparent);
+  }
+  .hero-badge {
+    display: inline-block; position: relative;
+    background: rgba(225,29,72,0.08); border: 1px solid var(--accent);
+    color: var(--accent2); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 5px 16px; border-radius: 20px; margin-bottom: 20px;
+  }
+  .hero h1 { font-size: clamp(24px, 4vw, 48px); font-weight: 900; letter-spacing: -0.02em; margin-bottom: 14px; position: relative; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 15px; max-width: 620px; margin: 0 auto 32px; position: relative; }
+  .hero-stats { display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; position: relative; }
+  .hero-stat .val { font-size: clamp(20px, 3vw, 32px); font-weight: 900; color: var(--accent2); display: block; }
+  .hero-stat .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  section { max-width: 1040px; margin: 0 auto; padding: 56px 24px; }
+  hr.divider { border: none; border-top: 1px solid var(--border); }
+  .section-label {
+    display: inline-block;
+    background: rgba(225,29,72,0.07); border: 1px solid rgba(225,29,72,0.3);
+    color: var(--accent2); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 4px; margin-bottom: 14px;
+  }
+  section h2 { font-size: clamp(18px, 2.5vw, 30px); font-weight: 800; margin-bottom: 6px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+  /* STATUS PILLS */
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .pill-green  { background: rgba(22,163,74,0.1);  color: #16a34a; }
+  .pill-red    { background: rgba(220,38,38,0.1);  color: #dc2626; }
+  .pill-orange { background: rgba(234,88,12,0.1);  color: #ea580c; }
+  .pill-blue   { background: rgba(37,99,235,0.1);  color: #2563eb; }
+  .pill-purple { background: rgba(124,58,237,0.1); color: #7c3aed; }
+  .pill-yellow { background: rgba(202,138,4,0.1);  color: #ca8a04; }
+
+  /* COUNTRY GRID */
+  .country-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .country-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .cc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cc-name { font-size: 15px; font-weight: 800; }
+  .cc-flag { font-size: 22px; }
+  .cc-body { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .cc-products { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* WANT-BUT-CANT TABLE */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 28px; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; min-width: 520px; }
+  th { background: var(--bg3); color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 13px 16px; font-size: 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(225,29,72,0.02); }
+  .td-bold { font-weight: 700; }
+  .td-green { color: var(--green); font-weight: 600; }
+  .td-red { color: #dc2626; font-weight: 600; }
+  .td-orange { color: var(--orange); font-weight: 600; }
+  .td-blue { color: var(--blue); font-weight: 600; }
+  .td-muted { color: var(--muted); font-size: 13px; }
+
+  /* FEATURE CARDS */
+  .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .feat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .feat-card h4 { font-size: 14px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .feat-card p { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .feat-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .feat-card ul li { font-size: 13px; color: var(--muted); display: flex; gap: 8px; }
+  .feat-card ul li::before { content: '›'; color: var(--accent); font-weight: 700; flex-shrink: 0; }
+
+  /* HIGHLIGHT */
+  .highlight { background: var(--bg2); border-left: 4px solid var(--accent); border-radius: 0 10px 10px 0; padding: 18px 20px; margin-bottom: 24px; font-size: 14px; color: var(--muted); }
+  .highlight strong { color: var(--text); }
+
+  /* NOTE BOXES */
+  .note-green  { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: #14532d; }
+  .note-blue   { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: #1e3a5f; }
+  .note-orange { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: #7c2d12; }
+  .note-red    { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: #881337; }
+
+  /* UKRAINE SECTION */
+  .ukraine-hero {
+    background: linear-gradient(135deg, #fefce8 0%, #eff6ff 100%);
+    border: 2px solid #fde68a; border-radius: 16px; padding: 32px;
+    margin-bottom: 28px;
+  }
+  .ukraine-hero h3 { font-size: clamp(16px, 2vw, 22px); font-weight: 900; margin-bottom: 8px; }
+  .ukraine-hero p { font-size: 14px; color: var(--muted); max-width: 700px; }
+
+  /* STEPS */
+  .steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+  .step { display: flex; gap: 16px; align-items: flex-start; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .step-n { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step h5 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .step p { font-size: 13px; color: var(--muted); }
+  .step .meta { font-size: 12px; font-weight: 700; color: var(--accent2); margin-top: 6px; }
+
+  /* FINAL BOX */
+  .final-box {
+    background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 40px 32px; text-align: center; margin-top: 8px;
+  }
+  .final-box h3 { font-size: clamp(18px, 2.5vw, 26px); font-weight: 900; margin-bottom: 12px; }
+  .final-box p { color: var(--muted); max-width: 640px; margin: 0 auto 24px; font-size: 14px; }
+  .fb-stats { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+  .fb-stat .fv { font-size: clamp(20px, 3vw, 28px); font-weight: 900; color: var(--accent2); }
+  .fb-stat .fl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+
+  /* BURGER */
+  .bm-btn {
+    position: fixed; bottom: 24px; right: 24px; z-index: 999;
+    width: 50px; height: 50px; border-radius: 50%;
+    background: var(--accent); border: none; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 5px;
+    box-shadow: 0 4px 16px rgba(225,29,72,0.4);
+    transition: transform 0.2s;
+  }
+  .bm-btn:hover { transform: scale(1.08); }
+  .bm-btn span { display: block; width: 18px; height: 2px; background: #fff; border-radius: 2px; transition: all 0.3s; }
+  .bm-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .bm-btn.open span:nth-child(2) { opacity: 0; }
+  .bm-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .burger-menu {
+    position: fixed; bottom: 82px; right: 24px; z-index: 998;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; width: 250px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    display: none; flex-direction: column; gap: 4px;
+  }
+  .burger-menu.open { display: flex; }
+  .burger-menu a { color: var(--text); text-decoration: none; font-size: 13px; font-weight: 500; padding: 9px 12px; border-radius: 8px; display: flex; align-items: center; gap: 10px; transition: all 0.15s; }
+  .burger-menu a:hover { background: rgba(225,29,72,0.07); color: var(--accent2); }
+  .burger-menu a.active-report { background: rgba(225,29,72,0.07); color: var(--accent2); }
+  .bml { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; padding: 4px 12px 2px; }
+
+  @media (max-width: 768px) {
+    .hero { padding: 52px 16px 36px; }
+    section { padding: 44px 16px; }
+    .ukraine-hero { padding: 20px; }
+    .final-box { padding: 28px 20px; }
+  }
+  @media (max-width: 480px) {
+    .hero-stats { gap: 20px; }
+    .step { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">🌍 Palantir Access Map</div>
+  <div class="nav-links">
+    <a href="#have">Who Has It</a>
+    <a href="#want">Who Wants It</a>
+    <a href="#features">Key Features</a>
+    <a href="#alternatives">Alternatives</a>
+    <a href="#ukraine">Ukraine</a>
+    <a href="#offer">What to Offer</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">Geopolitical Intelligence Brief</div>
+  <h1>Palantir <span>Access Map</span></h1>
+  <p>Which countries run Palantir, which are locked out, what they're using instead — and the full blueprint for what to offer Ukraine and every underserved sovereign client.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="val">~30</span><span class="lbl">Countries with access</span></div>
+    <div class="hero-stat"><span class="val">100+</span><span class="lbl">Countries locked out</span></div>
+    <div class="hero-stat"><span class="val">$500B+</span><span class="lbl">Underserved sovereign TAM</span></div>
+    <div class="hero-stat"><span class="val">0</span><span class="lbl">Good alternatives today</span></div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECTION 01 — WHO HAS IT -->
+<section id="have">
+  <div class="section-label">Section 01</div>
+  <h2>Countries With Palantir Access</h2>
+  <p class="sub">Palantir operates across ~30 countries — but access depth varies enormously. Most are US allies.</p>
+
+  <div class="highlight">
+    <strong>Access is not equal.</strong> The US gets everything — Gotham, Foundry, AIP, Maven, Apollo. UK gets near-everything. Most others get commercial Foundry only. No non-Five Eyes country gets classified Gotham or Maven Smart System. Access is controlled by US export law (ITAR/EAR) and Palantir's own commercial policy.
+  </div>
+
+  <div class="country-grid">
+    <div class="country-card" style="border-color:#bbf7d0;">
+      <div class="cc-top"><div class="cc-name">🇺🇸 United States</div><span class="pill pill-green">Full Access</span></div>
+      <div class="cc-body">Primary customer. DoD, CIA, FBI, NSA, DHS, ICE, CDC all use Palantir. Maven Smart System, Gotham classified, AIP, Foundry, Apollo — everything deployed.</div>
+      <div class="cc-products"><span class="pill pill-green">Gotham</span><span class="pill pill-green">Foundry</span><span class="pill pill-green">Maven</span><span class="pill pill-green">AIP</span><span class="pill pill-green">Apollo</span></div>
+    </div>
+    <div class="country-card" style="border-color:#bbf7d0;">
+      <div class="cc-top"><div class="cc-name">🇬🇧 United Kingdom</div><span class="pill pill-green">Deep Access</span></div>
+      <div class="cc-body">NHS (largest non-US Foundry deployment), GCHQ, MOD, MI5/MI6 data platforms. One of Palantir's largest contracts. UK is Five Eyes — gets close to US-level access.</div>
+      <div class="cc-products"><span class="pill pill-green">Gotham</span><span class="pill pill-green">Foundry</span><span class="pill pill-green">AIP</span><span class="pill pill-blue">Apollo (partial)</span></div>
+    </div>
+    <div class="country-card" style="border-color:#bbf7d0;">
+      <div class="cc-top"><div class="cc-name">🇦🇺 Australia</div><span class="pill pill-green">Deep Access</span></div>
+      <div class="cc-body">ADF (Australian Defence Force), ASIO, Home Affairs. Five Eyes member — gets defence-grade Gotham. Foundry used for government data integration.</div>
+      <div class="cc-products"><span class="pill pill-green">Gotham</span><span class="pill pill-green">Foundry</span><span class="pill pill-blue">AIP (limited)</span></div>
+    </div>
+    <div class="country-card" style="border-color:#bbf7d0;">
+      <div class="cc-top"><div class="cc-name">🇨🇦 Canada</div><span class="pill pill-green">Deep Access</span></div>
+      <div class="cc-body">RCMP, CSIS, CAF (Canadian Armed Forces). Five Eyes — defence-grade access. Used for counter-terrorism analytics and border intelligence.</div>
+      <div class="cc-products"><span class="pill pill-green">Gotham</span><span class="pill pill-green">Foundry</span></div>
+    </div>
+    <div class="country-card" style="border-color:#bbf7d0;">
+      <div class="cc-top"><div class="cc-name">🇳🇿 New Zealand</div><span class="pill pill-green">Five Eyes Access</span></div>
+      <div class="cc-body">GCSB, NZDF. Smallest Five Eyes partner — access but at lower volume. Foundry used for government analytics.</div>
+      <div class="cc-products"><span class="pill pill-green">Foundry</span><span class="pill pill-blue">Gotham (limited)</span></div>
+    </div>
+    <div class="country-card" style="border-color:#bfdbfe;">
+      <div class="cc-top"><div class="cc-name">🇩🇪 Germany</div><span class="pill pill-blue">Commercial Access</span></div>
+      <div class="cc-body">BND (intelligence), Bundeswehr (military). Commercial Foundry only — no classified US tools. Germany has been cautious about US data sovereignty.</div>
+      <div class="cc-products"><span class="pill pill-blue">Foundry</span><span class="pill pill-yellow">AIP (emerging)</span></div>
+    </div>
+    <div class="country-card" style="border-color:#bfdbfe;">
+      <div class="cc-top"><div class="cc-name">🇫🇷 France</div><span class="pill pill-blue">Commercial Access</span></div>
+      <div class="cc-body">Commercial Foundry contracts with French enterprises and some government ministries. DGSE (intelligence) resists US platforms — France builds its own where possible.</div>
+      <div class="cc-products"><span class="pill pill-blue">Foundry</span></div>
+    </div>
+    <div class="country-card" style="border-color:#bfdbfe;">
+      <div class="cc-top"><div class="cc-name">🇯🇵 Japan</div><span class="pill pill-blue">Commercial + Defence</span></div>
+      <div class="cc-body">JSDF (Japan Self-Defence Forces), commercial clients. Strong US-Japan defence treaty enables deeper access than most non-Five Eyes. Growing use post-2022.</div>
+      <div class="cc-products"><span class="pill pill-blue">Foundry</span><span class="pill pill-blue">Gotham (limited)</span></div>
+    </div>
+    <div class="country-card" style="border-color:#bfdbfe;">
+      <div class="cc-top"><div class="cc-name">🇮🇱 Israel</div><span class="pill pill-blue">Defence Access</span></div>
+      <div class="cc-body">IDF uses Palantir tools for intelligence fusion. Strong US-Israel defence relationship. Likely has Gotham access given close intelligence sharing. Also builds own competing tools (NSO Group, Elbit).</div>
+      <div class="cc-products"><span class="pill pill-blue">Gotham (limited)</span><span class="pill pill-blue">Foundry</span></div>
+    </div>
+    <div class="country-card" style="border-color:#fed7aa;">
+      <div class="cc-top"><div class="cc-name">🇦🇪 UAE</div><span class="pill pill-orange">Commercial Access</span></div>
+      <div class="cc-body">Abu Dhabi government and commercial clients. Gulf state with strong US ties. Commercial Foundry — no classified tools. UAE also aggressively builds its own AI capability (G42).</div>
+      <div class="cc-products"><span class="pill pill-orange">Foundry</span><span class="pill pill-yellow">AIP (emerging)</span></div>
+    </div>
+    <div class="country-card" style="border-color:#fed7aa;">
+      <div class="cc-top"><div class="cc-name">🇸🇦 Saudi Arabia</div><span class="pill pill-orange">Commercial Access</span></div>
+      <div class="cc-body">Saudi Aramco, Vision 2030 ministries. Commercial only. Complex relationship — human rights concerns have limited US defence tool exports.</div>
+      <div class="cc-products"><span class="pill pill-orange">Foundry</span></div>
+    </div>
+    <div class="country-card" style="border-color:#fed7aa;">
+      <div class="cc-top"><div class="cc-name">🇺🇦 Ukraine</div><span class="pill pill-yellow">War-Time Access</span></div>
+      <div class="cc-body">Since Feb 2022 — Palantir CEO Alex Karp deployed tools and engineers directly to Ukraine. Foundry for logistics, some Gotham-class intelligence fusion. Dependency on Palantir's goodwill — not a standard contract. Covered in depth in Section 05.</div>
+      <div class="cc-products"><span class="pill pill-yellow">Foundry</span><span class="pill pill-yellow">Intelligence tools</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 02 — WHO WANTS IT BUT CAN'T HAVE IT -->
+<section id="want">
+  <div class="section-label">Section 02</div>
+  <h2>Countries That Want Access — But Can't Get It</h2>
+  <p class="sub">The largest underserved market in enterprise software. Structural, political, and legal barriers keep 100+ governments out.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Country / Region</th><th>Why They're Blocked</th><th>What They Need Most</th><th>Urgency</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-bold">🇮🇳 India</td>
+          <td class="td-muted">Data sovereignty laws. India passed DPDP Act requiring data to stay in India. US cloud hosting incompatible. Geopolitical non-alignment policy — won't rely on US platforms for military.</td>
+          <td class="td-blue">Military intelligence fusion, border surveillance AI, logistics</td>
+          <td><span class="pill pill-red">Critical</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇹🇷 Turkey</td>
+          <td class="td-muted">Removed from F-35 program, US-Turkey tensions. NATO member but US reluctant to share intelligence tools. Turkish government wants sovereign capability.</td>
+          <td class="td-blue">Air defence intelligence, counter-terrorism analytics, border AI</td>
+          <td><span class="pill pill-red">Critical</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇧🇷 Brazil</td>
+          <td class="td-muted">National data sovereignty stance. Brazil's LGPD (data law) complicates US cloud. Non-aligned foreign policy. Amazon / deforestation monitoring need.</td>
+          <td class="td-blue">Environmental monitoring, border control, financial crime AI</td>
+          <td><span class="pill pill-orange">High</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇵🇱 Poland</td>
+          <td class="td-muted">Has limited access via NATO but not full sovereign deployment. Wants own data stack — not dependent on US platforms for national defence data.</td>
+          <td class="td-blue">Eastern border surveillance, military logistics, civil defence AI</td>
+          <td><span class="pill pill-red">Critical — frontline NATO</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇷🇴 Romania / 🇧🇬 Bulgaria</td>
+          <td class="td-muted">NATO members but outside Five Eyes. No sovereign AI platform. Black Sea region — elevated threat post-2022.</td>
+          <td class="td-blue">Naval surveillance, military intelligence, cyber defence</td>
+          <td><span class="pill pill-red">Critical — Black Sea</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇰🇷 South Korea</td>
+          <td class="td-muted">Has some access via US military alliance but not sovereign deployment. Wants full Korean-language, Korean-law-compliant version. DPRK threat requires high-urgency capability.</td>
+          <td class="td-blue">DPRK threat monitoring, military intelligence, logistics AI</td>
+          <td><span class="pill pill-orange">High</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇹🇼 Taiwan</td>
+          <td class="td-muted">US One China policy complicates direct defence tool sales. Taiwan desperately needs military AI — faces active PLA threat. Cannot officially buy Gotham/Maven.</td>
+          <td class="td-blue">Air / naval defence AI, early warning systems, logistics resilience</td>
+          <td><span class="pill pill-red">Extreme — existential threat</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇸🇬 Singapore / 🇲🇾 Malaysia / 🇮🇩 Indonesia</td>
+          <td class="td-muted">ASEAN non-alignment. Don't want to rely on US platforms for sensitive national data. Strong sovereignty doctrine across the region.</td>
+          <td class="td-blue">Maritime surveillance, financial crime AI, supply chain intelligence</td>
+          <td><span class="pill pill-orange">High</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇶🇦 Qatar / 🇰🇼 Kuwait / 🇧🇭 Bahrain</td>
+          <td class="td-muted">Gulf states outside UAE. Want sovereign capability — reluctant to route national security data through US systems. Qatar especially post-2017 blockade.</td>
+          <td class="td-blue">Defence AI, government operations platform, financial monitoring</td>
+          <td><span class="pill pill-orange">High</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🌍 African Union members</td>
+          <td class="td-muted">Cost — standard Palantir contracts start at $20M+/year. No localised product. No local support. 54 countries almost entirely unserved.</td>
+          <td class="td-blue">Border control, resource tracking, public health intelligence, peacekeeping AI</td>
+          <td><span class="pill pill-yellow">Medium — growing fast</span></td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇷🇺 Russia 🇨🇳 China 🇮🇷 Iran</td>
+          <td class="td-muted">Sanctioned / strategic adversaries. Completely blocked. Building own alternatives at state level — Russia has SORM, China has state-backed AI platforms, both investing billions.</td>
+          <td class="td-muted">N/A — not a target market</td>
+          <td><span class="pill pill-red">Blocked — do not serve</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 03 — KEY FEATURES NEEDED -->
+<section id="features">
+  <div class="section-label">Section 03</div>
+  <h2>Most Needed Features for Locked-Out Countries</h2>
+  <p class="sub">What these governments actually need — the use cases that would make them sign a 10-year contract tomorrow.</p>
+
+  <div class="feat-grid">
+    <div class="feat-card">
+      <h4>⚔️ Military Intelligence Fusion</h4>
+      <p>Single picture combining SIGINT, HUMINT, satellite, drone feeds. Every locked-out military is doing this manually with spreadsheets and phone calls. Priority #1 for India, Turkey, Taiwan, Poland.</p>
+      <ul>
+        <li>Multi-source data fusion into one operational map</li>
+        <li>Entity resolution across intelligence sources</li>
+        <li>AI-assisted threat assessment and alert</li>
+        <li>Air-gapped, sovereign-hosted deployment</li>
+      </ul>
+    </div>
+    <div class="feat-card">
+      <h4>🛰️ Border & Maritime Surveillance AI</h4>
+      <p>Automated detection of illegal crossings, vessel tracking, anomaly alerts. High demand across India (3,400km Pakistan border), Indonesia (vast maritime), Romania/Bulgaria (Black Sea).</p>
+      <ul>
+        <li>Satellite + drone feed analysis</li>
+        <li>AIS vessel tracking + anomaly detection</li>
+        <li>Cross-border movement pattern analysis</li>
+        <li>Real-time alert dashboard for operators</li>
+      </ul>
+    </div>
+    <div class="feat-card">
+      <h4>💰 Financial Crime & AML AI</h4>
+      <p>Anti-money-laundering, sanctions evasion detection, terrorist financing. Needed by every emerging market central bank and financial intelligence unit. Low political sensitivity — easy first product to sell.</p>
+      <ul>
+        <li>Transaction graph analysis</li>
+        <li>Beneficial ownership tracing</li>
+        <li>Sanctions screening automation</li>
+        <li>Connects to SWIFT, local payment networks</li>
+      </ul>
+    </div>
+    <div class="feat-card">
+      <h4>🏥 Government Operations Platform</h4>
+      <p>Foundry-equivalent for government ministries — connecting data across Finance, Health, Interior, Infrastructure. Huge demand from Gulf states building smart government (Vision 2030 type initiatives).</p>
+      <ul>
+        <li>Cross-ministry data ontology</li>
+        <li>Budget and resource tracking</li>
+        <li>KPI dashboards for heads of state</li>
+        <li>Citizen services intelligence</li>
+      </ul>
+    </div>
+    <div class="feat-card">
+      <h4>🌊 Disaster & Civil Defence AI</h4>
+      <p>Natural disaster response coordination, pandemic response, civil emergency. Southeast Asia (typhoons, earthquakes), South Asia (floods). Low political risk, high goodwill, entry point for deeper contracts.</p>
+      <ul>
+        <li>Real-time resource allocation during crisis</li>
+        <li>Supply chain tracking for relief</li>
+        <li>Population movement analysis</li>
+        <li>Predictive risk mapping</li>
+      </ul>
+    </div>
+    <div class="feat-card">
+      <h4>🔒 Sovereign AI Deployment (Apollo equivalent)</h4>
+      <p>The ability to run AI software in fully air-gapped, nationally controlled infrastructure. This is the #1 blocker — governments won't put sensitive data in US cloud. Sovereign deployment unlocks everything else.</p>
+      <ul>
+        <li>On-premise deployment — zero US cloud dependency</li>
+        <li>Government-controlled encryption keys</li>
+        <li>Air-gap capable for classified networks</li>
+        <li>NATO-compatible but non-US-dependent</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 04 — WHAT ALTERNATIVES EXIST -->
+<section id="alternatives">
+  <div class="section-label">Section 04</div>
+  <h2>What Are They Using Instead?</h2>
+  <p class="sub">The short answer: nothing good. Most locked-out governments are using legacy tools, manual processes, or fragmented point solutions.</p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Country / Region</th><th>Current Alternative</th><th>Why It Falls Short</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-bold">🇮🇳 India</td>
+          <td>Custom in-house (DRDO, NIC), SAP for ministries, Israeli NICE Systems for some intelligence</td>
+          <td class="td-muted">No unified platform. Each ministry runs separate databases. No AI layer. Intelligence fusion is manual.</td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇹🇷 Turkey</td>
+          <td>Aselsan (domestic defence tech), STM AI (domestic), some IBM analytics</td>
+          <td class="td-muted">Domestic tools are basic. No Foundry-equivalent data fabric. Intelligence work is fragmented.</td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇧🇷 Brazil</td>
+          <td>IBM, Oracle, Microsoft Azure (domestic data centres), SERPRO (state IT company)</td>
+          <td class="td-muted">SERPRO is a bureaucratic legacy IT company — no AI, no real-time analytics. IBM/Oracle do not provide intelligence-grade tools.</td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇵🇱 Poland / Eastern NATO</td>
+          <td>NATO C2 systems, Thales (France), some IBM, manual processes</td>
+          <td class="td-muted">NATO C2 systems are 10–20 years behind Palantir. Thales defence tools are expensive and slow to deploy. No AI fusion layer.</td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇰🇷 South Korea</td>
+          <td>LIG Nex1, Hanwha Systems (domestic), limited access to US tools via alliance</td>
+          <td class="td-muted">Domestic tools focus on hardware (missiles, radar) not software intelligence. No Foundry-equivalent. AI integration nascent.</td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇸🇬 / ASEAN</td>
+          <td>SAP, Microsoft Sentinel, Splunk for cyber, manual government ops</td>
+          <td class="td-muted">Splunk/Microsoft are security/IT tools — not government intelligence platforms. No ontology layer, no military-grade fusion.</td>
+        </tr>
+        <tr>
+          <td class="td-bold">Gulf States (non-UAE)</td>
+          <td>McKinsey / Accenture consulting, SAP, IBM, some Chinese tech (Huawei for infrastructure)</td>
+          <td class="td-muted">Consultants build one-off dashboards — not scalable platforms. Chinese tech raises back-door concerns. No sovereign AI layer.</td>
+        </tr>
+        <tr>
+          <td class="td-bold">🌍 Africa</td>
+          <td>Excel spreadsheets, donor-funded NGO tools, basic IBM/Microsoft, Chinese-built infrastructure (Huawei, ZTE)</td>
+          <td class="td-muted">No enterprise AI capability at all. Chinese infrastructure creates long-term dependency risk. Most government data is not even digitised.</td>
+        </tr>
+        <tr>
+          <td class="td-bold">🇺🇦 Ukraine (pre-2022)</td>
+          <td>NATO legacy C2 systems, Excel, manual coordination, some IBM</td>
+          <td class="td-muted">Pre-2022 Ukraine was operating with no real AI military intelligence capability. Palantir's 2022 deployment was transformative — but is dependent on continued goodwill.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-orange">
+    <strong>The strategic gap:</strong> Every one of these countries is using tools built for commercial IT, not national intelligence. SAP tracks your purchase orders. IBM runs your HR system. None of them were designed to fuse satellite imagery, signals intelligence, human reports, and drone feeds into a real-time operational picture. That gap is exactly what Palantir fills — and what a Sovereign Stack can fill for everyone else.
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 05 — UKRAINE -->
+<section id="ukraine">
+  <div class="section-label">Section 05</div>
+  <h2>Ukraine — Special Case Deep Dive</h2>
+  <p class="sub">Ukraine has partial Palantir access — but it's dependent, fragile, and incomplete. Here's the full picture.</p>
+
+  <div class="ukraine-hero">
+    <h3>🇺🇦 What Ukraine Actually Has</h3>
+    <p>After Russia's full-scale invasion in February 2022, Palantir CEO Alex Karp made a personal decision to deploy Palantir tools and engineers directly to Ukraine — outside of a standard commercial contract. This was a humanitarian / ideological decision, not a government-to-government deal. Ukraine uses Palantir for logistics coordination, some battlefield intelligence fusion, and resource allocation. It is NOT a permanent, contractual, sovereign deployment.</p>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>What Ukraine Has</th><th>What Ukraine Doesn't Have</th><th>Risk</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-green">✓ Foundry — logistics and resource tracking</td>
+          <td class="td-red">✗ Full Gotham — classified intelligence platform</td>
+          <td class="td-muted">If Palantir withdraws or US policy changes, loses logistics backbone</td>
+        </tr>
+        <tr>
+          <td class="td-green">✓ Some battlefield data fusion tools</td>
+          <td class="td-red">✗ Maven Smart System — AI targeting</td>
+          <td class="td-muted">Tactical AI targeting capability gap vs Russia</td>
+        </tr>
+        <tr>
+          <td class="td-green">✓ Palantir engineers on-ground support</td>
+          <td class="td-red">✗ Sovereign control of the data</td>
+          <td class="td-muted">All data flows through Palantir — Ukraine cannot fully control or audit it</td>
+        </tr>
+        <tr>
+          <td class="td-green">✓ Rapid deployment under wartime conditions</td>
+          <td class="td-red">✗ Air-gapped classified deployment</td>
+          <td class="td-muted">Network-connected deployment — vulnerable to cyber attack on the platform itself</td>
+        </tr>
+        <tr>
+          <td class="td-green">✓ Some satellite imagery integration</td>
+          <td class="td-red">✗ Full MetaConstellation / multi-source ISR</td>
+          <td class="td-muted">Limited to imagery that Palantir chooses to provide</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note-red">
+    <strong>The core vulnerability:</strong> Ukraine's current Palantir access is a favour, not a contract. If US political winds shift — a new administration, policy change, or budget cut — Ukraine could lose this capability overnight. A sovereign alternative that Ukraine controls and owns is not just commercially attractive — it's a national security imperative.
+  </div>
+
+  <div class="note-blue">
+    <strong>What Ukraine proved to the world:</strong> The Ukraine conflict is the first live demonstration that AI battlefield intelligence is a decisive military capability. Drone ISR + AI fusion + logistics AI has been transformative. Every military chief on Earth watched this and started urgent procurement. Ukraine is both a client opportunity AND a proof-of-concept showcase for Sovereign Maven.
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 06 — WHAT TO OFFER UKRAINE -->
+<section id="offer">
+  <div class="section-label">Section 06</div>
+  <h2>What to Offer Ukraine — The Sovereign Package</h2>
+  <p class="sub">Five modules, deployable in priority order, that replace Palantir's current role and extend it further with sovereign control.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">1</div>
+      <div>
+        <h5>Module 1 — Sovereign Logistics & Resource Platform (Foundry Replacement)</h5>
+        <p>Ukraine's most immediate need. Ammunition tracking, medical supply routing, equipment maintenance status, troop mobilisation logistics. Runs on Ukrainian-controlled servers — no foreign cloud dependency. Integrates with NATO supply chain systems via open API. Deployable in 4–6 weeks using AI-assisted development on top of open-source stack.</p>
+        <div class="meta">Build time: 6–10 weeks · Deploy on: Ukrainian MOD infrastructure or EU sovereign cloud · Cost: $3M–$8M</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div>
+        <h5>Module 2 — Battlefield Intelligence Fusion (Gotham Replacement)</h5>
+        <p>Single operational picture combining drone video feeds, satellite imagery (Planet Labs / BlackSky API), SIGINT intercepts, HUMINT reports, OSINT (Telegram channels, social media). AI correlates and flags — human commanders decide. Runs fully air-gapped on hardened edge hardware that can survive power outages and cyberattack. Key addition vs current Palantir: Ukraine owns the data and the system.</p>
+        <div class="meta">Build time: 3–4 months · Deploy on: air-gapped hardened servers · Cost: $8M–$20M</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div>
+        <h5>Module 3 — Drone ISR AI (Sovereign Maven)</h5>
+        <p>Computer vision running on drone feeds — automatic object detection and classification (tanks, artillery, troop concentrations, air defence systems). Processes hundreds of simultaneous drone feeds without analyst overload. Fine-tuned on Ukrainian theatre imagery — recognises Russian military equipment specifically. Runs on edge hardware that can be installed in forward command posts.</p>
+        <div class="meta">Build time: 2–3 months (foundation models + fine-tuning) · Cost: $5M–$12M</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">4</div>
+      <div>
+        <h5>Module 4 — Cyber Defence Intelligence</h5>
+        <p>Russia runs the most active state cyber warfare program in the world against Ukraine. AI-powered threat detection, network anomaly analysis, attack attribution, and infrastructure protection. Integrates with existing Ukrainian CERT. Key feature: threat intelligence sharing with NATO allies — each new attack makes the system smarter.</p>
+        <div class="meta">Build time: 2–3 months · Cost: $3M–$8M · Can be co-funded with EU cyber defence budget</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">5</div>
+      <div>
+        <h5>Module 5 — Reconstruction Intelligence Platform</h5>
+        <p>Ukraine will need $500B+ in reconstruction. Track damage assessment (satellite imagery → AI damage mapping), reconstruction project progress, contractor performance, anti-corruption monitoring (fund tracing). This is the post-war module — but building it now signals long-term commitment. Foundry-equivalent for civilian reconstruction. Also appealing to EU/World Bank funders who want accountability.</p>
+        <div class="meta">Build time: 4–6 months · Cost: $5M–$15M · Fundable via EU reconstruction grants</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Module</th><th>Replaces</th><th>Build Cost</th><th>Deploy Time</th><th>Who Can Fund It</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="td-bold">1 — Logistics Platform</td><td class="td-muted">Palantir Foundry</td><td class="td-green">$3M–$8M</td><td class="td-green">6–10 weeks</td><td class="td-blue">Ukraine MOD, NATO, EU</td></tr>
+        <tr><td class="td-bold">2 — Intelligence Fusion</td><td class="td-muted">Palantir Gotham</td><td class="td-orange">$8M–$20M</td><td class="td-orange">3–4 months</td><td class="td-blue">UK MOD, US DoD (indirect), EU</td></tr>
+        <tr><td class="td-bold">3 — Drone ISR AI</td><td class="td-muted">Maven Smart System</td><td class="td-orange">$5M–$12M</td><td class="td-green">2–3 months</td><td class="td-blue">Ukraine MOD, allied defence funds</td></tr>
+        <tr><td class="td-bold">4 — Cyber Defence AI</td><td class="td-muted">No current equivalent</td><td class="td-green">$3M–$8M</td><td class="td-green">2–3 months</td><td class="td-blue">EU Cyber Solidarity Act, NATO</td></tr>
+        <tr><td class="td-bold">5 — Reconstruction AI</td><td class="td-muted">Nothing today</td><td class="td-orange">$5M–$15M</td><td class="td-orange">4–6 months</td><td class="td-blue">World Bank, EU reconstruction fund</td></tr>
+        <tr style="background:#f0fdf4;"><td class="td-bold">Total — Full Stack</td><td class="td-muted">Full Palantir replacement + more</td><td class="td-green">$24M–$63M</td><td class="td-green">4–6 months to core</td><td class="td-blue">Multiple sources available</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="final-box">
+    <h3>The Ukraine Opportunity</h3>
+    <p>Ukraine is not just a client — it's the world's most visible proof of concept. A Sovereign Stack deployed in Ukraine, performing better than the current Palantir setup, is a live demo watched by every defence ministry on Earth. Win Ukraine, and you win 30 sovereign defence contracts behind it.</p>
+    <div class="fb-stats">
+      <div class="fb-stat"><div class="fv">$24M–$63M</div><div class="fl">Full Ukraine sovereign stack</div></div>
+      <div class="fb-stat"><div class="fv">6 months</div><div class="fl">To core deployment</div></div>
+      <div class="fb-stat"><div class="fv">$500B+</div><div class="fl">Reconstruction TAM — Module 5</div></div>
+      <div class="fb-stat"><div class="fv">30+</div><div class="fl">Follow-on sovereign contracts</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- BURGER -->
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html"><span>📡</span> Satellite Brief</a>
+  <a href="REALTIME_SATELLITE.html"><span>🔭</span> Real-Time Satellite Vision</a>
+  <a href="PALANTIR_ACCESS_MAP.html" class="active-report"><span>🌍</span> Palantir Access Map</a>
+</div>
+
+</body>
+</html>
