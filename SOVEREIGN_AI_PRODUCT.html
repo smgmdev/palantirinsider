@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Product They Can't Say No To — Sovereign AI Analyst</title>
+<style>
+:root {
+  --accent: #0d9488;
+  --accent2: #14b8a6;
+  --accent3: #5eead4;
+  --bg: #0a0f0f;
+  --bg2: #0f1a1a;
+  --bg3: #152020;
+  --border: rgba(13,148,136,0.2);
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; }
+
+nav {
+  position: fixed; top: 0; width: 100%; z-index: 100;
+  background: rgba(10,15,15,0.97); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem; height: 56px; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; color: var(--accent2); text-transform: uppercase; }
+.nav-tag { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0f0f 0%, #041a18 40%, #062420 60%, #0a0f0f 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 7rem 2rem 5rem; position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(13,148,136,0.1) 0%, transparent 70%);
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px; border-radius: 50%;
+  border: 1px solid rgba(13,148,136,0.06);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.4rem 1.2rem;
+  background: rgba(13,148,136,0.1); border: 1px solid rgba(13,148,136,0.3);
+  border-radius: 999px; font-size: 0.75rem; letter-spacing: 0.1em; color: var(--accent2);
+  text-transform: uppercase; margin-bottom: 2rem; position: relative; z-index: 1;
+}
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+.hero h1 {
+  font-size: clamp(2.2rem, 5.5vw, 4.2rem); font-weight: 900;
+  line-height: 1.05; margin-bottom: 1.5rem; position: relative; z-index: 1;
+  background: linear-gradient(135deg, #ccfbf1, #5eead4, #0d9488);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, #fef3c7, #fbbf24);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-sub {
+  font-size: 1.15rem; color: var(--muted); max-width: 700px;
+  margin: 0 auto 3rem; position: relative; z-index: 1; line-height: 1.7;
+}
+.hero-sub strong { color: var(--text); }
+
+.hero-stat-row {
+  display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+  position: relative; z-index: 1; margin-bottom: 3rem;
+}
+.hstat {
+  text-align: center;
+  padding: 1.2rem 2rem;
+  background: rgba(13,148,136,0.06); border: 1px solid rgba(13,148,136,0.2);
+  border-radius: 12px;
+}
+.hstat-val { font-size: 2rem; font-weight: 900; color: var(--accent2); line-height: 1; margin-bottom: 0.3rem; }
+.hstat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.06em; }
+
+.demo-box {
+  position: relative; z-index: 1;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.6rem 2rem; max-width: 680px; margin: 0 auto;
+  text-align: left;
+}
+.demo-bar {
+  display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.2rem;
+}
+.demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+.demo-title { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-left: auto; }
+.demo-input {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.9rem 1.2rem; margin-bottom: 1rem;
+  font-size: 0.9rem; color: var(--text); display: flex; align-items: center; justify-content: space-between;
+}
+.demo-input-text { color: var(--muted); }
+.demo-cursor { width: 2px; height: 16px; background: var(--accent2); animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.demo-response {
+  font-size: 0.85rem; color: var(--text); line-height: 1.7;
+  border-left: 2px solid var(--accent); padding-left: 1rem;
+}
+.demo-sources {
+  margin-top: 0.8rem; display: flex; gap: 0.5rem; flex-wrap: wrap;
+}
+.demo-src {
+  font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;
+  background: rgba(13,148,136,0.1); border: 1px solid rgba(13,148,136,0.2); color: var(--accent3);
+}
+
+/* PROBLEM */
+.section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+.section-title {
+  font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;
+}
+.section-sub { color: var(--muted); margin-bottom: 3rem; font-size: 0.95rem; }
+.grad-text {
+  background: linear-gradient(135deg, var(--text), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.problem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+.problem-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.8rem;
+}
+.problem-icon { font-size: 2rem; margin-bottom: 1rem; }
+.problem-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.6rem; }
+.problem-text { font-size: 0.88rem; color: var(--muted); line-height: 1.7; }
+.problem-quote {
+  margin-top: 1rem; padding: 0.8rem 1rem;
+  background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15);
+  border-radius: 8px; font-size: 0.8rem; color: #fca5a5; font-style: italic;
+}
+
+/* MODULES */
+.modules { background: var(--bg2); padding: 5rem 2rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.modules-inner { max-width: 1200px; margin: 0 auto; }
+
+.module-card {
+  background: var(--bg); border: 1px solid var(--border); border-radius: 20px;
+  overflow: hidden; margin-bottom: 2rem;
+}
+.module-card:last-child { margin-bottom: 0; }
+.module-header {
+  padding: 2rem 2.5rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 1.5rem;
+}
+.module-num {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: rgba(13,148,136,0.15); border: 1px solid rgba(13,148,136,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; font-weight: 900; color: var(--accent2);
+}
+.module-name { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.3rem; }
+.module-tagline { font-size: 0.88rem; color: var(--muted); }
+.module-time {
+  text-align: right;
+  font-size: 0.75rem; color: var(--muted);
+}
+.module-time strong { display: block; font-size: 1.1rem; color: var(--accent2); font-weight: 800; }
+
+.module-body { padding: 2rem 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media(max-width:700px){ .module-body { grid-template-columns: 1fr; } .module-header { grid-template-columns: auto 1fr; } .module-time { display: none; } }
+
+.mod-col-title { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 1rem; }
+.mod-list { list-style: none; }
+.mod-list li { font-size: 0.88rem; color: var(--text); padding: 0.5rem 0; padding-left: 1.4rem; position: relative; border-bottom: 1px solid rgba(13,148,136,0.07); }
+.mod-list li:last-child { border-bottom: none; }
+.mod-list li::before { content: '→'; position: absolute; left: 0; color: var(--accent2); font-weight: 700; }
+
+.tech-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.tech-tag {
+  padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+  background: var(--bg3); border: 1px solid var(--border); color: var(--muted);
+}
+.tech-tag.main { background: rgba(13,148,136,0.12); border-color: rgba(13,148,136,0.3); color: var(--accent3); }
+
+.module-impact {
+  margin: 0 2.5rem 2rem; padding: 1.2rem 1.5rem;
+  background: rgba(13,148,136,0.06); border: 1px solid rgba(13,148,136,0.2);
+  border-radius: 12px; display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+}
+.impact-item { }
+.impact-num { font-size: 1.6rem; font-weight: 900; color: var(--accent2); line-height: 1; }
+.impact-label { font-size: 0.75rem; color: var(--muted); }
+
+/* OBJECTION TABLE */
+.divider { border: none; border-top: 1px solid var(--border); }
+.obj-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); margin-top: 2rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th {
+  background: var(--bg3); padding: 1rem 1.4rem; text-align: left;
+  font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent2); font-weight: 700; border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 1rem 1.4rem; border-bottom: 1px solid rgba(13,148,136,0.07);
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(13,148,136,0.03); }
+.td-obj { color: #fca5a5; font-weight: 600; font-size: 0.85rem; }
+.td-ans { color: var(--text); }
+.td-ans strong { color: var(--accent3); }
+
+/* SALES MOTION */
+.timeline { position: relative; margin-top: 2rem; }
+.timeline::before {
+  content: ''; position: absolute; left: 24px; top: 0; bottom: 0;
+  width: 2px; background: linear-gradient(180deg, var(--accent), transparent);
+}
+.tl-item { display: flex; gap: 2rem; margin-bottom: 2.5rem; position: relative; }
+.tl-dot {
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  background: var(--bg3); border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 900; color: var(--accent2); z-index: 1;
+}
+.tl-content { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; flex: 1; }
+.tl-week { font-size: 0.72rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem; }
+.tl-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 0.6rem; }
+.tl-text { font-size: 0.88rem; color: var(--muted); line-height: 1.7; }
+.tl-price { margin-top: 0.8rem; font-size: 1.1rem; font-weight: 800; color: var(--accent2); }
+
+/* BUILD STACK */
+.stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-top: 2rem; }
+.stack-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem;
+}
+.stack-layer { font-size: 0.7rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem; }
+.stack-name { font-size: 1rem; font-weight: 800; margin-bottom: 0.5rem; }
+.stack-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+.stack-tools { margin-top: 0.8rem; display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.stool { font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 4px; background: var(--bg3); border: 1px solid var(--border); color: var(--muted); }
+.stool.hi { background: rgba(13,148,136,0.1); border-color: rgba(13,148,136,0.25); color: var(--accent3); }
+
+/* REVENUE MODEL */
+.revenue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-top: 2rem; }
+.rev-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem;
+  position: relative; overflow: hidden;
+}
+.rev-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+.rev-phase { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem; }
+.rev-val { font-size: 1.6rem; font-weight: 900; color: var(--accent2); line-height: 1; margin-bottom: 0.3rem; }
+.rev-label { font-size: 0.8rem; color: var(--muted); }
+
+/* VERDICT */
+.verdict {
+  margin-top: 4rem; padding: 3rem 2.5rem;
+  background: linear-gradient(135deg, rgba(13,148,136,0.08) 0%, rgba(13,148,136,0.04) 100%);
+  border: 1px solid rgba(13,148,136,0.25); border-radius: 20px; text-align: center;
+}
+.verdict-label { font-size: 0.75rem; color: var(--accent2); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; margin-bottom: 1rem; }
+.verdict-text { font-size: clamp(1.1rem, 2.5vw, 1.5rem); font-weight: 700; line-height: 1.5; color: var(--text); max-width: 800px; margin: 0 auto 1.5rem; }
+.verdict-sub { font-size: 0.9rem; color: var(--muted); max-width: 600px; margin: 0 auto; }
+
+/* FOOTER */
+footer {
+  padding: 3rem 2rem; text-align: center;
+  border-top: 1px solid var(--border); color: var(--muted); font-size: 0.8rem;
+}
+
+/* BURGER */
+.bm-btn {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--accent2); border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  box-shadow: 0 4px 20px rgba(13,148,136,0.4); transition: all 0.2s;
+}
+.bm-btn span { display: block; width: 20px; height: 2px; background: #000; border-radius: 2px; transition: all 0.3s; }
+.bm-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.bm-btn.open span:nth-child(2) { opacity: 0; }
+.bm-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.burger-menu {
+  position: fixed; bottom: 6rem; right: 2rem; z-index: 998;
+  background: #0a0f0f; border: 1px solid var(--border); border-radius: 16px;
+  padding: 1rem; width: 290px; box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  display: none; flex-direction: column; gap: 0.3rem;
+}
+.burger-menu.open { display: flex; }
+.bml { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding: 0.3rem 0.8rem 0.6rem; }
+.burger-menu a {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.6rem 0.8rem; border-radius: 8px; color: var(--text);
+  text-decoration: none; font-size: 0.85rem; transition: background 0.15s;
+}
+.burger-menu a:hover { background: var(--bg3); }
+.burger-menu a.active-report { background: rgba(13,148,136,0.12); color: var(--accent2); }
+.burger-menu a span { font-size: 1rem; }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">Palantir Insider</span>
+  <span class="nav-tag">The Product They Can't Say No To</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow"><span class="pulse"></span>Product Blueprint — April 2026</div>
+  <h1>The Product They<br>Cannot <em>Say No To</em></h1>
+  <p class="hero-sub">
+    Every country in Singapore and the Gulf has spent <strong>$100M+ on cloud infrastructure</strong> that isn't producing intelligence. They all watched ChatGPT launch and asked the same question. You're the first person showing up with the answer.
+  </p>
+  <div class="hero-stat-row">
+    <div class="hstat">
+      <div class="hstat-val">$20M+</div>
+      <div class="hstat-label">What Palantir AIP costs</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">$300K</div>
+      <div class="hstat-label">Your pilot entry price</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">6 wks</div>
+      <div class="hstat-label">To working demo with Claude</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val">0 new</div>
+      <div class="hstat-label">Cloud infra they need to buy</div>
+    </div>
+  </div>
+  <div class="demo-box">
+    <div class="demo-bar">
+      <div class="demo-dot" style="background:#ef4444"></div>
+      <div class="demo-dot" style="background:#f59e0b"></div>
+      <div class="demo-dot" style="background:#22c55e"></div>
+      <span class="demo-title">Sovereign AI Analyst — Live</span>
+    </div>
+    <div class="demo-input">
+      <span class="demo-input-text">What are the top 3 threat patterns on the northern border this month?</span>
+      <span class="demo-cursor"></span>
+    </div>
+    <div class="demo-response">
+      Based on 847 incident reports (Mar–Apr 2026), three patterns are elevated: <strong>(1)</strong> vehicle crossings between waypoints 14–17 increased 34% week-on-week. <strong>(2)</strong> Sensor blackouts at sector 9 correlate with subsequent incursions in 6 of 8 cases. <strong>(3)</strong> Activity peaks between 02:00–04:00 local, consistent with prior pattern from Q4 2025.
+      <div class="demo-sources">
+        <span class="demo-src">border_incidents.db</span>
+        <span class="demo-src">sector9_sensors.csv</span>
+        <span class="demo-src">patrol_logs_Q1.pdf</span>
+        <span class="demo-src">+4 sources</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<div class="section">
+  <div class="section-title grad-text">The Problem Every Country Shares</div>
+  <p class="section-sub">Different flags, same crisis. Six countries, one unsolved problem worth hundreds of millions.</p>
+
+  <div class="problem-grid">
+    <div class="problem-card">
+      <div class="problem-icon">🗄️</div>
+      <div class="problem-title">Data Everywhere, Intelligence Nowhere</div>
+      <div class="problem-text">Border sensors, patrol logs, financial transactions, satellite feeds, customs databases — all in separate systems, none talking to each other. Analysts copy-paste between spreadsheets to write reports.</div>
+      <div class="problem-quote">"We have petabytes of data and we don't know what's in it."</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">💸</div>
+      <div class="problem-title">Cloud Bought, Value Never Delivered</div>
+      <div class="problem-text">Kuwait signed with Microsoft. Qatar has Azure AND Google data centres. Saudi Arabia has Oracle. Singapore onboarded Oracle Cloud for DSTA. They paid for the pipes. No one built the intelligence layer on top.</div>
+      <div class="problem-quote">"We have Azure. Our data still lives in Excel."</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">🤖</div>
+      <div class="problem-title">Ministers Saw ChatGPT. They Want That.</div>
+      <div class="problem-text">Every defence minister and intelligence chief has used ChatGPT. They all asked the same question to their IT teams: "Why can't we have this but for our own data?" Their IT teams have no answer. You do.</div>
+      <div class="problem-quote">"Can we not just do what OpenAI did, but with our files?"</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">🔒</div>
+      <div class="problem-title">US Platforms Are a Sovereignty Problem</div>
+      <div class="problem-text">Palantir is US-origin. Gotham is ITAR-adjacent. Every country here has a reason not to send classified data to a US company server. Singapore is Five Eyes non-member. Gulf states have complex US political dynamics.</div>
+      <div class="problem-quote">"We cannot put our military data in an American cloud."</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">⏳</div>
+      <div class="problem-title">Analyst Time Wasted on Manual Work</div>
+      <div class="problem-text">Senior intelligence officers spend 60–70% of their time reading, summarising, and copy-pasting between reports. The actual analytical thinking — pattern recognition, threat assessment — gets maybe 2 hours a day.</div>
+      <div class="problem-quote">"My best analyst writes 4-page reports that no one reads."</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">🎯</div>
+      <div class="problem-title">Palantir's Price Is Unreachable</div>
+      <div class="problem-text">Palantir's minimum serious engagement starts at $10M–$20M. 18–24 month deployment. Requires their consultants embedded in your org. Bahrain, Kuwait, Qatar cannot justify this. Even Saudi wants an alternative for non-US-aligned work.</div>
+      <div class="problem-quote">"Palantir wanted $35M and two years. We need something in 90 days."</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODULES -->
+<div class="modules">
+  <div class="modules-inner">
+    <div class="section-title grad-text">Three Modules. One Product.</div>
+    <p class="section-sub" style="margin-bottom:2.5rem;">Each module solves a specific pain. All three run on their existing cloud. All three built with Claude API.</p>
+
+    <!-- MODULE 1 -->
+    <div class="module-card">
+      <div class="module-header">
+        <div class="module-num">01</div>
+        <div>
+          <div class="module-name">Ask Your Data</div>
+          <div class="module-tagline">Natural language query over any government or defence dataset — the demo that closes the deal</div>
+        </div>
+        <div class="module-time">
+          <strong>2 weeks</strong>to live demo
+        </div>
+      </div>
+      <div class="module-body">
+        <div>
+          <div class="mod-col-title">What It Does</div>
+          <ul class="mod-list">
+            <li>Connect their existing databases, Excel files, PDFs, API feeds</li>
+            <li>Any analyst types a question in English or Arabic</li>
+            <li>Claude reads relevant data, returns a sourced answer in seconds</li>
+            <li>Every answer cites which files/tables it used</li>
+            <li>Deployed entirely on their own Azure/Oracle — data never leaves</li>
+            <li>Role-based access: generals see military data, ministers see budget data</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mod-col-title">How You Build It</div>
+          <div class="tech-tags">
+            <span class="tech-tag main">Claude API (claude-opus-4)</span>
+            <span class="tech-tag main">RAG pipeline</span>
+            <span class="tech-tag main">Vector database (pgvector)</span>
+            <span class="tech-tag">Next.js frontend</span>
+            <span class="tech-tag">PostgreSQL connectors</span>
+            <span class="tech-tag">PDF ingestion (pypdf)</span>
+            <span class="tech-tag">Excel parser</span>
+            <span class="tech-tag">REST API polling</span>
+            <span class="tech-tag">Azure / Oracle Cloud deploy</span>
+            <span class="tech-tag">Arabic NLP preprocessing</span>
+          </div>
+        </div>
+      </div>
+      <div class="module-impact">
+        <div class="impact-item"><div class="impact-num">10 sec</div><div class="impact-label">vs 3 days for manual answer</div></div>
+        <div class="impact-item"><div class="impact-num">100%</div><div class="impact-label">Sovereign — their cloud, their data</div></div>
+        <div class="impact-item"><div class="impact-num">∞</div><div class="impact-label">Data sources connectable</div></div>
+        <div class="impact-item"><div class="impact-num">0</div><div class="impact-label">New infrastructure needed</div></div>
+      </div>
+    </div>
+
+    <!-- MODULE 2 -->
+    <div class="module-card">
+      <div class="module-header">
+        <div class="module-num">02</div>
+        <div>
+          <div class="module-name">Automated Intelligence Brief</div>
+          <div class="module-tagline">Every morning at 6am, every commander and minister gets a tailored briefing generated from overnight data — automatically</div>
+        </div>
+        <div class="module-time">
+          <strong>3 weeks</strong>to deploy
+        </div>
+      </div>
+      <div class="module-body">
+        <div>
+          <div class="mod-col-title">What It Does</div>
+          <ul class="mod-list">
+            <li>Nightly job reads all new incident reports, sensor logs, news feeds</li>
+            <li>Claude extracts entities, patterns, anomalies, changes from baseline</li>
+            <li>Generates a structured 1-page brief per role: Commander / Minister / Analyst</li>
+            <li>Flags items requiring immediate attention vs. routine updates</li>
+            <li>Delivered by email, secure portal, or pushed to mobile app</li>
+            <li>Tracks what was briefed previously — no repetition, only deltas</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mod-col-title">How You Build It</div>
+          <div class="tech-tags">
+            <span class="tech-tag main">Claude API (claude-sonnet)</span>
+            <span class="tech-tag main">Cron job scheduler</span>
+            <span class="tech-tag main">Template engine (structured output)</span>
+            <span class="tech-tag">Data diff pipeline</span>
+            <span class="tech-tag">Secure email delivery</span>
+            <span class="tech-tag">Role-based filtering</span>
+            <span class="tech-tag">PDF brief generator</span>
+            <span class="tech-tag">Baseline comparison logic</span>
+          </div>
+        </div>
+      </div>
+      <div class="module-impact">
+        <div class="impact-item"><div class="impact-num">3–5</div><div class="impact-label">Analysts replaced per deployment</div></div>
+        <div class="impact-item"><div class="impact-num">6am</div><div class="impact-label">Brief ready before first meeting</div></div>
+        <div class="impact-item"><div class="impact-num">Zero</div><div class="impact-label">Overnight analyst shifts needed</div></div>
+        <div class="impact-item"><div class="impact-num">100%</div><div class="impact-label">Coverage — no data missed</div></div>
+      </div>
+    </div>
+
+    <!-- MODULE 3 -->
+    <div class="module-card">
+      <div class="module-header">
+        <div class="module-num">03</div>
+        <div>
+          <div class="module-name">Document Intelligence</div>
+          <div class="module-tagline">Upload any document — foreign language, captured material, intercepted comm, contract — and get an instant structured extraction</div>
+        </div>
+        <div class="module-time">
+          <strong>2 weeks</strong>to deploy
+        </div>
+      </div>
+      <div class="module-body">
+        <div>
+          <div class="mod-col-title">What It Does</div>
+          <ul class="mod-list">
+            <li>Upload PDF, image, scanned doc, audio transcript, email chain</li>
+            <li>Claude extracts: people, places, dates, organisations, financial amounts</li>
+            <li>Auto-translates from Arabic, Farsi, Russian, Chinese, French</li>
+            <li>Generates: executive summary, key findings, recommended follow-up actions</li>
+            <li>Tags document into existing knowledge graph (links to related entities)</li>
+            <li>Flags if entities appear in watch lists or prior intelligence files</li>
+          </ul>
+        </div>
+        <div>
+          <div class="mod-col-title">How You Build It</div>
+          <div class="tech-tags">
+            <span class="tech-tag main">Claude API (claude-opus-4 vision)</span>
+            <span class="tech-tag main">Structured output (JSON schema)</span>
+            <span class="tech-tag main">Entity extraction pipeline</span>
+            <span class="tech-tag">OCR preprocessing</span>
+            <span class="tech-tag">Translation layer</span>
+            <span class="tech-tag">Knowledge graph (Neo4j)</span>
+            <span class="tech-tag">Watch list matching</span>
+            <span class="tech-tag">Secure upload interface</span>
+          </div>
+        </div>
+      </div>
+      <div class="module-impact">
+        <div class="impact-item"><div class="impact-num">45 sec</div><div class="impact-label">vs 4 hrs for manual processing</div></div>
+        <div class="impact-item"><div class="impact-num">8+</div><div class="impact-label">Languages supported out of box</div></div>
+        <div class="impact-item"><div class="impact-num">Auto</div><div class="impact-label">Links to related intelligence files</div></div>
+        <div class="impact-item"><div class="impact-num">100%</div><div class="impact-label">Audit trail — every extraction logged</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- OBJECTIONS -->
+<div class="section">
+  <div class="section-title grad-text">Why They Cannot Say No</div>
+  <p class="section-sub">Every objection has a structural answer baked into the product design.</p>
+
+  <div class="obj-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Their Objection</th>
+          <th>Your Answer</th>
+          <th>Why It's Bulletproof</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-obj">"We don't trust a US platform with our data"</td>
+          <td class="td-ans"><strong>Runs on their cloud.</strong> Azure Kuwait, Oracle Singapore, GCP Qatar. Data never leaves their sovereign infrastructure. You're a wrapper, not a data processor.</td>
+          <td class="td-ans">Claude API calls are stateless — no training on their data. Contractually provable.</td>
+        </tr>
+        <tr>
+          <td class="td-obj">"Palantir was too expensive and took too long"</td>
+          <td class="td-ans"><strong>$300K pilot, 90 days to live.</strong> If it doesn't work, they haven't spent their annual software budget. You de-risk the decision to near-zero.</td>
+          <td class="td-ans">Pilot pricing puts the decision below most procurement thresholds — no committee approval needed in several countries.</td>
+        </tr>
+        <tr>
+          <td class="td-obj">"We have no engineers to maintain this"</td>
+          <td class="td-ans"><strong>It runs on their existing cloud team's stack.</strong> Azure DevOps, Oracle Cloud ops — they already have staff who know how to run it. No new hires.</td>
+          <td class="td-ans">You provide 12-month support SLA. Their team trains on standard cloud tooling they already use.</td>
+        </tr>
+        <tr>
+          <td class="td-obj">"We already bought Microsoft / Oracle / G42"</td>
+          <td class="td-ans"><strong>This is the missing intelligence layer on top of what they already bought.</strong> It makes their $100M cloud investment actually produce value. It's complementary, not competitive.</td>
+          <td class="td-ans">Microsoft, Oracle, G42 all provide infrastructure — none provide this intelligence layer. No territory conflict.</td>
+        </tr>
+        <tr>
+          <td class="td-obj">"What if the AI makes a mistake?"</td>
+          <td class="td-ans"><strong>Every answer cites its source.</strong> Analysts verify before acting — same as today. You're removing the retrieval work, not the human decision. Claude doesn't act, it informs.</td>
+          <td class="td-ans">The "AI makes mistakes" objection assumes AI replaces humans. This product assists humans. Every output is auditable.</td>
+        </tr>
+        <tr>
+          <td class="td-obj">"We need to see it work first"</td>
+          <td class="td-ans"><strong>You build the demo in 2 weeks with synthetic but realistic data matching their specific country.</strong> Oil pipeline data for Kuwait. Maritime vessel logs for Bahrain. They walk out of the demo having used it.</td>
+          <td class="td-ans">Demos built on their domain-specific data have a 10x close rate vs. generic demos. Claude builds the demo in days.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SALES MOTION -->
+<div class="section">
+  <div class="section-title grad-text">The Sales Motion</div>
+  <p class="section-sub">Four steps from cold approach to $2M–$8M annual contract.</p>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot">1</div>
+      <div class="tl-content">
+        <div class="tl-week">Week 1–2</div>
+        <div class="tl-title">Build the Country-Specific Demo</div>
+        <div class="tl-text">
+          Use Claude to build a working demo with synthetic but realistic data for their specific domain. For Kuwait: KNPC oil pipeline maintenance logs + border incident reports. For Singapore: SAF logistics + DIS threat reports. For Bahrain: port vessel data + patrol logs.<br><br>
+          The demo must answer 3 questions they would actually ask in real life. Walk into the meeting and let them type their own question. They close themselves.
+        </div>
+        <div class="tl-price">Cost to build: ~40 hours of your time with Claude</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">2</div>
+      <div class="tl-content">
+        <div class="tl-week">Week 3–4</div>
+        <div class="tl-title">Sign the 90-Day Pilot ($300K–$500K)</div>
+        <div class="tl-text">
+          Pilot contract covers: connecting 2–3 of their real data sources, deploying on their cloud, training 5–10 analysts, and delivering 90 days of working usage. Fixed price. No overruns.<br><br>
+          Keep the pilot scope tight: one ministry, one domain. Win there, expand later. Pilot priced below most government procurement thresholds — a director can sign it without committee.
+        </div>
+        <div class="tl-price">Revenue: $300K–$500K</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">3</div>
+      <div class="tl-content">
+        <div class="tl-week">Month 4</div>
+        <div class="tl-title">Pilot Proves Value → Full Platform Contract</div>
+        <div class="tl-text">
+          After 90 days, you have user adoption data, time-saved metrics, and internal advocates. Present the numbers: "Your analysts answered 340 questions in 90 days. Without this, each took 3 days. You got back 1,020 analyst-days of capacity."<br><br>
+          Full platform contract: all 3 modules, full ministry/military deployment, 12-month support SLA. Annual recurring.
+        </div>
+        <div class="tl-price">Revenue: $2M–$8M/yr per country</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot">4</div>
+      <div class="tl-content">
+        <div class="tl-week">Year 2+</div>
+        <div class="tl-title">Custom Modules + Multi-Country Expansion</div>
+        <div class="tl-text">
+          Each country has specific additions: Saudi Arabia wants HUMAIN interoperability. Singapore wants joint ops AI across SAF branches. Kuwait wants oil infrastructure predictive maintenance. UAE wants drone coordination AI.<br><br>
+          Each custom module adds $500K–$2M to the contract. One country reference client unlocks the others — Gulf states all watch each other's procurement decisions closely.
+        </div>
+        <div class="tl-price">Revenue: $500K–$2M per custom module per country</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- BUILD STACK -->
+<div class="section">
+  <div class="section-title grad-text">What You Actually Build With Claude</div>
+  <p class="section-sub">Six layers. All buildable by one developer with Claude as your pair programmer. No PhD required.</p>
+
+  <div class="stack-grid">
+    <div class="stack-card">
+      <div class="stack-layer">Layer 1 — Frontend</div>
+      <div class="stack-name">Chat Interface</div>
+      <div class="stack-desc">Simple Next.js or plain HTML/JS chat UI. Secure login. Role-based views. Arabic RTL support. Runs in any modern browser.</div>
+      <div class="stack-tools">
+        <span class="stool hi">Next.js</span>
+        <span class="stool hi">Tailwind CSS</span>
+        <span class="stool">Arabic RTL</span>
+        <span class="stool">Auth.js</span>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Layer 2 — AI Core</div>
+      <div class="stack-name">Claude API</div>
+      <div class="stack-desc">claude-opus-4 for complex reasoning. claude-sonnet-4-6 for high-volume tasks like document processing and brief generation. Structured JSON outputs for all extractions.</div>
+      <div class="stack-tools">
+        <span class="stool hi">claude-opus-4</span>
+        <span class="stool hi">claude-sonnet-4-6</span>
+        <span class="stool">Tool use</span>
+        <span class="stool">Structured output</span>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Layer 3 — Retrieval</div>
+      <div class="stack-name">RAG Pipeline</div>
+      <div class="stack-desc">Chunk and embed all data sources. Store in pgvector (PostgreSQL extension — already available on Azure/Oracle). Retrieve relevant context before each Claude call.</div>
+      <div class="stack-tools">
+        <span class="stool hi">pgvector</span>
+        <span class="stool hi">Embeddings API</span>
+        <span class="stool">Chunking logic</span>
+        <span class="stool">Hybrid search</span>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Layer 4 — Data Connectors</div>
+      <div class="stack-name">Ingestion Layer</div>
+      <div class="stack-desc">Connectors for PostgreSQL, MySQL, Excel/CSV upload, PDF ingestion, REST API polling. Each connector is 100–200 lines of Python. Claude writes them in minutes.</div>
+      <div class="stack-tools">
+        <span class="stool hi">Python connectors</span>
+        <span class="stool">pypdf</span>
+        <span class="stool">pandas</span>
+        <span class="stool">REST polling</span>
+        <span class="stool">SQL adapters</span>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Layer 5 — Automation</div>
+      <div class="stack-name">Brief Generator</div>
+      <div class="stack-desc">Nightly cron job reads new data, calls Claude with a structured brief prompt, generates PDF/HTML output per role, delivers via secure email or portal push.</div>
+      <div class="stack-tools">
+        <span class="stool hi">Cron scheduler</span>
+        <span class="stool hi">PDF generator</span>
+        <span class="stool">Email delivery</span>
+        <span class="stool">Role templates</span>
+      </div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-layer">Layer 6 — Deployment</div>
+      <div class="stack-name">Sovereign Cloud Deploy</div>
+      <div class="stack-desc">Docker containers deployed on their existing Azure/Oracle/GCP. No special setup. Their cloud team does the deploy. You provide the Docker images and IaC templates.</div>
+      <div class="stack-tools">
+        <span class="stool hi">Docker</span>
+        <span class="stool hi">Terraform IaC</span>
+        <span class="stool">Azure Container Apps</span>
+        <span class="stool">Oracle OKE</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- REVENUE -->
+<div class="section">
+  <div class="section-title grad-text">Revenue Model Across All Six Countries</div>
+  <p class="section-sub">Conservative estimates. One country closed funds the next two pilots.</p>
+
+  <div class="revenue-grid">
+    <div class="rev-card">
+      <div class="rev-phase">Phase 1 — Pilots</div>
+      <div class="rev-val">$1.8M</div>
+      <div class="rev-label">6 × $300K pilot contracts</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-phase">Phase 2 — Full Platforms (Yr 1)</div>
+      <div class="rev-val">$12M–$30M</div>
+      <div class="rev-label">3–4 countries × $3M–$8M ARR</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-phase">Phase 3 — Custom Modules</div>
+      <div class="rev-val">$8M–$18M</div>
+      <div class="rev-label">4 modules × 4 countries avg</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-phase">Year 2 Total ARR</div>
+      <div class="rev-val">$20M–$48M</div>
+      <div class="rev-label">Fully contracted, 6 countries</div>
+    </div>
+  </div>
+
+  <div style="margin-top:2rem;padding:1.8rem 2rem;background:var(--bg2);border:1px solid var(--border);border-radius:14px;">
+    <div style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent2);font-weight:700;margin-bottom:1rem;">Cost To Build The Full Product</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1.5rem;">
+      <div>
+        <div style="font-size:1.6rem;font-weight:900;color:var(--accent2);">6 weeks</div>
+        <div style="font-size:0.8rem;color:var(--muted);">To working MVP (you + Claude)</div>
+      </div>
+      <div>
+        <div style="font-size:1.6rem;font-weight:900;color:var(--accent2);">~$2K</div>
+        <div style="font-size:0.8rem;color:var(--muted);">Claude API cost per demo build</div>
+      </div>
+      <div>
+        <div style="font-size:1.6rem;font-weight:900;color:var(--accent2);">~$800/mo</div>
+        <div style="font-size:0.8rem;color:var(--muted);">Claude API cost per live deployment</div>
+      </div>
+      <div>
+        <div style="font-size:1.6rem;font-weight:900;color:var(--accent2);">1 dev</div>
+        <div style="font-size:0.8rem;color:var(--muted);">Team size to build initial product</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VERDICT -->
+<div class="section" style="padding-top:2rem;">
+  <div class="verdict">
+    <div class="verdict-label">The One-Line Pitch</div>
+    <div class="verdict-text">
+      "Give every minister and general a ChatGPT that answers questions from their own classified data — running on the cloud they already own, live in 90 days, for $300K."
+    </div>
+    <div class="verdict-sub">
+      Palantir charges $20M–$50M and takes 18 months to do the same thing. You're not undercutting Palantir — you're going to the 80% of the market Palantir can't serve. That market is worth $400M in Singapore and the Gulf alone.
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.5rem;">Palantir Insider — Intelligence Reports</p>
+  <p>Sovereign AI Analyst Product Blueprint — April 2026. Build this. Ship this.</p>
+</footer>
+
+<!-- BURGER MENU -->
+<button class="bm-btn" id="bmBtn" onclick="this.classList.toggle('open'); document.getElementById('burgerMenu').classList.toggle('open');">
+  <span></span><span></span><span></span>
+</button>
+<div class="burger-menu" id="burgerMenu">
+  <div class="bml">Reports</div>
+  <a href="index.html"><span>🛰️</span> Project MAX — Palantir Takedown</a>
+  <a href="PALANTIR_OFFERINGS.html"><span>🔍</span> Palantir Service Offerings</a>
+  <a href="PALANTIR_REPLICATION_TARGETS.html"><span>💰</span> Replication Targets</a>
+  <a href="SOVEREIGN_REPLICATION.html"><span>⚡</span> Sovereign Stack Deep Dive</a>
+  <a href="SATELLITE_BRIEF.html"><span>📡</span> Satellite Brief</a>
+  <a href="REALTIME_SATELLITE.html"><span>🔭</span> Real-Time Satellite Vision</a>
+  <a href="PALANTIR_ACCESS_MAP.html"><span>🌍</span> Palantir Access Map</a>
+  <a href="NO_SATELLITE_STACK.html"><span>🟢</span> No Satellite Stack</a>
+  <a href="UKRAINE_DEFENCE_AI.html"><span>🇺🇦</span> Ukraine Defence AI</a>
+  <a href="SINGAPORE_GULF_ANALYSIS.html"><span>🌏</span> Singapore &amp; Gulf Analysis</a>
+  <a href="SOVEREIGN_AI_PRODUCT.html" class="active-report"><span>🧠</span> The Product They Can't Refuse</a>
+</div>
+
+</body>
+</html>
